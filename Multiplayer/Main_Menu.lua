@@ -1,47 +1,15 @@
 ----------------------------------------------
 ------------MOD MAIN MENU---------------------
 
-local Debug = require "Debug"
+local Utils = require "Utils"
 
 MULTIPLAYER_VERSION = "0.1.0-MULTIPLAYER"
 
-local gameMainMenuRef = Game.main_menu
-function Game.main_menu(arg_280_0, arg_280_1)
-	gameMainMenuRef(arg_280_0, arg_280_1)
-	UIBox({
-		definition = {
-			n = G.UIT.ROOT,
-			config = {
-				align = "cm",
-				colour = G.C.UI.TRANSPARENT_DARK
-			},
-			nodes = {
-				{
-					n = G.UIT.T,
-					config = {
-						scale = 0.3,
-						text = MULTIPLAYER_VERSION,
-						colour = G.C.UI.TEXT_LIGHT
-					}
-				}
-			}
-		},
-		config = {
-			align = "tri",
-			bond = "Weak",
-			offset = {
-				x = 0,
-				y = 0.6
-			},
-			major = G.ROOM_ATTACH
-		}
-	})
-end
-
-function create_UIBox_multiplayer_button()
+function create_UIBox_create_lobby_button()
 	local var_495_0 = 0.75
 
 	return (create_UIBox_generic_options({
+		back_func = "play_options",
 		contents = {
 			{
 				n = G.UIT.R,
@@ -55,7 +23,7 @@ function create_UIBox_multiplayer_button()
 						colour = G.C.BOOSTER,
 						tabs = {
 							{
-								label = "Create Lobby",
+								label = "Attrition (1v1)",
 								chosen = true,
 								tab_definition_function = function()
 									return {
@@ -73,27 +41,34 @@ function create_UIBox_multiplayer_button()
 											{
 												n = G.UIT.R,
 												config = {
-													padding = 0,
-													align = "cm"
+														align = "tm",
+														padding = 0.05,
+														minw = 4,
+														minh = 1.5
 												},
 												nodes = {
 													{
 														n = G.UIT.T,
 														config = {
-															text = "Test",
+															text = Utils.wrapText("Both players start with 4 lives, every boss round is a competition between players where the player with the lower score loses a life.", 50),
 															shadow = true,
 															scale = var_495_0 * 0.6,
 															colour = G.C.UI.TEXT_LIGHT
 														}
 													}
 												}
-											}
+											},
+											UIBox_button({
+												label = {"Coming Soon!"},
+												colour = G.C.RED,
+												minw = 5,
+											})
 										}
 									}
 								end
 							},
 							{
-								label = "Join Lobby",
+								label = "Draft (1v1)",
 								tab_definition_function = function()
 									return {
 										n = G.UIT.ROOT,
@@ -110,27 +85,107 @@ function create_UIBox_multiplayer_button()
 											{
 												n = G.UIT.R,
 												config = {
-													padding = 0,
-													align = "cm"
+													align = "tm",
+													padding = 0.05,
+													minw = 4,
+													minh = 2.5
 												},
 												nodes = {
 													{
 														n = G.UIT.T,
 														config = {
-															text = "Test",
+															text = Utils.wrapText("Both players play a set amount of antes simultaneously, then they play an ante where every round the player with the higher scorer wins, player with the most round wins in the final ante is the victor.", 50),
 															shadow = true,
 															scale = var_495_0 * 0.6,
 															colour = G.C.UI.TEXT_LIGHT
 														}
 													}
 												}
-											}
+											},
+											UIBox_button({
+												label = {"Coming Soon!"},
+												colour = G.C.RED,
+												minw = 5,
+											})
+										}
+									}
+								end
+							},
+							{
+								label = "Battle Royale (8p)",
+								tab_definition_function = function()
+									return {
+										n = G.UIT.ROOT,
+										config = {
+											emboss = 0.05,
+											minh = 6,
+											r = 0.1,
+											minw = 10,
+											align = "Tm",
+											padding = 0.2,
+											colour = G.C.BLACK
+										},
+										nodes = {
+											{
+												n = G.UIT.R,
+												config = {
+													align = "tm",
+													padding = 0.05,
+													minw = 4,
+													minh = 1
+												},
+												nodes = {
+													{
+														n = G.UIT.T,
+														config = {
+															text = Utils.wrapText("Draft, except there are up to 8 players and every player only has 1 life.", 50),
+															shadow = true,
+															scale = var_495_0 * 0.6,
+															colour = G.C.UI.TEXT_LIGHT
+														}
+													}
+												}
+											},
+											UIBox_button({
+												label = {"Coming Soon!"},
+												colour = G.C.RED,
+												minw = 5,
+											})
 										}
 									}
 								end
 							}
 						}
 					})
+				}
+			}
+		}
+	}))
+
+end
+
+function create_UIBox_join_lobby_button()
+	local var_495_0 = 0.75
+
+	return (create_UIBox_generic_options({
+		back_func = "play_options",
+		contents = {
+			{
+				n = G.UIT.R,
+				config = {
+					padding = 0,
+					align = "cm"
+				},
+				nodes = {
+					{
+						n = G.UIT.T,
+						config = {
+							text = "Join Through Steam!",
+							shadow = true,
+							scale = var_495_0 * 0.6,
+							colour = G.C.UI.TEXT_LIGHT
+						}
+					}
 				}
 			}
 		}
@@ -142,42 +197,24 @@ function override_main_menu_play_button()
 
 	return (create_UIBox_generic_options({
 		contents = {
-			{
-				n = G.UIT.R,
-				config = {
-					padding = 0,
-					align = "cm"
-				},
-				nodes = {
-					UIBox_button({
-						label = {"Singleplayer"},
-						shadow = true,
-						scale = var_495_0 * 0.6,
-						colour = G.C.BLUE,
-						button = "setup_run",
-						minh = 0.8,
-						minw = 8,
-					}),
-					UIBox_button({
-						label = {"Create Lobby"},
-						shadow = true,
-						scale = var_495_0 * 0.6,
-						colour = G.C.GREEN,
-						button = "create_lobby",
-						minh = 0.8,
-						minw = 8,
-					}),
-					UIBox_button({
-						label = {"Join Lobby"},
-						shadow = true,
-						scale = var_495_0 * 0.6,
-						colour = G.C.RED,
-						button = "join_lobby",
-						minh = 0.8,
-						minw = 8,
-					}),
-				}
-			}
+			UIBox_button({
+				label = {"Singleplayer"},
+				colour = G.C.BLUE,
+				button = "setup_run",
+				minw = 5,
+			}),
+			UIBox_button({
+				label = {"Create Lobby"},
+				colour = G.C.GREEN,
+				button = "create_lobby",
+				minw = 5,
+			}),
+			UIBox_button({
+				label = {"Join Lobby"},
+				colour = G.C.RED,
+				button = "join_lobby",
+				minw = 5,
+			}),
 		}
 	}))
 end
@@ -194,7 +231,7 @@ function G.FUNCS.create_lobby(arg_736_0)
 	G.SETTINGS.paused = true
 
 	G.FUNCS.overlay_menu({
-		definition = create_UIBox_multiplayer_button()
+		definition = create_UIBox_create_lobby_button()
 	})
 end
 
@@ -202,7 +239,7 @@ function G.FUNCS.join_lobby(arg_736_0)
 	G.SETTINGS.paused = true
 
 	G.FUNCS.overlay_menu({
-		definition = create_UIBox_multiplayer_button()
+		definition = create_UIBox_join_lobby_button()
 	})
 end
 
@@ -211,7 +248,6 @@ local create_UIBox_main_menu_buttonsRef = create_UIBox_main_menu_buttons
 function create_UIBox_main_menu_buttons()
 	local menu = create_UIBox_main_menu_buttonsRef()
 	menu.nodes[1].nodes[1].nodes[1].nodes[1].config.button = "play_options"
-	sendDebugMessage(Debug.serialize_table(Debug))
 	return(menu)
 end
 

@@ -17,7 +17,6 @@ local function customLoader(moduleName)
     end
 
     local filePath = "Mods/Multiplayer/" .. filename
-    sendDebugMessage("Virtualized: " .. filePath)
     local fileContent = love.filesystem.read(filePath)
     if fileContent then
         local moduleFunc = assert(load(fileContent, "@"..filePath))

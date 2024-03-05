@@ -1,10 +1,10 @@
 ----------------------------------------------
 ------------MOD DEBUG-------------------------
 
-Debug = {}
+Utils = {}
 
 -- Credit to Henrik Ilgen (https://stackoverflow.com/a/6081639)
-function Debug.serialize_table(val, name, skipnewlines, depth)
+function Utils.serialize_table(val, name, skipnewlines, depth)
 	skipnewlines = skipnewlines or false
 	depth = depth or 0
 
@@ -16,7 +16,7 @@ function Debug.serialize_table(val, name, skipnewlines, depth)
 			tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
 
 			for k, v in pairs(val) do
-					tmp =  tmp .. Debug.serialize_table(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
+					tmp =  tmp .. Utils.serialize_table(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
 			end
 
 			tmp = tmp .. string.rep(" ", depth) .. "}"
@@ -33,7 +33,25 @@ function Debug.serialize_table(val, name, skipnewlines, depth)
 	return tmp
 end
 
-return Debug
+-- Credit to Steamo (https://github.com/Steamopollys/Steamodded/blob/main/core/core.lua)
+function Utils.wrapText(text, maxChars)
+	local wrappedText = ""
+	local currentLineLength = 0
+
+	for word in text:gmatch("%S+") do
+		if currentLineLength + #word <= maxChars then
+			wrappedText = wrappedText .. word .. ' '
+			currentLineLength = currentLineLength + #word + 1
+		else
+			wrappedText = wrappedText .. '\n' .. word .. ' '
+			currentLineLength = #word + 1
+		end
+	end
+
+	return wrappedText
+end
+
+return Utils
 
 ----------------------------------------------
 ------------MOD DEBUG END---------------------
