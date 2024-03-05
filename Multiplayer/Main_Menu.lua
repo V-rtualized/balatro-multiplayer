@@ -1,41 +1,9 @@
---- STEAMODDED HEADER
---- MOD_NAME: Multiplayer
---- MOD_ID: virtualizedMultiplayer
---- MOD_AUTHOR: [virtualized]
---- MOD_DESCRIPTION: Allows players to compete with their friends! Contact @virtualized on discord for mod assistance.
 ----------------------------------------------
-------------MOD CORE--------------------------
+------------MOD MAIN MENU---------------------
+
+local Debug = require "Debug"
+
 MULTIPLAYER_VERSION = "0.1.0-MULTIPLAYER"
-
--- Credit to Henrik Ilgen (https://stackoverflow.com/a/6081639)
-function serialize_table(val, name, skipnewlines, depth)
-	skipnewlines = skipnewlines or false
-	depth = depth or 0
-
-	local tmp = string.rep(" ", depth)
-
-	if name then tmp = tmp .. name .. " = " end
-
-	if type(val) == "table" then
-			tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
-
-			for k, v in pairs(val) do
-					tmp =  tmp .. serialize_table(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
-			end
-
-			tmp = tmp .. string.rep(" ", depth) .. "}"
-	elseif type(val) == "number" then
-			tmp = tmp .. tostring(val)
-	elseif type(val) == "string" then
-			tmp = tmp .. string.format("%q", val)
-	elseif type(val) == "boolean" then
-			tmp = tmp .. (val and "true" or "false")
-	else
-			tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
-	end
-
-	return tmp
-end
 
 local gameMainMenuRef = Game.main_menu
 function Game.main_menu(arg_280_0, arg_280_1)
@@ -238,11 +206,14 @@ function G.FUNCS.join_lobby(arg_736_0)
 	})
 end
 
-local modify_UIBox_main_menu_buttonRef = modify_UIBox_main_menu_button
-function modify_UIBox_main_menu_button()
-	local menu = modify_UIBox_main_menu_buttonRef()
+-- Modify play button to take you to mode select first
+local create_UIBox_main_menu_buttonsRef = create_UIBox_main_menu_buttons
+function create_UIBox_main_menu_buttons()
+	local menu = create_UIBox_main_menu_buttonsRef()
 	menu.nodes[1].nodes[1].nodes[1].nodes[1].config.button = "play_options"
+	sendDebugMessage(Debug.serialize_table(Debug))
 	return(menu)
 end
+
 ----------------------------------------------
-------------MOD CORE END----------------------
+------------MOD MAIN MENU END-----------------
