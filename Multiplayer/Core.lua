@@ -9,7 +9,6 @@
 
 -- Credit to Nyoxide for this custom loader
 local moduleCache = {}
-
 local function customLoader(moduleName)
     local filename = moduleName:gsub("%.", "/") .. ".lua"
     if moduleCache[filename] then

@@ -1,3 +1,6 @@
+--- STEAMODDED HEADER
+--- STEAMODDED SECONMDARY FILE
+
 ----------------------------------------------
 ------------MOD MAIN MENU---------------------
 
@@ -63,9 +66,9 @@ function create_UIBox_create_lobby_button()
 											create_toggle({label = "Lose lives on round loss", ref_table = Lobby.config, ref_value = 'death_on_round_loss'}),
 											create_toggle({label = "Different seeds", ref_table = Lobby.config, ref_value = 'different_seeds'}),
 											UIBox_button({
-												label = {"Create Lobby"},
+												label = {"Start Lobby"},
 												colour = G.C.RED,
-												button = "create_lobby",
+												button = "start_lobby",
 												minw = 5,
 											})
 										}
@@ -292,7 +295,7 @@ function G.FUNCS.join_lobby(arg_736_0)
 	})
 end
 
-function G.FUNCS.create_lobby(arg_736_0)
+function G.FUNCS.start_lobby(arg_736_0)
 	G.SETTINGS.paused = false
 
 	Networking.create_steam_lobby()
