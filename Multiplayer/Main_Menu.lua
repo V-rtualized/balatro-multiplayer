@@ -10,6 +10,39 @@ local Networking = require "Networking"
 
 MULTIPLAYER_VERSION = "0.1.0-MULTIPLAYER"
 
+local gameMainMenuRef = Game.main_menu
+function Game.main_menu(arg_280_0, arg_280_1)
+	gameMainMenuRef(arg_280_0, arg_280_1)
+	UIBox({
+		definition = {
+			n = G.UIT.ROOT,
+			config = {
+				align = "cm",
+				colour = G.C.UI.TRANSPARENT_DARK
+			},
+			nodes = {
+				{
+					n = G.UIT.T,
+					config = {
+						scale = 0.3,
+						text = MULTIPLAYER_VERSION,
+						colour = G.C.UI.TEXT_LIGHT
+					}
+				}
+			}
+		},
+		config = {
+			align = "tri",
+			bond = "Weak",
+			offset = {
+				x = 0,
+				y = 0.6
+			},
+			major = G.ROOM_ATTACH
+		}
+	})
+end
+
 function create_UIBox_create_lobby_button()
 	local var_495_0 = 0.75
 
@@ -304,7 +337,7 @@ end
 -- Modify play button to take you to mode select first
 local create_UIBox_main_menu_buttonsRef = create_UIBox_main_menu_buttons
 function create_UIBox_main_menu_buttons()
-	Networking.authorize('')
+	Networking.authorize()
 	local menu = create_UIBox_main_menu_buttonsRef()
 	menu.nodes[1].nodes[1].nodes[1].nodes[1].config.button = "play_options"
 	return(menu)
