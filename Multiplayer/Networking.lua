@@ -1,40 +1,89 @@
 --- STEAMODDED HEADER
---- STEAMODDED SECONMDARY FILE
+--- STEAMODDED SECONDARY FILE
 
 ----------------------------------------------
 ------------MOD NETWORKING--------------------
 local Lobby = require "Lobby"
-local Utils = require "Utils"
-
+local Config = require "Config"
+local socket = require "socket"
 
 Networking = {}
 
--- We assume this is happening at startup because Balatro uses luasteam already
---luasteam.init()
+function string_to_table(str)
+  local tbl = {}
+  for key, value in string.gmatch(str, '([^,]+):([^,]+)') do
+      tbl[key] = value
+  end
+  return tbl
+end
 
--- Callbacks require modifying the original game loop, this could be danergous or damaging
-local gameUpdateRef = Game.update
+local function action_connected(id)
+  sendDebugMessage("Client connected to multiplayer server")
+  Lobby.user_id = id
+  Networking.Client:send('action:authorize,username:Guest')
+end
+
+local function action_registered(username)
+  sendDebugMessage(username)
+end
+
+local function action_joinedRoom(code)
+  sendDebugMessage(code)
+end
+
+local function action_error(message)
+  sendDebugMessage(message)
+end
+
+local game_update_ref = Game.update
 function Game.update(arg_298_0, arg_298_1)
-  G.STEAM.runCallbacks()
-  sendDebugMessage(Utils.serialize_table(G.STEAM))
+  if Networking.Client then
+    repeat
+      local data, error, partial = Networking.Client:receive()
+      if data then
+        local t = string_to_table(data)
 
-  gameUpdateRef(arg_298_0, arg_298_1)
+        sendDebugMessage('Client got ' .. t.action .. ' message')
+
+        if t.action == 'connected' then
+          action_connected(t.id)
+        elseif t.action == 'registered' then
+          action_registered(t.username)
+        elseif t.action == 'joinedRoom' then
+          action_joinedRoom(t.code)
+        elseif t.action == 'error' then
+          action_error(t.message)
+        end
+      end
+    until not data
+  end
+
+  game_update_ref(arg_298_0, arg_298_1)
 end
 
-function Networking.create_steam_lobby()
-  --Steam.networkingSockets.createListenSocketP2P(0)
-  Lobby.connected = true
-  sendDebugMessage("Lobby: " .. Utils.serialize_table(Lobby))
+function Networking.authorize()
+  Networking.Client = socket.tcp()
+  Networking.Client:settimeout(0)
+  Networking.Client:connect(Config.URL, Config.PORT) -- Not sure if I want to make these values public yet
 end
 
----function G.STEAM.networkingSockets.onConnectionChanged(data)
-  --sendDebugMessage("Connection: " .. Utils.serialize_table(data))
-  --G.STEAM.networkingSockets.acceptConnection(data.connection)
---end
+function Networking.create_lobby()
+  if not Lobby.user_id then
+    sendDebugMessage("Tried to create lobby before client initialized")
+    return
+  end
 
---function G.STEAM.networkingSockets.onAuthenticationStatus(data)
-  --sendDebugMessage("Authentication: " .. Utils.serialize_table(data))
---end
+  Networking.Client:send('action:createLobby,auth:' .. Lobby.user_id)
+end
+
+function Networking.join_lobby(roomCode)
+  if not Lobby.user_id then
+    sendDebugMessage("Tried to create lobby before client initialized")
+    return
+  end
+  
+  Networking.Client:send('action:createLobby,auth:' .. Lobby.user_id .. ',roomCode:' .. roomCode)
+end
 
 return Networking
 

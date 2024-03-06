@@ -1,135 +1,129 @@
-import express from 'express'
-import cors from 'cors'
-import bodyParser from 'body-parser'
-import ws from 'express-ws'
+import net from 'net'
 import { v4 as uuidv4 } from 'uuid'
 
-const app = express()
 const PORT = 8080
-
-const clients = new Map();
-const rooms = new Map();
-
-const { getWss } = ws(app)
-
-app.use(cors())
-app.use(bodyParser.json())
-
-const sendToClient = (ws, data) => {
-  ws.send(JSON.stringify(data));
-};
+const clients = new Map()
+const rooms = new Map()
 
 const generateRoomCode = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let result = ''
   for (let i = 0; i < 5; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  return result;
+  return result
 };
 
-const handleRoomJoinOrCreate = (client, roomCode = null) => {
-  let room;
-  if (roomCode) {
-      room = rooms.get(roomCode);
-      if (room && room.clients.length < 2) {
-          room.clients.push(client.id);
-      } else {
-          sendToClient(client.ws, { error: 'Room is full or does not exist.' });
-          return;
-      }
+const stringToJson = (str) => {
+  const obj = {}
+  str.split(',').forEach(part => {
+      const [key, value] = part.split(':')
+      obj[key] = value
+  });
+  return obj
+}
+
+const sendToClient = (socket, data) => {
+  console.log('Responding with ' + data)
+  if (!socket) return
+  socket.write(data + '\n')
+};
+
+const authorize = (socket, username, clientId) => {
+  if (username) {
+    clients.get(clientId).username = username
+    sendToClient(socket, `action:registered,username:${username}`)
   } else {
-      roomCode = generateRoomCode();
-      while (rooms.has(roomCode)) {
-          roomCode = generateRoomCode();
-      }
-      room = { clients: [client.id], scores: {}, lives: {} };
-      rooms.set(roomCode, room);
+    sendToClient(socket, `action:error,message:Username is required`)
   }
+}
 
-  client.roomCode = roomCode;
-  room.scores[client.id] = 0;
-  room.lives[client.id] = 3;
-
-  sendToClient(client.ws, { action: 'roomJoined', roomCode, room });
-};
-
-const wsOnMessage = (ws) => {
-  ws.on('message', async (msg) => {
-    let message;
-    try {
-      message = JSON.parse(msg);
-    } catch (err) {
-      sendToClient(ws, { error: 'Bad Request' })
-      return
+const createLobby = (auth) => {
+  const player = clients.get(auth)
+  if (player) {
+    let roomCode = generateRoomCode()
+    while (rooms.has(roomCode)) {
+        roomCode = generateRoomCode()
     }
-      const action = message.action;
-      const username = message.username;
-      const roomCode = message.roomCode;
+    const room = { clients: [player.username], scores: {}, lives: {} }
+    rooms.set(roomCode, room);
+    sendToClient(player.ws, `action:joinedRoom,code:${roomCode}`)
+  } else {
+    sendToClient(player.ws, 'action:error,message:Client not found')
+  }
+}
 
-      if (!clients.has(ws) && action === 'register') {
-        if (username) {
-          const id = uuidv4()
-          clients.set(id, { username, ws });
-          sendToClient(ws, { action: 'registered', username, id });
-          return
-        } else {
-          sendToClient(ws, { error: 'Username is required' });
-          return
-        }
-      }
+const joinLobby = (auth, roomCode) => {
+  const player = clients.get(auth)
+  if (player) {
+    const room = rooms.get(roomCode)
+    if (room && room.clients.length < 2) {
+      room.clients.push(player.id)
+      sendToClient(player.ws, `action:joinedRoom,code:${roomCode}`)
+    } else {
+      sendToClient(player.ws, 'action:error,message:Room is full or does not exist.')
+    }
+  }
+}
 
-      const client = clients.get(ws);
-      if (action === 'createRoom') {
-        handleRoomJoinOrCreate(client);
-        return
-      }
-
-      if (action === 'joinRoom') {
-        if (roomCode) {
-          handleRoomJoinOrCreate(client, roomCode);
-          return
-        } else {
-          sendToClient(ws, { error: 'Room code is required' });
-          return
-        }
-      }
+const clientLeaveRoom = (clientId) => {
+  rooms.forEach(room => {
+    if (room.clients.includes(clientId)) {
+      return room.clients.filter(c => c.id !== clientId)
+    }
+    return room
   })
 }
 
-const wsOnClose = (ws) => {
-  const client = clients.get(ws);
-  if (client?.roomCode) {
-    const room = rooms.get(client.roomCode);
-    if (room) {
-      room.clients = room.clients.filter(username => username !== client.username);
-      if (room.clients.length === 0) {
-        rooms.delete(client.roomCode);
+const server = net.createServer((socket) => {
+  const clientId = uuidv4()
+  const client = { id: clientId, socket }
+  clients.set(clientId, client)
+  console.log('Client connected')
+  sendToClient(socket, `action:connected,id:${clientId}`)
+
+  socket.on('data', (data) => {
+    const messages = data.toString().split('\n')
+    messages.forEach((msg) => {
+      if (!msg) return
+      console.log('Recieved message ' + msg)
+      try {
+        const message = stringToJson(msg)
+        switch (message.action) {
+          case 'authorize':
+            authorize(socket, message.username, clientId)
+            break
+          case 'createLobby':
+            createLobby(message.auth)
+            break
+          case 'joinLobby':
+            joinLobby(message.auth, message.roomCode)
+            break
+        }
+      } catch (error) {
+        console.error('Failed to parse message', error)
+        sendToClient(socket, `action:error,message:Failed to parse message`)
       }
+    });
+  });
+
+  socket.on('end', () => {
+    console.log('Client disconnected')
+    clients.delete(clientId)
+    clientLeaveRoom(clientId)
+  });
+
+  socket.on('error', (err) => {
+    if (err.code === 'ECONNRESET') {
+      console.warn('TCP connection reset by peer (client).')
+    } else {
+      console.error('An unexpected error occurred:', err)
     }
-  }
-  clients.delete(ws);
-}
+    clients.delete(clientId)
+    clientLeaveRoom(clientId)
+  });
+});
 
-app.ws('/', wsOnMessage)
-
-getWss().addListener('connection', () => {
-  console.log('Client connected!')
-})
-
-getWss().addListener('close', wsOnClose)
-
-app.get('/*', (req, res) => {
-  res.status(404).send()
-})
-app.post('/*', (req, res) => {
-  res.status(404).send()
-})
-
-app.listen(PORT, '0.0.0.0', (error) => {
-  if (!error) {
-    console.log('Server started!')
-  } else {
-    console.error(error)
-  }
-})
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on port ${PORT}`);
+});

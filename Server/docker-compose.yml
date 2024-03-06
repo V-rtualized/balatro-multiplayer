@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  websocket:
+  socket:
     build:
       context: .
       dockerfile: Dockerfile
@@ -8,8 +8,4 @@ services:
       - "8788:8080"
     environment:
       NODE_ENV: development
-    volumes:
-      - ${CERT}:/app/cert.pem
-      - ${KEY}:/app/key.pem
-    env_file:
-      - .env
+    restart: unless-stopped

@@ -1,5 +1,5 @@
 --- STEAMODDED HEADER
---- STEAMODDED SECONMDARY FILE
+--- STEAMODDED SECONDARY FILE
 
 ----------------------------------------------
 ------------MOD DEBUG-------------------------
