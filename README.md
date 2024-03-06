@@ -69,9 +69,9 @@ If you make a video or stream Balatro using this mod then feel free to send me a
 
 ### 1. Install [Docker Compose](https://docs.docker.com/compose/install/)
 
-### 1. Download the "Server" folder
+### 2. Download the "Server" folder
 
-### 2. Run the `Server/docker-compose.yml` file with Docker Compose
+### 3. Run the `Server/docker-compose.yml` file with Docker Compose
 
 - Use Docker Desktop for GUI or the `docker compose up` command in terminal/cmd
 
