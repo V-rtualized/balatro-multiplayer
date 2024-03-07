@@ -337,7 +337,6 @@ end
 -- Modify play button to take you to mode select first
 local create_UIBox_main_menu_buttonsRef = create_UIBox_main_menu_buttons
 function create_UIBox_main_menu_buttons()
-	Networking.authorize()
 	local menu = create_UIBox_main_menu_buttonsRef()
 	menu.nodes[1].nodes[1].nodes[1].nodes[1].config.button = "play_options"
 	return(menu)

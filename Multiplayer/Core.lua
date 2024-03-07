@@ -30,6 +30,7 @@ function SMODS.INIT.VirtualizedMultiplayer()
     table.insert(package.loaders, 1, customLoader)
     require "Main_Menu"
     require "Utils".get_username()
+	Networking.authorize()
     require "Mod_Description".load_description_gui()
 end
 

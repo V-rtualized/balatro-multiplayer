@@ -15,6 +15,14 @@ Lobby = {
 
 Connection_Status_UI = nil
 
+local endRoundRef = end_round
+function end_round()
+  if Lobby.code then
+    G.GAME.chips = G.GAME.blind.chips
+  end
+  endRoundRef()
+end
+
 local function get_connection_status_ui()
   return UIBox({
 		definition = {
@@ -55,8 +63,8 @@ end
 
 local gameMainMenuRef = Game.main_menu
 function Game.main_menu(arg_280_0, arg_280_1)
-	gameMainMenuRef(arg_280_0, arg_280_1)
 	Connection_Status_UI = get_connection_status_ui()
+	gameMainMenuRef(arg_280_0, arg_280_1)
 end
 
 function create_UIBox_view_code()
@@ -86,10 +94,49 @@ function create_UIBox_view_code()
 	}))
 end
 
+-- Stops a multiplayer run from being saved, should prevent it from overriding singleplayer saved run
+local compressAndSaveRef = compress_and_save
+function compress_and_save(_file, _data)
+  local save_file_name = 'save.jkr'
+  if Lobby.code and _file:sub(-#save_file_name) == save_file_name then return end -- In lobby, and trying to save the run
+  compressAndSaveRef(_file, _data)
+end
+
 function G.FUNCS.lobby_setup_run(arg_736_0)
-	G.FUNCS.overlay_menu({
-		definition = override_main_menu_play_button()
-	})
+	G.FUNCS.start_run(arg_736_0, {
+    stake = 1,
+    challenge = {
+      name = 'Multiplayer',
+      id = 'c_multiplayer_1',
+      rules = {
+          custom = {
+          },
+          modifiers = {
+          }
+      },
+      jokers = {
+      },
+      consumeables = {
+      },
+      vouchers = {
+      },
+      deck = {
+          type = 'Challenge Deck'
+      },
+      restrictions = {
+          banned_cards = {
+              {id = 'j_diet_cola'}, -- Intention to disable skipping
+              {id = 'j_mr_bones'},
+              {id = 'v_hieroglyph'},
+              {id = 'v_petroglyph'},
+          },
+          banned_tags = {
+          },
+          banned_other = {
+          }
+      }
+  }
+  })
 end
 
 function G.FUNCS.lobby_options(arg_736_0)
@@ -250,43 +297,38 @@ local function create_UIBox_lobby_menu()
   return t
 end
 
-local function set_lobby_menu_UI()
-  G.MAIN_MENU_UI = UIBox({
-    definition = create_UIBox_lobby_menu(), 
-    config = {
-      align="bmi", 
-      offset = {
-        x = 0,
-        y = 10
-      }, 
-      major = G.ROOM_ATTACH, 
-      bond = 'Weak'
-    }
-  })
-  G.MAIN_MENU_UI.alignment.offset.y = 0
-  G.MAIN_MENU_UI:align_to_major()
+local setMainMenuUIRef = set_main_menu_UI
+function set_main_menu_UI()
+  if Lobby.code then
+    G.MAIN_MENU_UI = UIBox({
+      definition = create_UIBox_lobby_menu(), 
+      config = {
+        align="bmi", 
+        offset = {
+          x = 0,
+          y = 10
+        }, 
+        major = G.ROOM_ATTACH, 
+        bond = 'Weak'
+      }
+    })
+    G.MAIN_MENU_UI.alignment.offset.y = 0
+    G.MAIN_MENU_UI:align_to_major()
 
-  G.CONTROLLER:snap_to{node = G.MAIN_MENU_UI:get_UIE_by_ID('main_menu_play')}
+    G.CONTROLLER:snap_to{node = G.MAIN_MENU_UI:get_UIE_by_ID('lobby_menu_start')}
+  else
+    setMainMenuUIRef()
+  end
 end
 
 local in_lobby = false
-
-function Game:update_menu(dt)
-  if Lobby.code and not in_lobby then
-    in_lobby = true
-    if self.OVERLAY_MENU then self.OVERLAY_MENU:remove(); self.OVERLAY_MENU = nil end
-    if G.MAIN_MENU_UI then G.MAIN_MENU_UI:remove() end
-    if G.PROFILE_BUTTON then G.PROFILE_BUTTON:remove() end
-    self:prep_stage(G.STAGES.MAIN_MENU, G.STATES.MENU, true)
-    ease_background_colour{new_colour = G.C.BLUE, contrast = 1}
-    set_lobby_menu_UI()
+local gameUpdateRef = Game.update
+function Game:update(arg_298_1)
+  if (Lobby.code and not in_lobby) or (not Lobby.code and in_lobby) then
+    in_lobby = not in_lobby
+    self.FUNCS.go_to_menu()
   end
-
-  if not Lobby.code and in_lobby then
-    in_lobby = false
-    G:delete_run()
-    G:main_menu()
-  end
+  gameUpdateRef(self, arg_298_1)
 end
 
 return Lobby
