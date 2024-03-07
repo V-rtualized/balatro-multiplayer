@@ -32,6 +32,16 @@ local function action_joinedRoom(code)
   sendDebugMessage("Joining room " .. code)
   Lobby.code = code
   Lobby.update_connection_status()
+  Networking.room_info(code)
+end
+
+local function action_roomInfo(players)
+  Lobby.players = {}
+  local player_usernames = Utils.string_split(players, '.')
+  for i = 1, #player_usernames do
+    table.insert(Lobby.players, { username = player_usernames[i] })
+  end
+  Lobby.update_player_usernames()
 end
 
 local function action_error(message)
@@ -54,6 +64,8 @@ function Game.update(arg_298_0, arg_298_1)
           action_registered(t.username)
         elseif t.action == 'joinedRoom' then
           action_joinedRoom(t.code)
+        elseif t.action == 'roomInfo' then
+          action_roomInfo(t.players)
         elseif t.action == 'error' then
           action_error(t.message)
         end
@@ -86,6 +98,24 @@ function Networking.join_lobby(roomCode)
   end
   
   Networking.Client:send('action:createLobby,auth:' .. Lobby.user_id .. ',roomCode:' .. roomCode)
+end
+
+function Networking.room_info(roomCode)
+  if not Lobby.user_id then
+    sendDebugMessage("Tried to get lobby info before client initialized")
+    return
+  end
+  
+  Networking.Client:send('action:lobbyInfo,auth:' .. Lobby.user_id .. ',roomCode:' .. roomCode)
+end
+
+function Networking.leave_lobby()
+  if not Lobby.user_id then
+    sendDebugMessage("Tried to get lobby info before client initialized")
+    return
+  end
+
+  Networking.Client:send('action:leaveLobby,auth:' .. Lobby.user_id)
 end
 
 return Networking

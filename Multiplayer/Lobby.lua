@@ -15,7 +15,8 @@ Lobby = {
     username = "dude_crusher69",
     score = 1564,
     hands = 4
-  }
+  },
+  players = {}
 }
 
 Connection_Status_UI = nil
@@ -62,8 +63,8 @@ end
 function Lobby.update_connection_status()
   if Connection_Status_UI then
     Connection_Status_UI:remove()
-    Connection_Status_UI = get_connection_status_ui()
   end
+  Connection_Status_UI = get_connection_status_ui()
 end
 
 local gameMainMenuRef = Game.main_menu
@@ -150,12 +151,89 @@ end
 
 function G.FUNCS.lobby_leave(arg_736_0)
   Lobby.code = nil
+  Networking.leave_lobby()
   Lobby.update_connection_status()
+end
+
+Player_Usernames_UI = nil
+local function get_players_usernames_ui()
+  local text_scale = 0.45
+
+  return {
+    n = G.UIT.C, 
+    config = {
+      align = "tm", 
+      minw = 2.65
+    }, 
+    nodes = {
+      {
+        n = G.UIT.R,
+        config = {
+          padding = 0.2,
+          align = "cm"
+        },
+        nodes = {
+          {
+            n = G.UIT.T,
+            config = {
+              text = 'Connected Players:',
+              shadow = true,
+              scale = text_scale * 0.8,
+              colour = G.C.UI.TEXT_LIGHT
+            }
+          }
+        },
+      },
+      Lobby.players[1] and {  
+        n = G.UIT.R,
+        config = {
+          padding = 0,
+          align = "cm"
+        },
+        nodes = {
+          {
+            n = G.UIT.T,
+            config = {
+              text = Lobby.players[1].username,
+              shadow = true,
+              scale = text_scale * 0.8,
+              colour = G.C.UI.TEXT_LIGHT
+            }
+          }
+        }
+      } or nil,
+      Lobby.players[2] and {  
+        n = G.UIT.R,
+        config = {
+          padding = 0,
+          align = "cm"
+        },
+        nodes = {
+          {
+            n = G.UIT.T,
+            config = {
+              text = Lobby.players[2].username,
+              shadow = true,
+              scale = text_scale * 0.8,
+              colour = G.C.UI.TEXT_LIGHT
+            }
+          }
+        }
+      } or nil
+    }
+  }
+end
+
+function Lobby.update_player_usernames()
+  if Player_Usernames_UI then
+    Player_Usernames_UI:remove()
+  end
+  Player_Usernames_UI = get_players_usernames_ui()
 end
 
 local function create_UIBox_lobby_menu()
   local text_scale = 0.45
-
+  
   local t = {
     n = G.UIT.ROOT, 
     config = {
@@ -213,69 +291,7 @@ local function create_UIBox_lobby_menu()
                     }, 
                     nodes = {}
                   },
-                  {
-                    n = G.UIT.C, 
-                    config = {
-                      align = "tm", 
-                      minw = 2.65
-                    }, 
-                    nodes = {
-                      {
-                        n = G.UIT.R,
-                        config = {
-                          padding = 0.2,
-                          align = "cm"
-                        },
-                        nodes = {
-                          {
-                            n = G.UIT.T,
-                            config = {
-                              text = 'Connected Players:',
-                              shadow = true,
-                              scale = text_scale * 0.8,
-                              colour = G.C.UI.TEXT_LIGHT
-                            }
-                          }
-                        },
-                      },
-                      {  
-                        n = G.UIT.R,
-                        config = {
-                          padding = 0,
-                          align = "cm"
-                        },
-                        nodes = {
-                          {
-                            n = G.UIT.T,
-                            config = {
-                              text = Lobby.username,
-                              shadow = true,
-                              scale = text_scale * 0.8,
-                              colour = G.C.UI.TEXT_LIGHT
-                            }
-                          }
-                        }
-                      },
-                      {  
-                        n = G.UIT.R,
-                        config = {
-                          padding = 0,
-                          align = "cm"
-                        },
-                        nodes = {
-                          {
-                            n = G.UIT.T,
-                            config = {
-                              text = Lobby.enemy.username,
-                              shadow = true,
-                              scale = text_scale * 0.8,
-                              colour = G.C.UI.TEXT_LIGHT
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
+                  Player_Usernames_UI,
                   {
                     n = G.UIT.C, 
                     config = {

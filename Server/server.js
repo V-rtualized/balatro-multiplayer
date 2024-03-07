@@ -12,13 +12,13 @@ const generateRoomCode = () => {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   return result
-};
+}
 
 const stringToJson = (str) => {
   const obj = {}
   str.split(',').forEach(part => {
-      const [key, value] = part.split(':')
-      obj[key] = value
+    const [key, value] = part.split(':')
+    obj[key] = value
   });
   return obj
 }
@@ -29,7 +29,7 @@ const sendToClient = (socket, data) => {
     console.log('Socket is undefined')
   }
   socket.write(data + '\n')
-};
+}
 
 const authorize = (socket, username, clientId) => {
   if (username) {
@@ -45,9 +45,9 @@ const createLobby = (auth) => {
   if (player) {
     let roomCode = generateRoomCode()
     while (rooms.has(roomCode)) {
-        roomCode = generateRoomCode()
+      roomCode = generateRoomCode()
     }
-    const room = { clients: [player.username], scores: {}, lives: {} }
+    const room = { clients: [player.id] }
     rooms.set(roomCode, room);
     sendToClient(player.socket, `action:joinedRoom,code:${roomCode}`)
   } else {
@@ -62,19 +62,32 @@ const joinLobby = (auth, roomCode) => {
     if (room && room.clients.length < 2) {
       room.clients.push(player.id)
       sendToClient(player.socket, `action:joinedRoom,code:${roomCode}`)
+      for (const client of room.clients.values()) {
+        sendToClient(client.socket, `action:roomInfo,players:${room.clients.map(id => clients.get(id).username).join('.')}`)
+      }
     } else {
       sendToClient(player.socket, 'action:error,message:Room is full or does not exist.')
     }
   }
 }
 
-const clientLeaveRoom = (clientId) => {
+const leaveLobby = (auth) => {
+  const player = clients.get(auth)
   rooms.forEach(room => {
-    if (room.clients.includes(clientId)) {
-      return room.clients.filter(c => c.id !== clientId)
+    if (room.clients.includes(player.id)) {
+      return room.clients.filter(c => c.id !== player.id)
     }
     return room
   })
+}
+
+const roomInfo = (socket, auth, roomCode) => {
+  const room = rooms.get(roomCode)
+  if (room.clients.includes(auth)) {
+    sendToClient(socket, `action:roomInfo,players:${room.clients.map(id => clients.get(id).username).join('.')}`)
+  } else {
+    sendToClient(socket, `action:error,message:Not authorized for room`)
+  }
 }
 
 const server = net.createServer((socket) => {
@@ -100,6 +113,12 @@ const server = net.createServer((socket) => {
             break
           case 'joinLobby':
             joinLobby(message.auth, message.roomCode)
+            break
+          case 'leaveLobby':
+            leaveLobby(message.auth)
+            break
+          case 'lobbyInfo':
+            roomInfo(socket, message.auth, message.roomCode)
             break
         }
       } catch (error) {
