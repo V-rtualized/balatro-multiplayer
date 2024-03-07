@@ -32,6 +32,7 @@ function SMODS.INIT.VirtualizedMultiplayer()
     require "Utils".get_username()
 	Networking.authorize()
     require "Mod_Description".load_description_gui()
+    require "Game_UI"
 end
 
 ----------------------------------------------

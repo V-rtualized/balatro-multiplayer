@@ -10,7 +10,12 @@ Lobby = {
   type = "",
   config = {},
   user_id = nil,
-  username = "Guest"
+  username = "Guest",
+  enemy = {
+    username = "dude_crusher69",
+    score = 1564,
+    hands = 4
+  }
 }
 
 Connection_Status_UI = nil
@@ -236,7 +241,7 @@ local function create_UIBox_lobby_menu()
                       {  
                         n = G.UIT.R,
                         config = {
-                          padding = 0.2,
+                          padding = 0,
                           align = "cm"
                         },
                         nodes = {
@@ -244,6 +249,24 @@ local function create_UIBox_lobby_menu()
                             n = G.UIT.T,
                             config = {
                               text = Lobby.username,
+                              shadow = true,
+                              scale = text_scale * 0.8,
+                              colour = G.C.UI.TEXT_LIGHT
+                            }
+                          }
+                        }
+                      },
+                      {  
+                        n = G.UIT.R,
+                        config = {
+                          padding = 0,
+                          align = "cm"
+                        },
+                        nodes = {
+                          {
+                            n = G.UIT.T,
+                            config = {
+                              text = Lobby.enemy.username,
                               shadow = true,
                               scale = text_scale * 0.8,
                               colour = G.C.UI.TEXT_LIGHT
