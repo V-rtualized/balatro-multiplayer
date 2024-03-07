@@ -76,6 +76,21 @@ function Utils.string_split(inputstr, sep)
 	return t
 end
 
+function Utils.copy_to_clipboard(text)
+	local pathSeparator = package.config:sub(1,1)
+	local isWindows = pathSeparator == '\\'
+
+	if isWindows then
+			local clipCommand = 'clip'
+			local process = io.popen(clipCommand, 'w')
+			process:write(text)
+			process:close()
+	else
+			local safeText = text:gsub("'", "'\\''")
+			os.execute('echo "' .. safeText .. '" | pbcopy')
+	end
+end
+
 return Utils
 
 ----------------------------------------------

@@ -250,25 +250,56 @@ function create_UIBox_create_lobby_button()
 end
 
 function create_UIBox_join_lobby_button()
-	local var_495_0 = 0.75
-
 	return (create_UIBox_generic_options({
 		back_func = "play_options",
 		contents = {
 			{
 				n = G.UIT.R,
 				config = {
-					padding = 0,
-					align = "cm"
+						padding = 0.5,
+						align = "cm",
+						minw = 5
 				},
 				nodes = {
 					{
-						n = G.UIT.T,
+						n = G.UIT.R,
 						config = {
-							text = "Join Through Steam!",
-							shadow = true,
-							scale = var_495_0 * 0.6,
-							colour = G.C.UI.TEXT_LIGHT
+								padding = 0,
+								align = "cm",
+								minw = 5
+						},
+						nodes = {
+							{
+								n = G.UIT.T,
+								config = {
+									scale = 0.6,
+									text = 'Lobby Code:',
+									colour = G.C.UI.TEXT_LIGHT
+								}
+							}
+						}
+					},
+					{
+						n = G.UIT.R,
+						config = {
+								padding = 0,
+								align = "cm",
+								minw = 5
+						},
+						nodes = {
+							create_text_input({
+								w = 4, 
+								h = 1,
+								max_length = 5,
+								prompt_text = "Enter Lobby Code",
+								ref_table = Lobby,
+								ref_value = 'temp_code',
+								extended_corpus = false,
+								keyboard_offset = 1,
+								callback = function(val)
+									Networking.join_lobby(Lobby.temp_code)
+								end
+							})
 						}
 					}
 				}

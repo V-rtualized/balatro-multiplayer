@@ -6,6 +6,7 @@
 
 Lobby = {
   connected = false,
+  temp_code = '',
   code = nil,
   type = "",
   config = {},
@@ -73,6 +74,10 @@ function Game.main_menu(arg_280_0, arg_280_1)
 	gameMainMenuRef(arg_280_0, arg_280_1)
 end
 
+function G.FUNCS.copy_to_clipboard(arg_736_0)
+  Utils.copy_to_clipboard(Lobby.code)
+end
+
 function create_UIBox_view_code()
 	local var_495_0 = 0.75
 
@@ -85,18 +90,42 @@ function create_UIBox_view_code()
 					align = "cm"
 				},
 				nodes = {
-					{
-						n = G.UIT.T,
-						config = {
-							text = Lobby.code,
-							shadow = true,
-							scale = var_495_0 * 0.6,
-							colour = G.C.UI.TEXT_LIGHT
-						}
-					}
+          {
+            n = G.UIT.R,
+            config = {
+              padding = 0.5,
+              align = "cm"
+            },
+            nodes = {
+              {
+                n = G.UIT.T,
+                config = {
+                  text = Lobby.code,
+                  shadow = true,
+                  scale = var_495_0 * 0.6,
+                  colour = G.C.UI.TEXT_LIGHT
+                }
+              }
+            }
+          },
+          {
+            n = G.UIT.R,
+            config = {
+              padding = 0,
+              align = "cm"
+            },
+            nodes = {
+              UIBox_button({
+                label = {"Copy to Clipboard"},
+                colour = G.C.BLUE,
+                button = "copy_to_clipboard",
+                minw = 5,
+              })
+            }
+          }
 				}
-			}
-		}
+		  }
+    }
 	}))
 end
 
