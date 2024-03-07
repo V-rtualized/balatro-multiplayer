@@ -94,14 +94,6 @@ function create_UIBox_view_code()
 	}))
 end
 
--- Stops a multiplayer run from being saved, should prevent it from overriding singleplayer saved run
-local compressAndSaveRef = compress_and_save
-function compress_and_save(_file, _data)
-  local save_file_name = 'save.jkr'
-  if Lobby.code and _file:sub(-#save_file_name) == save_file_name then return end -- In lobby, and trying to save the run
-  compressAndSaveRef(_file, _data)
-end
-
 function G.FUNCS.lobby_setup_run(arg_736_0)
 	G.FUNCS.start_run(arg_736_0, {
     stake = 1,
@@ -326,6 +318,7 @@ local gameUpdateRef = Game.update
 function Game:update(arg_298_1)
   if (Lobby.code and not in_lobby) or (not Lobby.code and in_lobby) then
     in_lobby = not in_lobby
+    G.F_NO_SAVING = in_lobby
     self.FUNCS.go_to_menu()
   end
   gameUpdateRef(self, arg_298_1)
