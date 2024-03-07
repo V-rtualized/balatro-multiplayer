@@ -54,6 +54,17 @@ function Utils.wrapText(text, maxChars)
 	return wrappedText
 end
 
+local usernameFilePath = "Mods/Multiplayer/Saved/username.txt"
+function Utils.save_username(text)
+	love.filesystem.write(usernameFilePath, text)
+end
+
+function Utils.get_username()
+	local fileContent = love.filesystem.read(usernameFilePath)
+	if not fileContent then return end
+	Lobby.username = fileContent
+end
+
 return Utils
 
 ----------------------------------------------

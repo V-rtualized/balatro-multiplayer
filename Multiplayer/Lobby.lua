@@ -5,9 +5,289 @@
 ------------MOD LOBBY-------------------------
 
 Lobby = {
+  connected = false,
+  code = nil,
   type = "",
-  config = {}
+  config = {},
+  user_id = nil,
+  username = "Guest"
 }
+
+Connection_Status_UI = nil
+
+local function get_connection_status_ui()
+  return UIBox({
+		definition = {
+			n = G.UIT.ROOT,
+			config = {
+				align = "cm",
+				colour = G.C.UI.TRANSPARENT_DARK
+			},
+			nodes = {
+				{
+					n = G.UIT.T,
+					config = {
+						scale = 0.3,
+						text = (Lobby.code and 'In Lobby') or (Lobby.user_id and 'Connected to Service') or 'WARN: Cannot Find Multiplayer Service',
+						colour = G.C.UI.TEXT_LIGHT
+					}
+				}
+			}
+		},
+		config = {
+			align = "tri",
+			bond = "Weak",
+			offset = {
+				x = 0,
+				y = 0.9
+			},
+			major = G.ROOM_ATTACH
+		}
+	})
+end
+
+function Lobby.update_connection_status()
+  if Connection_Status_UI then
+    Connection_Status_UI:remove()
+    Connection_Status_UI = get_connection_status_ui()
+  end
+end
+
+local gameMainMenuRef = Game.main_menu
+function Game.main_menu(arg_280_0, arg_280_1)
+	gameMainMenuRef(arg_280_0, arg_280_1)
+	Connection_Status_UI = get_connection_status_ui()
+end
+
+function create_UIBox_view_code()
+	local var_495_0 = 0.75
+
+	return (create_UIBox_generic_options({
+		contents = {
+			{
+				n = G.UIT.R,
+				config = {
+					padding = 0,
+					align = "cm"
+				},
+				nodes = {
+					{
+						n = G.UIT.T,
+						config = {
+							text = Lobby.code,
+							shadow = true,
+							scale = var_495_0 * 0.6,
+							colour = G.C.UI.TEXT_LIGHT
+						}
+					}
+				}
+			}
+		}
+	}))
+end
+
+function G.FUNCS.lobby_setup_run(arg_736_0)
+	G.FUNCS.overlay_menu({
+		definition = override_main_menu_play_button()
+	})
+end
+
+function G.FUNCS.lobby_options(arg_736_0)
+	G.FUNCS.overlay_menu({
+		definition = override_main_menu_play_button()
+	})
+end
+
+function G.FUNCS.view_code(arg_736_0)
+	G.FUNCS.overlay_menu({
+		definition = create_UIBox_view_code()
+	})
+end
+
+function G.FUNCS.lobby_leave(arg_736_0)
+  Lobby.code = nil
+  Lobby.update_connection_status()
+end
+
+local function create_UIBox_lobby_menu()
+  local text_scale = 0.45
+
+  local t = {
+    n = G.UIT.ROOT, 
+    config = {
+      align = "cm",
+      colour = G.C.CLEAR
+    }, 
+    nodes = { 
+      {
+        n = G.UIT.C, 
+        config = { 
+          align = "bm"
+        }, 
+        nodes = {      
+          {
+            n = G.UIT.R, 
+            config = {
+              align = "cm", 
+              padding = 0.2, 
+              r = 0.1, 
+              emboss = 0.1, 
+              colour = G.C.L_BLACK, 
+              mid = true
+            }, 
+            nodes = {
+              UIBox_button({
+                id = 'lobby_menu_start', 
+                button = "lobby_setup_run", 
+                colour = G.C.BLUE, 
+                minw = 3.65, 
+                minh = 1.55, 
+                label = {'START'}, 
+                scale = text_scale*2, 
+                col = true
+              }),
+              {
+                n = G.UIT.C, 
+                config = { 
+                  align = "cm"
+                }, 
+                nodes = {
+                  UIBox_button{
+                    button = 'lobby_options', 
+                    colour = G.C.ORANGE, 
+                    minw = 3.15, 
+                    minh = 1.35, 
+                    label = {'LOBBY OPTIONS'}, 
+                    scale = text_scale * 1.2, 
+                    col = true
+                  },
+                  {
+                    n = G.UIT.C, 
+                    config = {
+                      align = "cm", 
+                      minw = 0.2
+                    }, 
+                    nodes = {}
+                  },
+                  {
+                    n = G.UIT.C, 
+                    config = {
+                      align = "tm", 
+                      minw = 2.65
+                    }, 
+                    nodes = {
+                      {
+                        n = G.UIT.R,
+                        config = {
+                          padding = 0.2,
+                          align = "cm"
+                        },
+                        nodes = {
+                          {
+                            n = G.UIT.T,
+                            config = {
+                              text = 'Connected Players:',
+                              shadow = true,
+                              scale = text_scale * 0.8,
+                              colour = G.C.UI.TEXT_LIGHT
+                            }
+                          }
+                        },
+                      },
+                      {  
+                        n = G.UIT.R,
+                        config = {
+                          padding = 0.2,
+                          align = "cm"
+                        },
+                        nodes = {
+                          {
+                            n = G.UIT.T,
+                            config = {
+                              text = Lobby.username,
+                              shadow = true,
+                              scale = text_scale * 0.8,
+                              colour = G.C.UI.TEXT_LIGHT
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    n = G.UIT.C, 
+                    config = {
+                      align = "cm", 
+                      minw = 0.2
+                    }, 
+                    nodes = {}
+                  },
+                  UIBox_button{
+                    button = 'view_code', 
+                    colour = G.C.PALE_GREEN, 
+                    minw = 3.15, 
+                    minh = 1.35, 
+                    label = {'VIEW CODE'}, 
+                    scale = text_scale * 1.2, 
+                    col = true
+                  },
+                }
+              },
+              UIBox_button{
+                id = 'lobby_menu_leave', 
+                button = "lobby_leave", 
+                colour = G.C.RED, 
+                minw = 3.65, 
+                minh = 1.55, 
+                label = {'LEAVE'}, 
+                scale = text_scale*1.5, 
+                col = true
+              },
+            }
+          },
+      }},
+    }}
+  return t
+end
+
+local function set_lobby_menu_UI()
+  G.MAIN_MENU_UI = UIBox({
+    definition = create_UIBox_lobby_menu(), 
+    config = {
+      align="bmi", 
+      offset = {
+        x = 0,
+        y = 10
+      }, 
+      major = G.ROOM_ATTACH, 
+      bond = 'Weak'
+    }
+  })
+  G.MAIN_MENU_UI.alignment.offset.y = 0
+  G.MAIN_MENU_UI:align_to_major()
+
+  G.CONTROLLER:snap_to{node = G.MAIN_MENU_UI:get_UIE_by_ID('main_menu_play')}
+end
+
+local in_lobby = false
+
+function Game:update_menu(dt)
+  if Lobby.code and not in_lobby then
+    in_lobby = true
+    if self.OVERLAY_MENU then self.OVERLAY_MENU:remove(); self.OVERLAY_MENU = nil end
+    if G.MAIN_MENU_UI then G.MAIN_MENU_UI:remove() end
+    if G.PROFILE_BUTTON then G.PROFILE_BUTTON:remove() end
+    self:prep_stage(G.STAGES.MAIN_MENU, G.STATES.MENU, true)
+    ease_background_colour{new_colour = G.C.BLUE, contrast = 1}
+    set_lobby_menu_UI()
+  end
+
+  if not Lobby.code and in_lobby then
+    in_lobby = false
+    G:delete_run()
+    G:main_menu()
+  end
+end
 
 return Lobby
 

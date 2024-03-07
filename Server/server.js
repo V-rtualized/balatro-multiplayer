@@ -25,7 +25,9 @@ const stringToJson = (str) => {
 
 const sendToClient = (socket, data) => {
   console.log('Responding with ' + data)
-  if (!socket) return
+  if (!socket) {
+    console.log('Socket is undefined')
+  }
   socket.write(data + '\n')
 };
 
@@ -47,9 +49,9 @@ const createLobby = (auth) => {
     }
     const room = { clients: [player.username], scores: {}, lives: {} }
     rooms.set(roomCode, room);
-    sendToClient(player.ws, `action:joinedRoom,code:${roomCode}`)
+    sendToClient(player.socket, `action:joinedRoom,code:${roomCode}`)
   } else {
-    sendToClient(player.ws, 'action:error,message:Client not found')
+    sendToClient(player.socket, 'action:error,message:Client not found')
   }
 }
 
@@ -59,9 +61,9 @@ const joinLobby = (auth, roomCode) => {
     const room = rooms.get(roomCode)
     if (room && room.clients.length < 2) {
       room.clients.push(player.id)
-      sendToClient(player.ws, `action:joinedRoom,code:${roomCode}`)
+      sendToClient(player.socket, `action:joinedRoom,code:${roomCode}`)
     } else {
-      sendToClient(player.ws, 'action:error,message:Room is full or does not exist.')
+      sendToClient(player.socket, 'action:error,message:Room is full or does not exist.')
     }
   }
 }

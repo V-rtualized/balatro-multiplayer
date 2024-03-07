@@ -20,15 +20,18 @@ end
 local function action_connected(id)
   sendDebugMessage("Client connected to multiplayer server")
   Lobby.user_id = id
-  Networking.Client:send('action:authorize,username:Guest')
+  Lobby.update_connection_status()
+  Networking.Client:send('action:authorize,username:'..Lobby.username)
 end
 
 local function action_registered(username)
-  sendDebugMessage(username)
+  sendDebugMessage("Registered username with server")
 end
 
 local function action_joinedRoom(code)
-  sendDebugMessage(code)
+  sendDebugMessage("Joining room " .. code)
+  Lobby.code = code
+  Lobby.update_connection_status()
 end
 
 local function action_error(message)
