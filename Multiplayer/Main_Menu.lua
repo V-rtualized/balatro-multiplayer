@@ -256,23 +256,22 @@ function create_UIBox_join_lobby_button()
 			{
 				n = G.UIT.R,
 				config = {
-						padding = 0.5,
+						padding = 0,
 						align = "cm",
-						minw = 5
 				},
 				nodes = {
 					{
 						n = G.UIT.R,
 						config = {
-								padding = 0,
-								align = "cm",
-								minw = 5
+								padding = 0.5,
+								align = "cm"
 						},
 						nodes = {
 							{
 								n = G.UIT.T,
 								config = {
 									scale = 0.6,
+                  shadow = true,
 									text = 'Lobby Code:',
 									colour = G.C.UI.TEXT_LIGHT
 								}
@@ -282,13 +281,12 @@ function create_UIBox_join_lobby_button()
 					{
 						n = G.UIT.R,
 						config = {
-								padding = 0,
-								align = "cm",
-								minw = 5
+								padding = 0.5,
+								align = "cm"
 						},
 						nodes = {
 							create_text_input({
-								w = 4, 
+								w = 4,
 								h = 1,
 								max_length = 5,
 								prompt_text = "Enter Lobby Code",
@@ -296,12 +294,19 @@ function create_UIBox_join_lobby_button()
 								ref_value = 'temp_code',
 								extended_corpus = false,
 								keyboard_offset = 1,
+                minw = 5,
 								callback = function(val)
 									Networking.join_lobby(Lobby.temp_code)
-								end
+								end,
 							})
 						}
-					}
+					},
+					UIBox_button({
+						label = {"Paste From Clipboard"},
+						colour = G.C.RED,
+						button = "join_from_clipboard",
+						minw = 5,
+					}),
 				}
 			}
 		}
@@ -309,8 +314,6 @@ function create_UIBox_join_lobby_button()
 end
 
 function override_main_menu_play_button()
-	local var_495_0 = 0.75
-
 	return (create_UIBox_generic_options({
 		contents = {
 			UIBox_button({
@@ -357,6 +360,11 @@ function G.FUNCS.join_lobby(arg_736_0)
 	G.FUNCS.overlay_menu({
 		definition = create_UIBox_join_lobby_button()
 	})
+end
+
+function G.FUNCS.join_from_clipboard(arg_736_0)
+	Lobby.temp_code = Utils.get_from_clipboard()
+	Networking.join_lobby(Lobby.temp_code)
 end
 
 function G.FUNCS.start_lobby(arg_736_0)

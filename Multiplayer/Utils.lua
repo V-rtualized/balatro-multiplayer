@@ -91,6 +91,58 @@ function Utils.copy_to_clipboard(text)
 	end
 end
 
+function Utils.get_from_clipboard()
+	local pathSeparator = package.config:sub(1,1)
+	local isWindows = pathSeparator == '\\'
+
+	local clipboardContents = nil
+	if isWindows then
+			local process = io.popen('powershell Get-Clipboard', 'r')
+			if process then
+					clipboardContents = process:read('*a')
+					process:close()
+			end
+	else
+			local process = io.popen('pbpaste', 'r')
+			if process then
+					clipboardContents = process:read('*a')
+					process:close()
+			end
+	end
+
+	return clipboardContents
+end
+
+
+function Utils.overlay_message(message)
+	G.SETTINGS.paused = true
+
+	G.FUNCS.overlay_menu({
+		definition = create_UIBox_generic_options({
+			contents = {
+				{
+					n = G.UIT.R,
+					config = {
+							padding = 0.5,
+							align = "cm",
+					},
+					nodes = {
+						{
+							n = G.UIT.T,
+							config = {
+								scale = 0.6,
+								shadow = true,
+								text = message,
+								colour = G.C.UI.TEXT_LIGHT
+							}
+						}
+					}
+				}
+			}
+		})
+	})
+end
+
 return Utils
 
 ----------------------------------------------

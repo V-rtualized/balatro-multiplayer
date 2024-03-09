@@ -46,6 +46,8 @@ end
 
 local function action_error(message)
   sendDebugMessage(message)
+
+  Utils.overlay_message(message)
 end
 
 local game_update_ref = Game.update
@@ -97,7 +99,7 @@ function Networking.join_lobby(roomCode)
     return
   end
   
-  Networking.Client:send('action:createLobby,auth:' .. Lobby.user_id .. ',roomCode:' .. roomCode)
+  Networking.Client:send('action:joinLobby,auth:' .. Lobby.user_id .. ',roomCode:' .. roomCode)
 end
 
 function Networking.room_info(roomCode)
