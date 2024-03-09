@@ -24,9 +24,10 @@ const stringToJson = (str) => {
 }
 
 const sendToClient = (socket, data) => {
-  console.log('Responding with ' + data)
+  //console.log('Responding with ' + data)
   if (!socket) {
-    console.log('Socket is undefined')
+    //console.log('Socket is undefined')
+    return
   }
   socket.write(data + '\n')
 }
@@ -56,8 +57,10 @@ const createLobby = (auth) => {
 }
 
 const broadcastRoomInfo = (room) => {
-  for (const clientId of room.clients.values()) {
-    sendToClient(clients.get(clientId).socket, `action:roomInfo,players:${getRoomPlayerUsernames(room)}`)
+  for (const clientId of room.clients) {
+    const client = clients.get(clientId)
+    if (!client) continue
+    sendToClient(client.socket, `action:roomInfo,players:${getRoomPlayerUsernames(room)}`)
   }
 }
 
@@ -77,9 +80,10 @@ const joinLobby = (auth, roomCode) => {
 
 const leaveLobby = (auth) => {
   const player = clients.get(auth)
+  if (!player) return
   for (const room of rooms.values()) {
     if (room.clients.includes(player.id)) {
-      const newRoom = room.clients.filter(c => c.id !== player.id)
+      const newRoom = { ...room, clients: room.clients.filter(c => c.id !== player.id) }
       broadcastRoomInfo(newRoom)
       return
     }
@@ -87,7 +91,7 @@ const leaveLobby = (auth) => {
 }
 
 const getRoomPlayerUsernames = (room) => {
-  return room.clients.map(id => clients.get(id).username).join('.')
+  return room.clients.map(id => clients.get(id)?.username).filter(v => v).join('.')
 }
 
 const roomInfo = (socket, auth, roomCode) => {
@@ -103,14 +107,14 @@ const server = net.createServer((socket) => {
   const clientId = uuidv4()
   const client = { id: clientId, socket }
   clients.set(clientId, client)
-  console.log('Client connected')
+  //console.log('Client connected')
   sendToClient(socket, `action:connected,id:${clientId}`)
 
   socket.on('data', (data) => {
     const messages = data.toString().split('\n')
     messages.forEach((msg) => {
       if (!msg) return
-      console.log('Recieved message ' + msg)
+      //console.log('Recieved message ' + msg)
       try {
         const message = stringToJson(msg)
         switch (message.action) {
@@ -138,9 +142,9 @@ const server = net.createServer((socket) => {
   });
 
   socket.on('end', () => {
-    console.log('Client disconnected')
+    //console.log('Client disconnected')
     clients.delete(clientId)
-    clientLeaveRoom(clientId)
+    leaveLobby(clientId)
   });
 
   socket.on('error', (err) => {
@@ -150,10 +154,10 @@ const server = net.createServer((socket) => {
       console.error('An unexpected error occurred:', err)
     }
     clients.delete(clientId)
-    clientLeaveRoom(clientId)
+    leaveLobby(clientId)
   });
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on port ${PORT}`);
+  //console.log(`Server listening on port ${PORT}`);
 });
