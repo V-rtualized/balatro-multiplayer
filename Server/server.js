@@ -55,6 +55,12 @@ const createLobby = (auth) => {
   }
 }
 
+const broadcastRoomInfo = (room) => {
+  for (const clientId of room.clients.values()) {
+    sendToClient(clients.get(clientId).socket, `action:roomInfo,players:${getRoomPlayerUsernames(room)}`)
+  }
+}
+
 const joinLobby = (auth, roomCode) => {
   const player = clients.get(auth)
   if (player) {
@@ -62,9 +68,7 @@ const joinLobby = (auth, roomCode) => {
     if (room && room.clients.length < 2) {
       room.clients.push(player.id)
       sendToClient(player.socket, `action:joinedRoom,code:${roomCode}`)
-      for (const client of room.clients.values()) {
-        sendToClient(client.socket, `action:roomInfo,players:${room.clients.map(id => clients.get(id).username).join('.')}`)
-      }
+      broadcastRoomInfo(room)
     } else {
       sendToClient(player.socket, 'action:error,message:Room is full or does not exist.')
     }
@@ -73,18 +77,23 @@ const joinLobby = (auth, roomCode) => {
 
 const leaveLobby = (auth) => {
   const player = clients.get(auth)
-  rooms.forEach(room => {
+  for (const room of rooms.values()) {
     if (room.clients.includes(player.id)) {
-      return room.clients.filter(c => c.id !== player.id)
+      const newRoom = room.clients.filter(c => c.id !== player.id)
+      broadcastRoomInfo(newRoom)
+      return
     }
-    return room
-  })
+  }
+}
+
+const getRoomPlayerUsernames = (room) => {
+  return room.clients.map(id => clients.get(id).username).join('.')
 }
 
 const roomInfo = (socket, auth, roomCode) => {
   const room = rooms.get(roomCode)
   if (room.clients.includes(auth)) {
-    sendToClient(socket, `action:roomInfo,players:${room.clients.map(id => clients.get(id).username).join('.')}`)
+    sendToClient(socket, `action:roomInfo,players:${getRoomPlayerUsernames(room)}`)
   } else {
     sendToClient(socket, `action:error,message:Not authorized for room`)
   }
