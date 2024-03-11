@@ -1,18 +1,18 @@
 const Lobbies = new Map()
 
-const generateUniqueRoomCode = () => {
+const generateUniqueLobbyCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   let result = ''
   for (let i = 0; i < 5; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  return Lobbies.get(result) ? generateUniqueRoomCode() : result
+  return Lobbies.get(result) ? generateUniqueLobbyCode() : result
 }
 
 class Lobby {
   constructor(host) {
     do {
-      this.code = generateUniqueRoomCode()
+      this.code = generateUniqueLobbyCode()
     } while (Lobbies.get(this.code))
     Lobbies.set(this.code, this)
     this.host = host
@@ -43,7 +43,7 @@ class Lobby {
 
   join = (client) => {
     if (this.guest) {
-      client.send('action:error,message:Room is full or does not exist.')
+      client.send('action:error,message:Lobby is full or does not exist.')
       return
     }
     this.guest = client

@@ -10,7 +10,6 @@ Lobby = {
   code = nil,
   type = "",
   config = {},
-  user_id = nil,
   username = "Guest",
   enemy = {
     username = "dude_crusher69",
@@ -43,7 +42,7 @@ local function get_connection_status_ui()
 					n = G.UIT.T,
 					config = {
 						scale = 0.3,
-						text = (Lobby.code and 'In Lobby') or (Lobby.user_id and 'Connected to Service') or 'WARN: Cannot Find Multiplayer Service',
+						text = (Lobby.code and 'In Lobby') or (Lobby.connected and 'Connected to Service') or 'WARN: Cannot Find Multiplayer Service',
 						colour = G.C.UI.TEXT_LIGHT
 					}
 				}
@@ -184,82 +183,6 @@ function G.FUNCS.lobby_leave(arg_736_0)
   Lobby.update_connection_status()
 end
 
-Player_Usernames_UI = nil
-local function get_players_usernames_ui()
-  local text_scale = 0.45
-
-  return {
-    n = G.UIT.C, 
-    config = {
-      align = "tm", 
-      minw = 2.65
-    }, 
-    nodes = {
-      {
-        n = G.UIT.R,
-        config = {
-          padding = 0.2,
-          align = "cm"
-        },
-        nodes = {
-          {
-            n = G.UIT.T,
-            config = {
-              text = 'Connected Players:',
-              shadow = true,
-              scale = text_scale * 0.8,
-              colour = G.C.UI.TEXT_LIGHT
-            }
-          }
-        },
-      },
-      Lobby.players[1] and {  
-        n = G.UIT.R,
-        config = {
-          padding = 0,
-          align = "cm"
-        },
-        nodes = {
-          {
-            n = G.UIT.T,
-            config = {
-              text = Lobby.players[1].username,
-              shadow = true,
-              scale = text_scale * 0.8,
-              colour = G.C.UI.TEXT_LIGHT
-            }
-          }
-        }
-      } or nil,
-      Lobby.players[2] and {  
-        n = G.UIT.R,
-        config = {
-          padding = 0,
-          align = "cm"
-        },
-        nodes = {
-          {
-            n = G.UIT.T,
-            config = {
-              text = Lobby.players[2].username,
-              shadow = true,
-              scale = text_scale * 0.8,
-              colour = G.C.UI.TEXT_LIGHT
-            }
-          }
-        }
-      } or nil
-    }
-  }
-end
-
-function Lobby.update_player_usernames()
-  if Player_Usernames_UI then
-    Player_Usernames_UI:remove()
-  end
-  Player_Usernames_UI = get_players_usernames_ui()
-end
-
 local function create_UIBox_lobby_menu()
   local text_scale = 0.45
   
@@ -320,7 +243,69 @@ local function create_UIBox_lobby_menu()
                     }, 
                     nodes = {}
                   },
-                  Player_Usernames_UI,
+                  {
+                    n = G.UIT.C, 
+                    config = {
+                      align = "tm", 
+                      minw = 2.65
+                    }, 
+                    nodes = {
+                      {
+                        n = G.UIT.R,
+                        config = {
+                          padding = 0.2,
+                          align = "cm"
+                        },
+                        nodes = {
+                          {
+                            n = G.UIT.T,
+                            config = {
+                              text = 'Connected Players:',
+                              shadow = true,
+                              scale = text_scale * 0.8,
+                              colour = G.C.UI.TEXT_LIGHT
+                            }
+                          }
+                        },
+                      },
+                      Lobby.players[1] and {  
+                        n = G.UIT.R,
+                        config = {
+                          padding = 0,
+                          align = "cm"
+                        },
+                        nodes = {
+                          {
+                            n = G.UIT.T,
+                            config = {
+                              text = Lobby.players[1].username,
+                              shadow = true,
+                              scale = text_scale * 0.8,
+                              colour = G.C.UI.TEXT_LIGHT
+                            }
+                          }
+                        }
+                      } or nil,
+                      Lobby.players[2] and {  
+                        n = G.UIT.R,
+                        config = {
+                          padding = 0,
+                          align = "cm"
+                        },
+                        nodes = {
+                          {
+                            n = G.UIT.T,
+                            config = {
+                              text = Lobby.players[2].username,
+                              shadow = true,
+                              scale = text_scale * 0.8,
+                              colour = G.C.UI.TEXT_LIGHT
+                            }
+                          }
+                        }
+                      } or nil
+                    }
+                  },
                   {
                     n = G.UIT.C, 
                     config = {
@@ -357,25 +342,40 @@ local function create_UIBox_lobby_menu()
   return t
 end
 
+local function get_lobby_main_menu_UI()
+  return UIBox({
+    definition = create_UIBox_lobby_menu(), 
+    config = {
+      align="bmi", 
+      offset = {
+        x = 0,
+        y = 10
+      }, 
+      major = G.ROOM_ATTACH, 
+      bond = 'Weak'
+    }
+  })
+end
+
+function display_lobby_main_menu_UI()
+  G.MAIN_MENU_UI = get_lobby_main_menu_UI()
+  G.MAIN_MENU_UI.alignment.offset.y = 0
+  G.MAIN_MENU_UI:align_to_major()
+
+  G.CONTROLLER:snap_to{node = G.MAIN_MENU_UI:get_UIE_by_ID('lobby_menu_start')}
+end
+
+function Lobby.update_player_usernames()
+  if Lobby.code then
+    G.MAIN_MENU_UI:remove()
+    display_lobby_main_menu_UI()
+  end
+end
+
 local setMainMenuUIRef = set_main_menu_UI
 function set_main_menu_UI()
   if Lobby.code then
-    G.MAIN_MENU_UI = UIBox({
-      definition = create_UIBox_lobby_menu(), 
-      config = {
-        align="bmi", 
-        offset = {
-          x = 0,
-          y = 10
-        }, 
-        major = G.ROOM_ATTACH, 
-        bond = 'Weak'
-      }
-    })
-    G.MAIN_MENU_UI.alignment.offset.y = 0
-    G.MAIN_MENU_UI:align_to_major()
-
-    G.CONTROLLER:snap_to{node = G.MAIN_MENU_UI:get_UIE_by_ID('lobby_menu_start')}
+    display_lobby_main_menu_UI()
   else
     setMainMenuUIRef()
   end

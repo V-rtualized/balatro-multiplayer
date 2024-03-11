@@ -10,7 +10,6 @@ class Client {
 
   setUsername = (username) => {
     this.username = username
-    this.send(`action:confirmed`)
     this.lobby?.broadcast()
   }
 

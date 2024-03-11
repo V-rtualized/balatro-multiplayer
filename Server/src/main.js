@@ -33,7 +33,7 @@ const createLobbyAction = (client) => {
 const joinLobbyAction = (client, code) => {
   const newLobby = Lobby.get(code)
   if (!newLobby) {
-    client.send('action:error,message:Room is full or does not exist.')
+    client.send('action:error,message:Lobby is full or does not exist.')
     return
   }
   newLobby.join(client)
