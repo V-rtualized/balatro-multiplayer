@@ -77,40 +77,19 @@ function Utils.string_split(inputstr, sep)
 end
 
 function Utils.copy_to_clipboard(text)
-	local pathSeparator = package.config:sub(1,1)
-	local isWindows = pathSeparator == '\\'
-
-	if isWindows then
-			local clipCommand = 'clip'
-			local process = io.popen(clipCommand, 'w')
-			process:write(text)
-			process:close()
-	else
-			local safeText = text:gsub("'", "'\\''")
-			os.execute('echo "' .. safeText .. '" | pbcopy')
-	end
+	if G.F_LOCAL_CLIPBOARD then
+    G.CLIPBOARD = text
+  else
+    love.system.setClipboardText(text)
+  end
 end
 
 function Utils.get_from_clipboard()
-	local pathSeparator = package.config:sub(1,1)
-	local isWindows = pathSeparator == '\\'
-
-	local clipboardContents = nil
-	if isWindows then
-			local process = io.popen('powershell Get-Clipboard', 'r')
-			if process then
-					clipboardContents = process:read('*a')
-					process:close()
-			end
-	else
-			local process = io.popen('pbpaste', 'r')
-			if process then
-					clipboardContents = process:read('*a')
-					process:close()
-			end
-	end
-
-	return clipboardContents
+	if G.F_LOCAL_CLIPBOARD then
+    return G.F_LOCAL_CLIPBOARD
+  else
+    return love.system.getClipboardText()
+  end
 end
 
 
