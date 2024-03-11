@@ -26,11 +26,11 @@ class Lobby {
   }
 
   leave = (client) => {
-    if (this.host === client._id) {
+    if (this.host.id === client.id) {
       this.host = this.guest
       this.guest = null
     }
-    if (this.guest === client._id) {
+    if (this.guest?.id === client.id) {
       this.guest = null
     }
     client.setLobby(null)
