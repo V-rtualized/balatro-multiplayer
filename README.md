@@ -19,7 +19,7 @@ If you make a video or stream Balatro using this mod then feel free to send me a
 ## Planned Gamemodes
 
 - Attrition (1v1)
-  - Both players start with 4 lives, every boss round is a competition between players where the player with the lower score loses a life."
+  - Both players start with 4 lives, every boss round is a competition between players where the player with the lower score loses a life.
 - Draft (1v1)
   - Both players play a set amount of antes simultaneously, then they play an ante where every round the player with the higher scorer wins, player with the most round wins in the final ante is the victor.
 - Heads Up (1v1)

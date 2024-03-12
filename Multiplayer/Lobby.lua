@@ -167,7 +167,37 @@ end
 
 function G.FUNCS.lobby_options(arg_736_0)
 	G.FUNCS.overlay_menu({
-		definition = override_main_menu_play_button()
+		definition = create_UIBox_generic_options({
+      contents = {
+        {
+          n = G.UIT.R,
+          config = {
+            padding = 0,
+            align = "cm"
+          },
+          nodes = {
+            {
+              n = G.UIT.R,
+              config = {
+                padding = 0.5,
+                align = "cm"
+              },
+              nodes = {
+                {
+                  n = G.UIT.T,
+                  config = {
+                    text = 'Not Implemented Yet',
+                    shadow = true,
+                    scale = 0.6,
+                    colour = G.C.UI.TEXT_LIGHT
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
 	})
 end
 
