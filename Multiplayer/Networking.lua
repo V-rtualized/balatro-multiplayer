@@ -17,6 +17,13 @@ function string_to_table(str)
   return tbl
 end
 
+function Networking.set_username(username)
+  Lobby.username = username or 'Guest'
+  if Lobby.connected then
+    Networking.Client:send('action:username,username:'..Lobby.username)
+  end
+end
+
 local function action_connected()
   sendDebugMessage("Client connected to multiplayer server")
   Lobby.connected = true

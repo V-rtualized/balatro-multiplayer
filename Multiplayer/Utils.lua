@@ -4,6 +4,8 @@
 ----------------------------------------------
 ------------MOD DEBUG-------------------------
 
+local Networking = require "Networking"
+
 Utils = {}
 
 local localize_ref = localize
@@ -11,9 +13,6 @@ function localize(args, misc_cat)
 	if args == nil then
 		sendDebugMessage("Caught nil localize args, misc_cat: " .. misc_cat)
 		return nil
-	end
-	if args == 'c_multiplayer_1' and misc_cat == 'challenge_names' then
-		return 'Multiplayer'
 	end
 	return localize_ref(args, misc_cat)
 end
@@ -68,6 +67,7 @@ end
 
 local usernameFilePath = "Mods/Multiplayer/Saved/username.txt"
 function Utils.save_username(text)
+	Networking.set_username(text)
 	love.filesystem.write(usernameFilePath, text)
 end
 

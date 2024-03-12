@@ -13,7 +13,7 @@ Lobby = {
   username = "Guest",
   enemy = {
     username = "dude_crusher69",
-    score = 1564,
+    score = 0,
     hands = 4
   },
   players = {}

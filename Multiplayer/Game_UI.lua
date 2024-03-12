@@ -7,52 +7,7 @@
 local Lobby = require "Lobby"
 local Utils = require "Utils"
 
-local create_UIBox_HUD_blind_ref = create_UIBox_HUD_blind
-function create_UIBox_HUD_blind()
-  if Lobby.code and G.GAME.blind.loc_name == 'Your Nemesis' then
-    local scale = 0.4
-    local stake_sprite = get_stake_sprite(G.GAME.stake or 1, 0.5)
-    G.GAME.blind:change_dim(1.5,1.5)
-
-    return {n=G.UIT.ROOT, config={align = "cm", minw = 4.5, r = 0.1, colour = G.C.BLACK, emboss = 0.05, padding = 0.05, func = 'HUD_blind_visible', id = 'HUD_blind'}, nodes={
-        {n=G.UIT.R, config={align = "cm", minh = 0.7, r = 0.1, emboss = 0.05, colour = G.C.DYN_UI.MAIN}, nodes={
-          {n=G.UIT.C, config={align = "cm", minw = 3}, nodes={
-            {n=G.UIT.O, config={object = DynaText({string = {{ref_table = Lobby.enemy, ref_value = 'username'}}, colours = {G.C.UI.TEXT_LIGHT},shadow = true, rotate = true, silent = true, float = true, scale = 1.6*scale, y_offset = -4}),id = 'HUD_blind_name'}},
-          }},
-        }},
-        {n=G.UIT.R, config={align = "cm", minh = 2.74, r = 0.1,colour = G.C.DYN_UI.DARK}, nodes={
-          {n=G.UIT.R, config={align = "cm", padding = 0.05}, nodes={
-            {n=G.UIT.R, config={align = "cm", minh = 0.3, maxw = 4.2}, nodes={
-              {n=G.UIT.T, config={ref_table = {val = ''}, ref_value = 'val', scale = scale*0.9, colour = G.C.UI.TEXT_LIGHT, func = 'HUD_blind_debuff_prefix'}},
-              {n=G.UIT.T, config={ref_table = G.GAME.blind.loc_debuff_lines, ref_value = 1, scale = scale*0.9, colour = G.C.UI.TEXT_LIGHT, id = 'HUD_blind_debuff_1', func = 'HUD_blind_debuff'}}
-            }},
-            {n=G.UIT.R, config={align = "cm", minh = 0.3, maxw = 4.2}, nodes={
-              {n=G.UIT.T, config={ref_table = G.GAME.blind.loc_debuff_lines, ref_value = 2, scale = scale*0.9, colour = G.C.UI.TEXT_LIGHT, id = 'HUD_blind_debuff_2', func = 'HUD_blind_debuff'}}
-            }},
-          }},
-          {n=G.UIT.R, config={align = "cm",padding = 0.15}, nodes={
-            {n=G.UIT.O, config={object = G.GAME.blind, draw_layer = 1}},
-            {n=G.UIT.C, config={align = "cm",r = 0.1, padding = 0.05, emboss = 0.05, minw = 2.9, colour = G.C.BLACK}, nodes={
-              {n=G.UIT.R, config={align = "cm", maxw = 2.8}, nodes={
-                {n=G.UIT.T, config={text = 'Chips To Beat', scale = 0.3, colour = G.C.WHITE, shadow = true}}
-              }},
-              {n=G.UIT.R, config={align = "cm", minh = 0.6}, nodes={
-                {n=G.UIT.O, config={w=0.5,h=0.5, colour = G.C.BLUE, object = stake_sprite, hover = true, can_collide = false}},
-                {n=G.UIT.B, config={h=0.1,w=0.1}},
-                {n=G.UIT.T, config={ref_table = Lobby.enemy, ref_value = 'score', scale = 0.001, colour = G.C.RED, shadow = true, id = 'HUD_blind_count', func = 'blind_chip_UI_scale'}}
-              }},
-              {n=G.UIT.R, config={align = "cm", minh = 0.45, maxw = 2.8, func = 'HUD_blind_reward'}, nodes={
-                {n=G.UIT.T, config={text = 'Enemy hands left: ', scale = 0.3, colour = G.C.WHITE}},
-                {n=G.UIT.O, config={object = DynaText({string = {{ref_table = Lobby.enemy, ref_value = 'hands'}}, colours = {G.C.BLUE},shadow = true, rotate = true, bump = true, silent = true, scale = 0.45}),id = 'dollars_to_be_earned'}},
-              }},
-            }},
-          }},
-        }},
-      }}
-  else
-    return create_UIBox_HUD_blind_ref()
-  end
-end
+local Game_UI = {}
 
 local create_UIBox_options_ref = create_UIBox_options
 function create_UIBox_options()
@@ -179,18 +134,13 @@ function create_UIBox_blind_choice(type, run_info)
     end
     G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante or G.GAME.round_resets.ante
 
-    local loc_target = nil
-    local loc_name = nil
+    local loc_target = localize{type = 'raw_descriptions', key = blind_choice.config.key, set = 'Blind', vars = {localize(G.GAME.current_round.most_played_poker_hand, 'poker_hands')}}
+    local loc_name = localize{type = 'name_text', key = blind_choice.config.key, set = 'Blind'}
     local blind_col = get_blind_main_colour(type)
     local blind_amt = get_blind_amount(G.GAME.round_resets.blind_ante)*blind_choice.config.mult*G.GAME.starting_params.ante_scaling
 
     if G.GAME.round_resets.blind_choices[type] == 'bl_pvp' then
-      loc_target = {'Face another player,', 'most chips wins'}
-      loc_name = 'Your Nemesis'
       blind_amt = '????'
-    else 
-      loc_target = localize{type = 'raw_descriptions', key = blind_choice.config.key, set = 'Blind', vars = {localize(G.GAME.current_round.most_played_poker_hand, 'poker_hands')}}
-      loc_name = localize{type = 'name_text', key = blind_choice.config.key, set = 'Blind'}
     end
 
     local text_table = loc_target
@@ -260,5 +210,76 @@ function create_UIBox_blind_choice(type, run_info)
   end
 end
 
+function Game_UI.update_enemy()
+  G.HUD_blind.alignment.offset.y = -10
+  G.E_MANAGER:add_event(Event({
+    trigger = 'after',
+    delay = 0.3,
+    blockable = false,
+    func = function()
+      G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = Lobby.enemy
+      G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = 'score'
+      G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text = 'Current enemy score'
+      G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text = 'Enemy hands left: '
+      G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = {{ref_table = Lobby.enemy, ref_value = 'hands'}}
+      G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
+      G.HUD_blind.alignment.offset.y = 0
+      return true
+    end
+  }))
+end
+
+function Game_UI.reset_blind_HUD()
+  G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {{ref_table = G.GAME.blind, ref_value = 'loc_name'}}
+  G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
+  G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = G.GAME.blind
+  G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = 'chip_text'
+  G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text = localize('ph_blind_score_at_least')
+  G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text = localize('ph_blind_reward')
+  G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = {{ref_table = G.GAME.current_round, ref_value = 'dollars_to_be_earned'}}
+  G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
+end
+
+local update_draw_to_hand_ref = Game.update_draw_to_hand
+function Game:update_draw_to_hand(dt)
+  if Lobby.code then
+    if not G.STATE_COMPLETE and G.GAME.current_round.hands_played == 0 and 
+    G.GAME.current_round.discards_used == 0 and 
+    G.GAME.facing_blind then
+      if G.GAME.blind.name == 'Your Nemesis' then
+        G.E_MANAGER:add_event(Event({
+          trigger = 'after',
+          delay = 1,
+          blockable = false,
+          func = function()
+            G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:pop_out(0)
+            Game_UI.update_enemy()
+            G.E_MANAGER:add_event(Event({
+              trigger = 'after',
+              delay = 0.45,
+              blockable = false,
+              func = function()
+                G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {{ref_table = Lobby.enemy, ref_value = 'username'}}
+                G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
+                G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:pop_in(0)
+                return true
+              end
+            }))
+            return true
+          end
+        }))
+      end
+    end
+  end
+  update_draw_to_hand_ref(self,dt)
+end
+
+local blind_defeat_ref = Blind.defeat
+function Blind:defeat(silent)
+  blind_defeat_ref(self, silent)
+  Game_UI.reset_blind_HUD()
+end
+
+return Game_UI
 ----------------------------------------------
 ------------MOD GAME UI END-------------------

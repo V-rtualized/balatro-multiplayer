@@ -38,6 +38,14 @@ local c_multiplayer_1 = {
 
 G.CHALLENGES[21] = c_multiplayer_1
 
+local localize_ref = localize
+function localize(args, misc_cat)
+	if args == 'c_multiplayer_1' and misc_cat == 'challenge_names' then
+		return 'Multiplayer'
+	end
+	return localize_ref(args, misc_cat)
+end
+
 local set_discover_tallies_ref = set_discover_tallies
 function set_discover_tallies()
   G.CHALLENGES[21] = nil
