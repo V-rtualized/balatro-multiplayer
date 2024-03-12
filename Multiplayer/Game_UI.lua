@@ -9,7 +9,7 @@ local Utils = require "Utils"
 
 local create_UIBox_HUD_blind_ref = create_UIBox_HUD_blind
 function create_UIBox_HUD_blind()
-  if Lobby.code then
+  if Lobby.code and G.GAME.blind.loc_name == 'Your Nemesis' then
     local scale = 0.4
     local stake_sprite = get_stake_sprite(G.GAME.stake or 1, 0.5)
     G.GAME.blind:change_dim(1.5,1.5)
@@ -110,6 +110,15 @@ function create_UIBox_options()
   end
 end
 
+local get_new_boss_ref = get_new_boss
+function get_new_boss()
+  if Lobby.code then
+    return 'bl_pvp'
+  else
+    return get_new_boss_ref()
+  end
+end
+
 local create_UIBox_blind_choice_ref = create_UIBox_blind_choice
 function create_UIBox_blind_choice(type, run_info)
   if Lobby.code then
@@ -150,9 +159,9 @@ function create_UIBox_blind_choice(type, run_info)
     elseif type == 'Big' then
       extras = nil
     elseif not run_info then
-      local dt1 = DynaText({string = {{string = localize('ph_up_ante_1'), colour = G.C.FILTER}}, colours = {G.C.BLACK}, scale = 0.55, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 3})
-      local dt2 = DynaText({string = {{string = localize('ph_up_ante_2'), colour = G.C.WHITE}},colours = {G.C.CHANCE}, scale = 0.35, silent = true, pop_delay = 4.5, shadow = true, maxw = 3})
-      local dt3 = DynaText({string = {{string = localize('ph_up_ante_3'), colour = G.C.WHITE}},colours = {G.C.CHANCE}, scale = 0.35, silent = true, pop_delay = 4.5, shadow = true, maxw = 3})
+      local dt1 = DynaText({string = {{string = 'LIFE', colour = G.C.FILTER}}, colours = {G.C.BLACK}, scale = 0.55, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 3})
+      local dt2 = DynaText({string = {{string = 'or', colour = G.C.WHITE}},colours = {G.C.CHANCE}, scale = 0.35, silent = true, pop_delay = 4.5, shadow = true, maxw = 3})
+      local dt3 = DynaText({string = {{string = 'DEATH', colour = G.C.FILTER}}, colours = {G.C.BLACK}, scale = 0.55, silent = true, pop_delay = 4.5, shadow = true, bump = true, maxw = 3})
       extras = 
       {n=G.UIT.R, config={align = "cm"}, nodes={
           {n=G.UIT.R, config={align = "cm", padding = 0.07, r = 0.1, colour = {0,0,0,0.12}, minw = 2.9}, nodes={
@@ -169,11 +178,22 @@ function create_UIBox_blind_choice(type, run_info)
         }}
     end
     G.GAME.round_resets.blind_ante = G.GAME.round_resets.blind_ante or G.GAME.round_resets.ante
-    local loc_target = localize{type = 'raw_descriptions', key = blind_choice.config.key, set = 'Blind', vars = {localize(G.GAME.current_round.most_played_poker_hand, 'poker_hands')}}
-    local loc_name = localize{type = 'name_text', key = blind_choice.config.key, set = 'Blind'}
-    local text_table = loc_target
+
+    local loc_target = nil
+    local loc_name = nil
     local blind_col = get_blind_main_colour(type)
     local blind_amt = get_blind_amount(G.GAME.round_resets.blind_ante)*blind_choice.config.mult*G.GAME.starting_params.ante_scaling
+
+    if G.GAME.round_resets.blind_choices[type] == 'bl_pvp' then
+      loc_target = {'Face another player,', 'most chips wins'}
+      loc_name = 'Your Nemesis'
+      blind_amt = '????'
+    else 
+      loc_target = localize{type = 'raw_descriptions', key = blind_choice.config.key, set = 'Blind', vars = {localize(G.GAME.current_round.most_played_poker_hand, 'poker_hands')}}
+      loc_name = localize{type = 'name_text', key = blind_choice.config.key, set = 'Blind'}
+    end
+
+    local text_table = loc_target
   
     local blind_state = G.GAME.round_resets.blind_states[type]
     local _reward = true

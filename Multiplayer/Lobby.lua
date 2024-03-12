@@ -21,14 +21,6 @@ Lobby = {
 
 Connection_Status_UI = nil
 
-local endRoundRef = end_round
-function end_round()
-  if Lobby.code then
-    G.GAME.chips = G.GAME.blind.chips
-  end
-  endRoundRef()
-end
-
 local function get_connection_status_ui()
   return UIBox({
 		definition = {
@@ -132,7 +124,7 @@ function G.FUNCS.lobby_setup_run(arg_736_0)
 	G.FUNCS.start_run(arg_736_0, {
     stake = 1,
     challenge = {
-      name = 'Multiplayer',
+      name = 'Multiplayer Deck',
       id = 'c_multiplayer_1',
       rules = {
           custom = {

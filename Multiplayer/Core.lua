@@ -28,6 +28,8 @@ end
 
 function SMODS.INIT.VirtualizedMultiplayer()
     table.insert(package.loaders, 1, customLoader)
+    require "Blind"
+    require "Deck"
     require "Main_Menu"
     require "Utils".get_username()
 	Networking.authorize()
