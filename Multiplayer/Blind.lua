@@ -4,8 +4,6 @@
 ----------------------------------------------
 ------------MOD BLIND-------------------------
 
-local Utils = require "Utils"
-
 local bl_pvp = {
   name = 'Your Nemesis',
   defeated = false,
@@ -21,6 +19,19 @@ local bl_pvp = {
 }
 
 G.P_BLINDS['bl_pvp'] = bl_pvp
+
+local get_new_boss_ref = get_new_boss
+function get_new_boss()
+  if Lobby.code then
+    return 'bl_pvp'
+  else
+    local boss = get_new_boss_ref()
+    while boss == 'bl_pvp' do
+      boss = get_new_boss_ref()
+    end
+    return boss
+  end
+end
 
 local localize_ref = localize
 function localize(args, misc_cat)

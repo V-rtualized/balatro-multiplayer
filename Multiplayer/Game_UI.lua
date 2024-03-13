@@ -5,7 +5,6 @@
 ------------MOD GAME UI-----------------------
 
 local Lobby = require "Lobby"
-local Utils = require "Utils"
 
 local Game_UI = {}
 
@@ -62,15 +61,6 @@ function create_UIBox_options()
     return t
   else
     return create_UIBox_options_ref()
-  end
-end
-
-local get_new_boss_ref = get_new_boss
-function get_new_boss()
-  if Lobby.code then
-    return 'bl_pvp'
-  else
-    return get_new_boss_ref()
   end
 end
 
@@ -206,38 +196,42 @@ function create_UIBox_blind_choice(type, run_info)
       }}
     return t
   else
-    create_UIBox_blind_choice_ref(type, run_info)
+    return create_UIBox_blind_choice_ref(type, run_info)
   end
 end
 
 function Game_UI.update_enemy()
-  G.HUD_blind.alignment.offset.y = -10
-  G.E_MANAGER:add_event(Event({
-    trigger = 'after',
-    delay = 0.3,
-    blockable = false,
-    func = function()
-      G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = Lobby.enemy
-      G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = 'score'
-      G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text = 'Current enemy score'
-      G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text = 'Enemy hands left: '
-      G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = {{ref_table = Lobby.enemy, ref_value = 'hands'}}
-      G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
-      G.HUD_blind.alignment.offset.y = 0
-      return true
-    end
-  }))
+  if Lobby.code then
+    G.HUD_blind.alignment.offset.y = -10
+    G.E_MANAGER:add_event(Event({
+      trigger = 'after',
+      delay = 0.3,
+      blockable = false,
+      func = function()
+        G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = Lobby.enemy
+        G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = 'score'
+        G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text = 'Current enemy score'
+        G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text = 'Enemy hands left: '
+        G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = {{ref_table = Lobby.enemy, ref_value = 'hands'}}
+        G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
+        G.HUD_blind.alignment.offset.y = 0
+        return true
+      end
+    }))
+  end
 end
 
 function Game_UI.reset_blind_HUD()
-  G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {{ref_table = G.GAME.blind, ref_value = 'loc_name'}}
-  G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
-  G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = G.GAME.blind
-  G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = 'chip_text'
-  G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text = localize('ph_blind_score_at_least')
-  G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text = localize('ph_blind_reward')
-  G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = {{ref_table = G.GAME.current_round, ref_value = 'dollars_to_be_earned'}}
-  G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
+  if Lobby.code then
+    G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {{ref_table = G.GAME.blind, ref_value = 'loc_name'}}
+    G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
+    G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = G.GAME.blind
+    G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = 'chip_text'
+    G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text = localize('ph_blind_score_at_least')
+    G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text = localize('ph_blind_reward')
+    G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = {{ref_table = G.GAME.current_round, ref_value = 'dollars_to_be_earned'}}
+    G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
+  end
 end
 
 local update_draw_to_hand_ref = Game.update_draw_to_hand
