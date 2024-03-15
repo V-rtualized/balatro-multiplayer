@@ -4,26 +4,26 @@ import type Lobby from "./Lobby";
 type SendFn = (data: string) => void;
 
 class Client {
-	id: string;
-	username: string;
-	lobby: Lobby | null;
-	send: SendFn;
+  id: string;
+  username: string;
+  lobby: Lobby | null;
+  send: SendFn;
 
-	constructor(send: SendFn) {
-		this.id = uuidv4();
-		this.lobby = null;
-		this.username = "Guest";
-		this.send = send;
-	}
+  constructor(send: SendFn) {
+    this.id = uuidv4();
+    this.lobby = null;
+    this.username = "Guest";
+    this.send = send;
+  }
 
-	setUsername = (username: string) => {
-		this.username = username;
-		this.lobby?.broadcast();
-	};
+  setUsername = (username: string) => {
+    this.username = username;
+    this.lobby?.broadcast();
+  };
 
-	setLobby = (lobby: Lobby | null) => {
-		this.lobby = lobby;
-	};
+  setLobby = (lobby: Lobby | null) => {
+    this.lobby = lobby;
+  };
 }
 
 export default Client;
