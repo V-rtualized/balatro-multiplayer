@@ -87,6 +87,7 @@ const server = net.createServer((socket) => {
 			try {
 				const message: ActionClientToServer | ActionUtility = stringToJson(msg)
 				const { action, ...actionArgs } = message
+				console.log(`Received action ${action} from ${client.id}`)
 
 				// This only works for now, once we add more arguments
 				// we'll need to refactor this
@@ -109,6 +110,7 @@ const server = net.createServer((socket) => {
 	})
 
 	socket.on('end', () => {
+		console.log(`Client disconnected ${client.id}`)
 		actionHandlers.leaveLobby?.(client)
 	})
 
