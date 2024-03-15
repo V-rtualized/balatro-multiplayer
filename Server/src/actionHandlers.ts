@@ -48,7 +48,8 @@ const lobbyInfoAction = (client: Client) => {
 	client.lobby?.broadcast()
 }
 
-const keepAliveAckAction = (client: Client) => {
+const keepAliveAction = (client: Client) => {
+	// Send an ack back to the received keepAlive
 	client.send(serializeAction({ action: 'keepAliveAck' }))
 }
 
@@ -59,5 +60,5 @@ export const actionHandlers: Partial<ActionHandlers> = {
 	joinLobby: joinLobbyAction,
 	lobbyInfo: lobbyInfoAction,
 	leaveLobby: leaveLobbyAction,
-	keepAliveAck: keepAliveAckAction,
+	keepAlive: keepAliveAction,
 }
