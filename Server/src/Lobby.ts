@@ -1,6 +1,8 @@
+import type Client from "./Client"
+
 const Lobbies = new Map()
 
-const generateUniqueLobbyCode = () => {
+const generateUniqueLobbyCode = (): string => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   let result = ''
   for (let i = 0; i < 5; i++) {
@@ -10,7 +12,11 @@ const generateUniqueLobbyCode = () => {
 }
 
 class Lobby {
-  constructor(host) {
+  code: string;
+  host: Client | null;
+  guest: Client | null;
+
+  constructor(host: Client) {
     do {
       this.code = generateUniqueLobbyCode()
     } while (Lobbies.get(this.code))
@@ -21,12 +27,12 @@ class Lobby {
     host.send(`action:joinedLobby,code:${this.code}`)
   }
 
-  static get = (code) => {
+  static get = (code: string) => {
     return Lobbies.get(code)
   }
 
-  leave = (client) => {
-    if (this.host.id === client.id) {
+  leave = (client: Client) => {
+    if (this.host?.id === client.id) {
       this.host = this.guest
       this.guest = null
     }
@@ -41,7 +47,7 @@ class Lobby {
     }
   }
 
-  join = (client) => {
+  join = (client: Client) => {
     if (this.guest) {
       client.send('action:error,message:Lobby is full or does not exist.')
       return
@@ -53,6 +59,10 @@ class Lobby {
   }
 
   broadcast = () => {
+    if(!this.host) {
+      return;
+    }
+
     let message = `action:lobbyInfo,host:${this.host.username}`
     if (this.guest?.username) {
       message += `,guest:${this.guest.username}`
