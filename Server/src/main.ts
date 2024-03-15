@@ -96,8 +96,6 @@ const server = net.createServer((socket) => {
     code: string,
     syscall: string
   }) => {
-    console.log(err);
-
     if (err.code === 'ECONNRESET') {
       console.warn('TCP connection reset by peer (client).')
     } else {
