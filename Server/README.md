@@ -198,7 +198,7 @@ One of the following, left side is the values, right side is the corosponding in
 - bl_flint          = The Flint
 - bl_final_acorn    = Amber Acorn
 - bl_final_heart    = Crimson Heart
-- **b1_pvp = Your Nemesis** <-- This is the blind that needs to be set for players to play against eachother's scores
+- **b1_pvp          = Your Nemesis** <-- This is the blind that needs to be set for players to play against eachother's scores
 
 ### Deck Types
 
@@ -242,6 +242,7 @@ One of the following, left side is the values, right side is the corosponding in
 - c_golden_needle_1   = Golden Needle
 - c_cruelty_1         = Cruelty
 - c_jokerless_1       = Jokerless
+- **c_multiplayer_1   = Multiplayer Default** <-- This is the default deck until deck selection implementation (will be removed)
 
 ### Seed Type
 
