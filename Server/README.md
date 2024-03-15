@@ -89,6 +89,8 @@ endPvP: lost
 - Needs to be sent at the end of a PvP blind, clients will wait for this
 - lost: Whether the client lost the PvP, client will take this as a life lost (server should reflect this), must be a boolean value (client will interpret this as a string)
 
+---
+
 ### Client to Server
 
 username: username
@@ -153,6 +155,8 @@ playerInfo
 
 enemyInfo
 - Request an enemyInfo update.
+
+---
 
 ## Server Types
 
