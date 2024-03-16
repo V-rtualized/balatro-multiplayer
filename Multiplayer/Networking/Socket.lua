@@ -27,6 +27,7 @@ function SEND_THREAD_DEBUG_MESSAGE(message)
 	end
 end
 
+-- TODO: Disable this if not in debug mode
 initializeThreadDebugSocketConnection()
 
 Networking = {}
@@ -61,11 +62,11 @@ end
 
 -- Check for messages from the main thread
 local mainThreadMessageQueue = function()
-	-- Executes requestsPerSecond action requests
+	-- Executes a max of requestsPerCycle action requests
 	-- from the main thread and then yields
-	local requestsPerSecond = 25
+	local requestsPerCycle = 25
 	while true do
-		for _ = 1, requestsPerSecond do
+		for _ = 1, requestsPerCycle do
 			local msg = uiToNetworkChannel:pop()
 			if msg then
 				if msg:find("^action") ~= nil then
@@ -73,6 +74,9 @@ local mainThreadMessageQueue = function()
 				elseif msg == "connect" then
 					Networking.connect()
 				end
+			else
+				-- If there are no more messages, yield
+				coroutine.yield()
 			end
 		end
 
@@ -88,7 +92,6 @@ local timer = function(time)
 		coroutine.yield(diff)
 		diff = os.difftime(os.time(), init)
 	end
-	print("Timer timed out at " .. time .. " seconds!")
 end
 local timerCoroutine = coroutine.create(timer)
 
@@ -102,12 +105,12 @@ local retryCount = 0
 
 -- Check for network packets
 local networkPacketQueue = function()
-	local packetsPerSecond = 25
+	local packetsPerCycle = 25
 	while true do
 		if Networking.Client then
-			-- Tries to fetch a packet packetsPerSecond times
+			-- Tries to fetch a packet a max of packetsPerCycle times
 			-- and then yields
-			for _ = 1, packetsPerSecond do
+			for _ = 1, packetsPerCycle do
 				local data, error, partial = Networking.Client:receive()
 				if data then
 					-- Packet arrived, reset retries
@@ -126,6 +129,9 @@ local networkPacketQueue = function()
 
 					timerCoroutine = coroutine.create(timer)
 					networkToUiChannel:push("action:disconnected")
+				else
+					-- If there are no more packets, yield
+					coroutine.yield()
 				end
 			end
 
@@ -176,8 +182,8 @@ while true do
 		end
 	end
 
-	-- Sleeps for one second
-	socket.sleep(1)
+	-- Sleeps for 200 milliseconds
+	socket.sleep(0.2)
 end
 
 ----------------------------------------------
