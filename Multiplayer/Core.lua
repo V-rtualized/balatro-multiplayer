@@ -9,16 +9,17 @@
 
 -- Credit to Nyoxide for this custom loader
 local moduleCache = {}
+local relativeModPath = "Mods/Multiplayer/"
 local function customLoader(moduleName)
     local filename = moduleName:gsub("%.", "/") .. ".lua"
     if moduleCache[filename] then
         return moduleCache[filename]
     end
 
-    local filePath = "Mods/Multiplayer/" .. filename
+    local filePath = relativeModPath .. filename
     local fileContent = love.filesystem.read(filePath)
     if fileContent then
-        local moduleFunc = assert(load(fileContent, "@"..filePath))
+        local moduleFunc = assert(load(fileContent, "@" .. filePath))
         moduleCache[filename] = moduleFunc
         return moduleFunc
     end
@@ -32,9 +33,15 @@ function SMODS.INIT.VirtualizedMultiplayer()
     require "Deck"
     require "Main_Menu"
     require "Utils".get_username()
-	require "Networking".authorize()
+    require "Action_Handlers"
     require "Mod_Description".load_description_gui()
     require "Game_UI"
+
+    CONFIG = require "Config"
+    NETWORKING_THREAD = love.thread.newThread(relativeModPath .. "Networking.lua")
+    NETWORKING_THREAD:start(CONFIG.URL, CONFIG.PORT)
+
+    ActionHandlers.connect()
 end
 
 ----------------------------------------------

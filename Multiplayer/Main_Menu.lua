@@ -6,7 +6,7 @@
 
 local Utils = require "Utils"
 local Lobby = require "Lobby"
-local Networking = require "Networking"
+local ActionHandlers = require "Action_Handlers"
 
 MULTIPLAYER_VERSION = "0.1.0-MULTIPLAYER"
 
@@ -296,7 +296,7 @@ function create_UIBox_join_lobby_button()
 								keyboard_offset = 1,
                 minw = 5,
 								callback = function(val)
-									Networking.join_lobby(Lobby.temp_code)
+									ActionHandlers.join_lobby(Lobby.temp_code)
 								end,
 							})
 						}
@@ -370,13 +370,13 @@ end
 
 function G.FUNCS.join_from_clipboard(arg_736_0)
 	Lobby.temp_code = Utils.get_from_clipboard()
-	Networking.join_lobby(Lobby.temp_code)
+	ActionHandlers.join_lobby(Lobby.temp_code)
 end
 
 function G.FUNCS.start_lobby(arg_736_0)
 	G.SETTINGS.paused = false
 
-	Networking.create_lobby()
+	ActionHandlers.create_lobby()
 end
 
 -- Modify play button to take you to mode select first

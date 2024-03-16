@@ -4,7 +4,7 @@
 ----------------------------------------------
 ------------MOD DEBUG-------------------------
 
-local Networking = require "Networking"
+local ActionHandlers = require "Action_Handlers"
 
 Utils = {}
 
@@ -67,7 +67,7 @@ end
 
 local usernameFilePath = "Mods/Multiplayer/Saved/username.txt"
 function Utils.save_username(text)
-	Networking.set_username(text)
+	ActionHandlers.set_username(text)
 	love.filesystem.write(usernameFilePath, text)
 end
 
