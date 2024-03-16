@@ -1,3 +1,9 @@
+--- STEAMODDED HEADER
+--- STEAMODDED SECONDARY FILE
+
+----------------------------------------------
+------------MOD NETWORKING--------------------
+
 -- Code for networking stuff that runs in a separate thread
 
 -- Since threads run on a separate lua environment, we need to require

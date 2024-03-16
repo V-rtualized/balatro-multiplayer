@@ -2,7 +2,7 @@
 --- STEAMODDED SECONDARY FILE
 
 ----------------------------------------------
-------------MOD DEBUG-------------------------
+------------MOD UTILS-------------------------
 
 local ActionHandlers = require "Action_Handlers"
 

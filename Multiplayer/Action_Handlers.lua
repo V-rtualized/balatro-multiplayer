@@ -2,7 +2,7 @@
 --- STEAMODDED SECONDARY FILE
 
 ----------------------------------------------
-------------MOD NETWORKING--------------------
+------------MOD ACTION_HANDLERS--------------------
 local Lobby = require "Lobby"
 
 ActionHandlers = {}
