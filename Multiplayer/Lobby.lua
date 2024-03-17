@@ -18,6 +18,11 @@ G.LOBBY = {
 	is_host = false,
 }
 
+G.MULTIPLAYER_GAME = {
+	ready = false,
+	ready_text = "Ready",
+}
+
 PREV_ACHIEVEMENT_VALUE = true
 function G.MULTIPLAYER.update_connection_status()
 	-- Save the previous value of the achievement flag

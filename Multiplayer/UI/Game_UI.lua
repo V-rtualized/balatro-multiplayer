@@ -522,34 +522,38 @@ function create_UIBox_blind_choice(type, run_info)
 														},
 													},
 												},
-												_reward and {
-													n = G.UIT.R,
-													config = { align = "cm" },
-													nodes = {
-														{
-															n = G.UIT.T,
-															config = {
-																text = localize("ph_blind_reward"),
-																scale = 0.35,
-																colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.WHITE,
-																shadow = not disabled,
+												_reward
+														and {
+															n = G.UIT.R,
+															config = { align = "cm" },
+															nodes = {
+																{
+																	n = G.UIT.T,
+																	config = {
+																		text = localize("ph_blind_reward"),
+																		scale = 0.35,
+																		colour = disabled and G.C.UI.TEXT_INACTIVE
+																			or G.C.WHITE,
+																		shadow = not disabled,
+																	},
+																},
+																{
+																	n = G.UIT.T,
+																	config = {
+																		text = string.rep(
+																			---@diagnostic disable-next-line: param-type-mismatch
+																			localize("$"),
+																			blind_choice.config.dollars
+																		) .. "+",
+																		scale = 0.35,
+																		colour = disabled and G.C.UI.TEXT_INACTIVE
+																			or G.C.MONEY,
+																		shadow = not disabled,
+																	},
+																},
 															},
-														},
-														{
-															n = G.UIT.T,
-															config = {
-																text = string.rep(
-																	---@diagnostic disable-next-line: param-type-mismatch
-																	localize("$"),
-																	blind_choice.config.dollars
-																) .. "+",
-																scale = 0.35,
-																colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.MONEY,
-																shadow = not disabled,
-															},
-														},
-													},
-												} or nil,
+														}
+													or nil,
 											},
 										},
 									},
@@ -610,6 +614,19 @@ local function reset_blind_HUD()
 	end
 end
 
+function G.FUNCS.mp_toggle_ready(e)
+	G.MULTIPLAYER_GAME.ready = not G.MULTIPLAYER_GAME.ready
+	G.MULTIPLAYER_GAME.ready_text = G.MULTIPLAYER_GAME.ready and "Unready" or "Ready"
+end
+
+function G.FUNCS.mp_config_ready_button(e)
+	-- Override next round button
+	e.config.ref_table = G.FUNCS
+	e.config.button = "mp_toggle_ready"
+	e.config.colour = G.MULTIPLAYER_GAME.ready and G.C.GREEN or G.C.RED
+	e.config.one_press = false
+end
+
 local update_draw_to_hand_ref = Game.update_draw_to_hand
 function Game:update_draw_to_hand(dt)
 	if G.LOBBY.code then
@@ -632,8 +649,12 @@ function Game:update_draw_to_hand(dt)
 							delay = 0.45,
 							blockable = false,
 							func = function()
-								G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string =
-									{ { ref_table = G.LOBBY.is_host and G.LOBBY.guest or G.LOBBY.host, ref_value = "username" } }
+								G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {
+									{
+										ref_table = G.LOBBY.is_host and G.LOBBY.guest or G.LOBBY.host,
+										ref_value = "username",
+									},
+								}
 								G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
 								G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:pop_in(0)
 								return true
@@ -652,6 +673,44 @@ local blind_defeat_ref = Blind.defeat
 function Blind:defeat(silent)
 	blind_defeat_ref(self, silent)
 	reset_blind_HUD()
+end
+
+local ui_def_shop_ref = G.UIDEF.shop
+---@diagnostic disable-next-line: duplicate-set-field
+function G.UIDEF.shop()
+	-- Only modify the shop if not in a singleplayer game
+	if not G.LOBBY.connected or not G.LOBBY.code then
+		return ui_def_shop_ref()
+	end
+
+	local t = ui_def_shop_ref()
+
+	local inner_table = t.nodes[1].nodes[1].nodes[1].nodes
+
+	local next_round_button = inner_table[1].nodes[1].nodes[1].nodes[1]
+	next_round_button.config.func = "mp_config_ready_button"
+
+	-- Text inside the button
+	next_round_button.nodes[1].nodes = {
+		{
+			n = G.UIT.R,
+			config = { align = "cm" },
+			nodes = {
+				{
+					n = G.UIT.T,
+					config = {
+						ref_table = G.MULTIPLAYER_GAME,
+						ref_value = "ready_text",
+						scale = 0.65,
+						colour = G.C.WHITE,
+						shadow = true,
+					},
+				},
+			},
+		},
+	}
+
+	return t
 end
 
 ----------------------------------------------
