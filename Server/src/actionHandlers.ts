@@ -8,6 +8,7 @@ import type {
 	ActionUsername,
 } from './actions.js'
 import { serializeAction } from './main.js'
+import { generateSeed } from './utils.js'
 
 const usernameAction = (
 	{ username }: ActionHandlerArgs<ActionUsername>,
@@ -64,7 +65,7 @@ const startGameAction = (client: Client) => {
 	client.lobby.broadcast({
 		action: 'startGame',
 		deck: 'c_multiplayer_1',
-		seed: '7WT7WG5D',
+		seed: generateSeed(),
 	})
 }
 
