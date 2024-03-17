@@ -5,6 +5,7 @@ import type {
 	ActionHandlerArgs,
 	ActionHandlers,
 	ActionJoinLobby,
+	ActionPlayHand,
 	ActionUsername,
 } from './actions.js'
 import { serializeAction } from './main.js'
@@ -86,6 +87,51 @@ const unreadyBlindAction = (client: Client) => {
 	client.isReady = false
 }
 
+const playHandAction = (
+	{ handsLeft, score }: ActionHandlerArgs<ActionPlayHand>,
+	client: Client,
+) => {
+	if (!client.lobby) {
+		return
+	}
+
+	// Should this be additive or just
+	// the latest score?
+	client.score = score
+
+	const lobby = client.lobby
+	// Update the other party about the
+	// enemy's score and hands left
+	// TODO: Refactor for more than two players
+	if (lobby.host?.id === client.id) {
+		lobby.guest?.send(
+			serializeAction({
+				action: 'enemyInfo',
+				handsLeft,
+				score,
+			}),
+		)
+	} else if (lobby.guest?.id === client.id) {
+		lobby.host?.send(
+			serializeAction({
+				action: 'enemyInfo',
+				handsLeft,
+				score,
+			}),
+		)
+	}
+
+	// TODO: This should check if this is the boss blind
+	if (lobby.host?.lives === 0 && lobby.guest?.lives === 0) {
+		const winner =
+			lobby.host.score > lobby.guest.score ? lobby.host : lobby.guest
+		const loser = winner.id === lobby.host.id ? lobby.guest : lobby.host
+
+		winner.send(serializeAction({ action: 'endPvP', lost: false }))
+		loser.send(serializeAction({ action: 'endPvP', lost: true }))
+	}
+}
+
 // Declared partial for now untill all action handlers are defined
 export const actionHandlers = {
 	username: usernameAction,
@@ -97,4 +143,5 @@ export const actionHandlers = {
 	startGame: startGameAction,
 	readyBlind: readyBlindAction,
 	unreadyBlind: unreadyBlindAction,
+	playHand: playHandAction,
 } satisfies Partial<ActionHandlers>

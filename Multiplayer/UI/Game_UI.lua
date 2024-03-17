@@ -619,9 +619,9 @@ function G.FUNCS.mp_toggle_ready(e)
 	G.MULTIPLAYER_GAME.ready_blind_text = G.MULTIPLAYER_GAME.ready_blind and "Unready" or "Ready"
 
 	if G.MULTIPLAYER_GAME.ready_blind then
-		G.MULTIPLAYER.readyBlind()
+		G.MULTIPLAYER.ready_blind()
 	else
-		G.MULTIPLAYER.unreadyBlind()
+		G.MULTIPLAYER.unready_blind()
 	end
 end
 
@@ -717,6 +717,15 @@ function G.UIDEF.shop()
 	}
 
 	return t
+end
+
+local update_hand_played_ref = Game.update_hand_played
+function Game:update_hand_played(dt)
+	if not G.STATE_COMPLETE then
+		G.MULTIPLAYER.play_hand(G.GAME.chips, G.GAME.current_round.hands_left)
+	end
+
+	update_hand_played_ref(self, dt)
 end
 
 ----------------------------------------------

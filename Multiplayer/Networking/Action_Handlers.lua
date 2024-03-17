@@ -66,7 +66,40 @@ local function action_disconnected()
 	G.MULTIPLAYER.update_connection_status()
 end
 
--- Client to Server
+---@param deck string
+---@param seed string
+---@param stake_str string
+local function action_start_game(deck, seed, stake_str)
+	local stake = tonumber(stake_str)
+	G.FUNCS.lobby_start_run(nil, { deck = deck, seed = seed, stake = stake })
+end
+
+local function action_start_blind()
+	G.MULTIPLAYER_GAME.ready_blind = false
+	-- TODO: This should check that player is in a
+	-- multiplayer game
+	G.FUNCS.toggle_shop()
+end
+
+---@param score_str string
+---@param hands_left_str string
+local function action_enemy_info(score_str, hands_left_str)
+	local score = tonumber(score_str)
+	local hands_left = tonumber(hands_left_str)
+
+	if score == nil or hands_left == nil then
+		sendDebugMessage("Invalid score or hands_left")
+		return
+	end
+
+	-- TODO: This is not working right now
+	if G.GAME.blind.boss then
+		-- Set blind chips to enemy score
+		G.GAME.blind.chips = score
+	end
+end
+
+-- #region Client to Server
 function G.MULTIPLAYER.create_lobby()
 	-- TODO: This is hardcoded to attrition for now, must be changed
 	Client.send("action:createLobby,gameMode:attrition")
@@ -88,13 +121,20 @@ function G.MULTIPLAYER.start_game()
 	Client.send("action:startGame")
 end
 
-function G.MULTIPLAYER.readyBlind()
+function G.MULTIPLAYER.ready_blind()
 	Client.send("action:readyBlind")
 end
 
-function G.MULTIPLAYER.unreadyBlind()
+function G.MULTIPLAYER.unready_blind()
 	Client.send("action:unreadyBlind")
 end
+
+---@param score number
+---@param hands_left number
+function G.MULTIPLAYER.play_hand(score, hands_left)
+	Client.send(string.format("action:playHand,score:%d,handsLeft:%d", score, hands_left))
+end
+-- #endregion Client to Server
 
 -- Utils
 function G.MULTIPLAYER.connect()
@@ -130,15 +170,11 @@ function Game:update(dt)
 			elseif parsedAction.action == "lobbyInfo" then
 				action_lobbyInfo(parsedAction.host, parsedAction.guest, parsedAction.isHost)
 			elseif parsedAction.action == "startGame" then
-				G.FUNCS.lobby_start_run(
-					nil,
-					{ deck = parsedAction.deck, seed = parsedAction.seed, stake = parsedAction.stake }
-				)
+				action_start_game(parsedAction.deck, parsedAction.seed, parsedAction.stake)
 			elseif parsedAction.action == "startBlind" then
-				G.MULTIPLAYER_GAME.ready_blind = false
-				-- TODO: This should check that player is in a
-				-- multiplayer game
-				G.FUNCS.toggle_shop()
+				action_start_blind()
+			elseif parsedAction.action == "enemyInfo" then
+				action_enemy_info(parsedAction.score, parsedAction.handsLeft)
 			elseif parsedAction.action == "error" then
 				action_error(parsedAction.message)
 			elseif parsedAction.action == "keepAlive" then

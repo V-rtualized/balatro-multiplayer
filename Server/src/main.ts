@@ -7,6 +7,7 @@ import type {
 	ActionCreateLobby,
 	ActionHandlerArgs,
 	ActionJoinLobby,
+	ActionPlayHand,
 	ActionUsername,
 	ActionUtility,
 } from './actions.js'
@@ -133,6 +134,12 @@ const server = net.createServer((socket) => {
 						break
 					case 'keepAlive':
 						actionHandlers.keepAlive(client)
+						break
+					case 'playHand':
+						actionHandlers.playHand(
+							actionArgs as ActionHandlerArgs<ActionPlayHand>,
+							client,
+						)
 						break
 				}
 			} catch (error) {

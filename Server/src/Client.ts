@@ -9,22 +9,25 @@ type SendFn = (data: string) => void
 type Address = net.AddressInfo | {}
 
 class Client {
+	// Connection info
 	id: string
 	// Could be useful later on to detect reconnects
 	address: Address
-	username: string
-	lobby: Lobby | null
-	/** Whether player is ready for next blind */
-	isReady: boolean
 	send: SendFn
+
+	// Game info
+	username = 'Guest'
+	lobby: Lobby | null = null
+	/** Whether player is ready for next blind */
+	isReady = false
+	// TODO: Set lives based on game mode
+	lives = 4
+	score = 0
 
 	constructor(address: Address, send: SendFn) {
 		this.id = uuidv4()
-		this.lobby = null
-		this.username = 'Guest'
 		this.address = address
 		this.send = send
-		this.isReady = false
 	}
 
 	setUsername = (username: string) => {
