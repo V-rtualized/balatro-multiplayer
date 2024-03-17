@@ -69,6 +69,23 @@ const startGameAction = (client: Client) => {
 	})
 }
 
+const playerReadyAction = (client: Client) => {
+	client.isReady = true
+
+	// TODO: Refactor for more than two players
+	if (client.lobby?.host?.isReady && client.lobby.guest?.isReady) {
+		// Reset ready status for next blind
+		client.lobby.host.isReady = false
+		client.lobby.guest.isReady = false
+
+		client.lobby.broadcast({ action: 'startBlind' })
+	}
+}
+
+const playerUnreadyAction = (client: Client) => {
+	client.isReady = false
+}
+
 // Declared partial for now untill all action handlers are defined
 export const actionHandlers = {
 	username: usernameAction,
@@ -78,4 +95,6 @@ export const actionHandlers = {
 	leaveLobby: leaveLobbyAction,
 	keepAlive: keepAliveAction,
 	startGame: startGameAction,
+	playerReady: playerReadyAction,
+	playerUnready: playerUnreadyAction,
 } satisfies Partial<ActionHandlers>

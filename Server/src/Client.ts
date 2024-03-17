@@ -14,6 +14,8 @@ class Client {
 	address: Address
 	username: string
 	lobby: Lobby | null
+	/** Whether player is ready for next blind */
+	isReady: boolean
 	send: SendFn
 
 	constructor(address: Address, send: SendFn) {
@@ -22,6 +24,7 @@ class Client {
 		this.username = 'Guest'
 		this.address = address
 		this.send = send
+		this.isReady = false
 	}
 
 	setUsername = (username: string) => {

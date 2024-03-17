@@ -88,6 +88,14 @@ function G.MULTIPLAYER.start_game()
 	Client.send("action:startGame")
 end
 
+function G.MULTIPLAYER.playerReady()
+	Client.send("action:playerReady")
+end
+
+function G.MULTIPLAYER.playerUnready()
+	Client.send("action:playerUnready")
+end
+
 -- Utils
 function G.MULTIPLAYER.connect()
 	Client.send("connect")
@@ -126,6 +134,11 @@ function Game:update(dt)
 					nil,
 					{ deck = parsedAction.deck, seed = parsedAction.seed, stake = parsedAction.stake }
 				)
+			elseif parsedAction.action == "startBlind" then
+				G.MULTIPLAYER_GAME.ready = false
+				-- TODO: This should check that player is in a
+				-- multiplayer game
+				G.FUNCS.toggle_shop()
 			elseif parsedAction.action == "error" then
 				action_error(parsedAction.message)
 			elseif parsedAction.action == "keepAlive" then

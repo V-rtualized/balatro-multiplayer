@@ -164,6 +164,16 @@ enemyInfo
 
 ---
 
+playerReady
+- Indicates that player is ready for the next blind.
+
+---
+
+playerUnready
+- Indicates that player is not ready for the next blind.
+
+---
+
 ### Utility
 
 keepAlive

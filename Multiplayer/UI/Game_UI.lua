@@ -617,6 +617,12 @@ end
 function G.FUNCS.mp_toggle_ready(e)
 	G.MULTIPLAYER_GAME.ready = not G.MULTIPLAYER_GAME.ready
 	G.MULTIPLAYER_GAME.ready_text = G.MULTIPLAYER_GAME.ready and "Unready" or "Ready"
+
+	if G.MULTIPLAYER_GAME.ready then
+		G.MULTIPLAYER.playerReady()
+	else
+		G.MULTIPLAYER.playerUnready()
+	end
 end
 
 function G.FUNCS.mp_config_ready_button(e)
