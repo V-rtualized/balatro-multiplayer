@@ -615,21 +615,21 @@ local function reset_blind_HUD()
 end
 
 function G.FUNCS.mp_toggle_ready(e)
-	G.MULTIPLAYER_GAME.ready = not G.MULTIPLAYER_GAME.ready
-	G.MULTIPLAYER_GAME.ready_text = G.MULTIPLAYER_GAME.ready and "Unready" or "Ready"
+	G.MULTIPLAYER_GAME.ready_blind = not G.MULTIPLAYER_GAME.ready_blind
+	G.MULTIPLAYER_GAME.ready_blind_text = G.MULTIPLAYER_GAME.ready_blind and "Unready" or "Ready"
 
-	if G.MULTIPLAYER_GAME.ready then
-		G.MULTIPLAYER.playerReady()
+	if G.MULTIPLAYER_GAME.ready_blind then
+		G.MULTIPLAYER.readyBlind()
 	else
-		G.MULTIPLAYER.playerUnready()
+		G.MULTIPLAYER.unreadyBlind()
 	end
 end
 
-function G.FUNCS.mp_config_ready_button(e)
+function G.FUNCS.mp_cfg_ready_blind_button(e)
 	-- Override next round button
 	e.config.ref_table = G.FUNCS
 	e.config.button = "mp_toggle_ready"
-	e.config.colour = G.MULTIPLAYER_GAME.ready and G.C.GREEN or G.C.RED
+	e.config.colour = G.MULTIPLAYER_GAME.ready_blind and G.C.GREEN or G.C.RED
 	e.config.one_press = false
 end
 
@@ -694,7 +694,7 @@ function G.UIDEF.shop()
 	local inner_table = t.nodes[1].nodes[1].nodes[1].nodes
 
 	local next_round_button = inner_table[1].nodes[1].nodes[1].nodes[1]
-	next_round_button.config.func = "mp_config_ready_button"
+	next_round_button.config.func = "mp_cfg_ready_blind_button"
 
 	-- Text inside the button
 	next_round_button.nodes[1].nodes = {
@@ -706,7 +706,7 @@ function G.UIDEF.shop()
 					n = G.UIT.T,
 					config = {
 						ref_table = G.MULTIPLAYER_GAME,
-						ref_value = "ready_text",
+						ref_value = "ready_blind_text",
 						scale = 0.65,
 						colour = G.C.WHITE,
 						shadow = true,

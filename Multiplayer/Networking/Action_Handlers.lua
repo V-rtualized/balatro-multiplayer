@@ -88,12 +88,12 @@ function G.MULTIPLAYER.start_game()
 	Client.send("action:startGame")
 end
 
-function G.MULTIPLAYER.playerReady()
-	Client.send("action:playerReady")
+function G.MULTIPLAYER.readyBlind()
+	Client.send("action:readyBlind")
 end
 
-function G.MULTIPLAYER.playerUnready()
-	Client.send("action:playerUnready")
+function G.MULTIPLAYER.unreadyBlind()
+	Client.send("action:unreadyBlind")
 end
 
 -- Utils
@@ -135,7 +135,7 @@ function Game:update(dt)
 					{ deck = parsedAction.deck, seed = parsedAction.seed, stake = parsedAction.stake }
 				)
 			elseif parsedAction.action == "startBlind" then
-				G.MULTIPLAYER_GAME.ready = false
+				G.MULTIPLAYER_GAME.ready_blind = false
 				-- TODO: This should check that player is in a
 				-- multiplayer game
 				G.FUNCS.toggle_shop()

@@ -69,7 +69,7 @@ const startGameAction = (client: Client) => {
 	})
 }
 
-const playerReadyAction = (client: Client) => {
+const readyBlindAction = (client: Client) => {
 	client.isReady = true
 
 	// TODO: Refactor for more than two players
@@ -82,7 +82,7 @@ const playerReadyAction = (client: Client) => {
 	}
 }
 
-const playerUnreadyAction = (client: Client) => {
+const unreadyBlindAction = (client: Client) => {
 	client.isReady = false
 }
 
@@ -95,6 +95,6 @@ export const actionHandlers = {
 	leaveLobby: leaveLobbyAction,
 	keepAlive: keepAliveAction,
 	startGame: startGameAction,
-	playerReady: playerReadyAction,
-	playerUnready: playerUnreadyAction,
+	readyBlind: readyBlindAction,
+	unreadyBlind: unreadyBlindAction,
 } satisfies Partial<ActionHandlers>

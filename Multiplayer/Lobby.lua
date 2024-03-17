@@ -19,8 +19,8 @@ G.LOBBY = {
 }
 
 G.MULTIPLAYER_GAME = {
-	ready = false,
-	ready_text = "Ready",
+	ready_blind = false,
+	ready_blind_text = "Ready",
 }
 
 PREV_ACHIEVEMENT_VALUE = true

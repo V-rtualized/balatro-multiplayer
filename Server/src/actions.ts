@@ -56,6 +56,7 @@ export type ActionLobbyInfoRequest = { action: 'lobbyInfo' }
 export type ActionStopGameRequest = { action: 'stopGame' }
 export type ActionStartGameRequest = { action: 'startGame' }
 export type ActionReadyBlind = { action: 'readyBlind' }
+export type ActionPlayerUnready = { action: 'unreadyBlind' }
 export type ActionPlayHand = {
 	action: 'playHand'
 	score: number
@@ -64,8 +65,6 @@ export type ActionPlayHand = {
 export type ActionGameInfoRequest = { action: 'gameInfo' }
 export type ActionPlayerInfoRequest = { action: 'playerInfo' }
 export type ActionEnemyInfoRequest = { action: 'enemyInfo' }
-export type ActionPlayerReady = { action: 'playerReady' }
-export type ActionPlayerUnready = { action: 'playerUnready' }
 
 export type ActionClientToServer =
 	| ActionUsername
@@ -80,7 +79,6 @@ export type ActionClientToServer =
 	| ActionGameInfoRequest
 	| ActionPlayerInfoRequest
 	| ActionEnemyInfoRequest
-	| ActionPlayerReady
 	| ActionPlayerUnready
 
 // Utility actions

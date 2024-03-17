@@ -125,8 +125,11 @@ const server = net.createServer((socket) => {
 					case 'startGame':
 						actionHandlers.startGame(client)
 						break
-					case 'playerReady':
-						actionHandlers.playerReady(client)
+					case 'readyBlind':
+						actionHandlers.readyBlind(client)
+						break
+					case 'unreadyBlind':
+						actionHandlers.unreadyBlind(client)
 						break
 					case 'keepAlive':
 						actionHandlers.keepAlive(client)
