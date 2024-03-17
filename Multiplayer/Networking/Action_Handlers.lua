@@ -41,6 +41,9 @@ local function action_lobbyInfo(host, guest, is_host)
 	else
 		G.LOBBY.guest = {}
 	end
+	-- TODO: This should check for player count instead
+	-- once we enable more than 2 players
+	G.LOBBY.ready_to_start = G.LOBBY.is_host and guest ~= nil
 	G.MULTIPLAYER.update_player_usernames()
 end
 
@@ -81,6 +84,10 @@ function G.MULTIPLAYER.leave_lobby()
 	Client.send("action:leaveLobby")
 end
 
+function G.MULTIPLAYER.start_game()
+	Client.send("action:startGame")
+end
+
 -- Utils
 function G.MULTIPLAYER.connect()
 	Client.send("connect")
@@ -114,6 +121,11 @@ function Game:update(dt)
 				action_joinedLobby(parsedAction.code)
 			elseif parsedAction.action == "lobbyInfo" then
 				action_lobbyInfo(parsedAction.host, parsedAction.guest, parsedAction.isHost)
+			elseif parsedAction.action == "startGame" then
+				G.FUNCS.lobby_start_run(
+					nil,
+					{ deck = parsedAction.deck, seed = parsedAction.seed, stake = parsedAction.stake }
+				)
 			elseif parsedAction.action == "error" then
 				action_error(parsedAction.message)
 			elseif parsedAction.action == "keepAlive" then

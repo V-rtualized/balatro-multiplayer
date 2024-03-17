@@ -26,7 +26,7 @@ class Client {
 
 	setUsername = (username: string) => {
 		this.username = username
-		this.lobby?.broadcast()
+		this.lobby?.broadcastLobbyInfo()
 	}
 
 	setLobby = (lobby: Lobby | null) => {
