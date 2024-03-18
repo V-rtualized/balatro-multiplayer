@@ -1,0 +1,20 @@
+{
+	"name": "balatro-multiplayer-client",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"build": "tstl",
+		"dev": "tstl --watch"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@biomejs/biome": "^1.6.1",
+		"love-typescript-definitions": "^11.4.2",
+		"lua-types": "^2.13.1",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.4.2",
+		"typescript-to-lua": "^1.25.0"
+	}
+}

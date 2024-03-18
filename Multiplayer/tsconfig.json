@@ -1,0 +1,21 @@
+{
+	"$schema": "https://raw.githubusercontent.com/TypeScriptToLua/TypeScriptToLua/master/tsconfig-schema.json",
+	"compilerOptions": {
+		"target": "ESNext",
+		"lib": ["ESNext"],
+		"moduleResolution": "Node",
+		"types": ["lua-types/5.1", "love-typescript-definitions"],
+		"strict": true,
+		"outDir": "dist",
+		"removeComments": false
+	},
+	"exclude": ["transform"],
+	"tstl": {
+		"luaTarget": "universal",
+		"noHeader": true,
+		"noImplicitSelf": true,
+		"noImplicitGlobalVariables": true,
+		"noResolvePaths": [],
+		"luaPlugins": [{ "name": "./transform/steamodded-header-plugin.ts" }]
+	}
+}

@@ -3,4 +3,5 @@ node_modules
 .env
 Config.lua
 Server/dist
+Multiplayer/dist
 .vscode
