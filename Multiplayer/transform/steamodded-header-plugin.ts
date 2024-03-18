@@ -40,7 +40,18 @@ const plugin: tstl.Plugin = {
 					'------------MOD CORE END----------------------',
 				].join('\n')
 			} else {
-				file.code = `-- Comment added by beforeEmit plugin\n${file.code}`
+				const declarationName = fileName?.toUpperCase()
+				file.code = [
+					'--- STEAMODDED HEADER',
+					'--- STEAMODDED SECONDARY FILE',
+					'',
+					'----------------------------------------------',
+					`------------MOD ${declarationName}--------------------------`,
+					'',
+					file.code,
+					'----------------------------------------------',
+					`------------MOD ${declarationName} END----------------------`,
+				].join('\n')
 			}
 		}
 	},

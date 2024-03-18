@@ -15,7 +15,7 @@
 		"noHeader": true,
 		"noImplicitSelf": true,
 		"noImplicitGlobalVariables": true,
-		"noResolvePaths": [],
+		"noResolvePaths": ["Lobby"],
 		"luaPlugins": [{ "name": "./transform/steamodded-header-plugin.ts" }]
 	}
 }
