@@ -101,6 +101,7 @@ end
 
 local function action_stop_game()
 	if G.STAGE ~= G.STAGES.MAIN_MENU then
+		G.FUNCS.go_to_menu()
 		G.MULTIPLAYER.update_connection_status()
 	end
 end
