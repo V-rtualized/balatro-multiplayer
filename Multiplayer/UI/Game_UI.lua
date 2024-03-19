@@ -773,5 +773,15 @@ function Game:update_hand_played(dt)
 	end
 end
 
+local can_play_ref = G.FUNCS.can_play
+G.FUNCS.can_play = function(e)
+	if G.GAME.current_round.hands_left <= 0 then 
+		e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+		e.config.button = nil
+	else
+		can_play_ref(e)
+	end
+end
+
 ----------------------------------------------
 ------------MOD GAME UI END-------------------
