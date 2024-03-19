@@ -681,6 +681,15 @@ function Blind:defeat(silent)
 	reset_blind_HUD()
 end
 
+local update_shop_ref = Game.update_shop
+function Game:update_shop(dt)
+	if not G.STATE_COMPLETE then
+		G.MULTIPLAYER_GAME.ready_blind = false
+		G.MULTIPLAYER_GAME.ready_blind_text = "Ready"
+	end
+	update_shop_ref(self, dt)
+end
+
 local ui_def_shop_ref = G.UIDEF.shop
 ---@diagnostic disable-next-line: duplicate-set-field
 function G.UIDEF.shop()
