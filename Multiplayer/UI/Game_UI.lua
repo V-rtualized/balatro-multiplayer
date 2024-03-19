@@ -679,6 +679,7 @@ local blind_defeat_ref = Blind.defeat
 function Blind:defeat(silent)
 	blind_defeat_ref(self, silent)
 	reset_blind_HUD()
+	G.MULTIPLAYER.play_hand(0, G.GAME.round_resets.hands)
 end
 
 local update_shop_ref = Game.update_shop
@@ -733,7 +734,7 @@ local update_hand_played_ref = Game.update_hand_played
 function Game:update_hand_played(dt)
 	-- Ignore for singleplayer
 	if not G.LOBBY.connected or not G.LOBBY.code then
-		update_hand_played_ref(dt)
+		update_hand_played_ref(self, dt)
 		return
 	end
 
@@ -751,13 +752,21 @@ function Game:update_hand_played(dt)
 		G.E_MANAGER:add_event(Event({
 			trigger = "immediate",
 			func = function()
-				G.MULTIPLAYER.play_hand(G.GAME.chips, G.GAME.current_round.hands_left)
-
 				if G.GAME.blind.boss then
+					G.MULTIPLAYER.play_hand(G.GAME.chips, G.GAME.current_round.hands_left)
 					-- Set blind chips to enemy score
 					G.GAME.blind.chips = G.LOBBY.enemy.score
 					-- For now, never advance to next round
-					G.STATE = G.STATES.DRAW_TO_HAND
+					if G.GAME.current_round.hands_left < 1 then
+						if G.hand.cards[1] then
+							attention_text({
+								scale = 0.8, text = 'Waiting for enemy to finish...', hold = 5, align = 'cm', offset = {x = 0,y = -1.5},major = G.play
+							})
+							G.FUNCS.draw_from_hand_to_discard()
+						end
+					else
+						G.STATE = G.STATES.DRAW_TO_HAND
+					end
 				else
 					if G.GAME.chips - G.GAME.blind.chips >= 0 or G.GAME.current_round.hands_left < 1 then
 						G.STATE = G.STATES.NEW_ROUND
