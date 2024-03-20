@@ -5,3 +5,8 @@ Config.lua
 Server/dist
 .vscode
 RustLib/target
+# We don't want to commit this to the repo
+# although it will not build if lua51.dll is
+# not provided
+# We need to find a better alternative
+RustLib/lua
