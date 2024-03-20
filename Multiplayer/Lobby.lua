@@ -89,5 +89,12 @@ function G.MULTIPLAYER.update_player_usernames()
 	end
 end
 
+function G.STEAM.friends.onGameRichPresenceJoinRequested(data)
+	sendDebugMessage(string.format("Joining lobby %s", data.connect))
+	G.LOBBY.code = data.connect
+	G.MULTIPLAYER.lobby_info()
+	G.MULTIPLAYER.update_connection_status()
+end
+
 ----------------------------------------------
 ------------MOD LOBBY END---------------------
