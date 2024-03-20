@@ -67,6 +67,7 @@ fn start_server(lua: &Lua, _: ()) -> LuaResult<()> {
 #[mlua::lua_module]
 fn balatro_multiplayer_rlib(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
+    exports.set("start_server", lua.create_function(start_server)?)?;
 
     Ok(exports)
 }

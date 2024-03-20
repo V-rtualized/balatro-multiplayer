@@ -41,7 +41,7 @@ function SMODS.INIT.VirtualizedMultiplayer()
 	require("UI.Game_UI")
 
 	CONFIG = require("Config")
-	NETWORKING_THREAD = love.thread.newThread(string.format("%sNetworking/Socket.lua", relativeModPath))
+	NETWORKING_THREAD = love.thread.newThread(string.format("%sNetworking/SocketRust.lua", relativeModPath))
 	NETWORKING_THREAD:start(CONFIG.URL, CONFIG.PORT)
 
 	G.MULTIPLAYER.connect()
