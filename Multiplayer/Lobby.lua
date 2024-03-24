@@ -18,6 +18,7 @@ G.LOBBY = {
 	host = {},
 	guest = {},
 	is_host = false,
+	cached_friends = {}
 }
 
 G.MULTIPLAYER_GAME = {
@@ -30,6 +31,17 @@ local init_mods_ref = initMods
 function initMods()
 	init_mods_ref()
 	START_NO_ACHIEVEMENT_VALUE = G.F_NO_ACHIEVEMENTS
+end
+
+function G.MULTIPLAYER.update_steam_friends()
+	G.LOBBY.cached_friends = {}
+	local flag = 0x04
+	local count = G.STEAM.friends.getFriendCount(flag)
+	for i = 1, count do
+    local id = G.STEAM.friends.getFriendByIndex(i - 1, flag)
+		local name = G.STEAM.friends.getFriendPersonaName(id)
+    table.insert(G.LOBBY.cached_friends, {id=id,name=name})
+	end
 end
 
 function G.MULTIPLAYER.update_connection_status()
@@ -68,6 +80,16 @@ local gameMainMenuRef = Game.main_menu
 function Game:main_menu(change_context)
 	G.MULTIPLAYER.update_connection_status()
 	gameMainMenuRef(self, change_context)
+
+	if not G.STEAM.friends.onGameRichPresenceJoinRequested then
+		G.STEAM.friends.onGameRichPresenceJoinRequested = function (data)
+			G.MULTIPLAYER.join_lobby(data.connect)
+		end
+
+		--G.MULTIPLAYER.update_steam_friends()
+		sendDebugMessage('Friends:')
+		sendDebugMessage(Utils.serialize_table(G.STEAM))
+	end
 end
 
 function G.FUNCS.copy_to_clipboard(e)
@@ -87,10 +109,6 @@ function G.MULTIPLAYER.update_player_usernames()
 
 		G.FUNCS.display_lobby_main_menu_UI()
 	end
-end
-
-function G.STEAM.friends.onGameRichPresenceJoinRequested(data)
-	G.MULTIPLAYER.join_lobby(data.connect)
 end
 
 ----------------------------------------------
