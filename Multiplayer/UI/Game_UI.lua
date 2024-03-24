@@ -1616,5 +1616,14 @@ function G.FUNCS:exit_overlay_menu()
 
 	exit_overlay_menu_ref(self)
 end
+
+local mods_button_ref = G.FUNCS.mods_button
+function G.FUNCS.mods_button(arg_736_0)
+	if G.OVERLAY_MENU and G.OVERLAY_MENU:get_UIE_by_ID("username_input_box") ~= nil then
+		Utils.save_username(G.LOBBY.username)
+	end
+
+	mods_button_ref(arg_736_0)
+end
 ----------------------------------------------
 ------------MOD GAME UI END-------------------
