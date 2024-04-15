@@ -6,6 +6,7 @@ pub mod lua_parser;
 pub mod lua_ser;
 
 use crate::client::Client;
+use crate::lua_parser::action_from_string;
 // use crate::lobby::Lobby;
 use dashmap::DashMap;
 use std::env;
@@ -71,7 +72,15 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
                 }
 
                 let msg = String::from_utf8_lossy(&buf);
-                info!(?client_addr, "Received: {}", msg);
+                let action = action_from_string(&msg);
+                match action {
+                    Ok(action) => {
+                        info!(?action, "Received action");
+                    }
+                    Err(_) => {
+                        error!("Could not parse action");
+                    }
+                }
 
                 br.get_mut().write_all(&buf).await.unwrap();
             }

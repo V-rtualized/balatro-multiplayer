@@ -3,7 +3,7 @@ use regex::Regex;
 use std::collections::HashMap;
 
 pub fn action_from_string(action_string: &str) -> Result<ActionClientToServer, ()> {
-    let re = Regex::new(r"(action:[^,]+)(?:,([^,]+:[^,]+))*\n").unwrap();
+    let re = Regex::new(r"(action:[^,]+)(?:,([^,]+:[^,\r]+))*\r?\n").unwrap();
     let captures = re.captures(action_string).unwrap();
 
     let pairs = captures.iter().skip(1);
