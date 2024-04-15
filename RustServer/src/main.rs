@@ -5,14 +5,15 @@ pub mod lobby;
 pub mod lua_parser;
 pub mod lua_ser;
 
+use crate::actions::ActionClientToServer;
 use crate::client::Client;
+use crate::lobby::{GameMode, Lobby};
 use crate::lua_parser::action_from_string;
-// use crate::lobby::Lobby;
 use dashmap::DashMap;
 use std::env;
 use std::error::Error;
 use std::sync::Arc;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::net::TcpListener;
 use tracing::*;
 use tracing_subscriber;
@@ -35,11 +36,11 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
     info!("Listening on: {}", addr);
 
     let clients: Arc<DashMap<Uuid, Client>> = Arc::new(DashMap::new());
-    // let lobbies: Arc<DashMap<String, Lobby>> = Arc::new(DashMap::new());
+    let lobbies: Arc<DashMap<String, Lobby>> = Arc::new(DashMap::new());
 
     loop {
         let clients_ref = clients.clone();
-        // let lobbies_ref = lobbies.clone();
+        let lobbies_ref = lobbies.clone();
 
         let (socket, client_addr) = listener.accept().await?;
         info!(?client_addr, "Accepted connection");
@@ -73,16 +74,38 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
 
                 let msg = String::from_utf8_lossy(&buf);
                 let action = action_from_string(&msg);
-                match action {
-                    Ok(action) => {
-                        info!(?action, "Received action");
-                    }
-                    Err(_) => {
-                        error!("Could not parse action");
-                    }
+
+                if action.is_err() {
+                    error!("Could not parse action {}", msg);
+                    continue;
                 }
 
-                br.get_mut().write_all(&buf).await.unwrap();
+                use ActionClientToServer::*;
+                match action.unwrap() {
+                    Username { username } => {
+                        let mut client = clients_ref.get_mut(&client_id).unwrap();
+                        client.username = username;
+                    }
+                    CreateLobby { game_mode } => {
+                        let game_mode: GameMode = game_mode.try_into().unwrap_or_default();
+                        let lobby = Lobby::new(Some(client_id)).with_gamemode(game_mode);
+                        lobbies_ref.insert(lobby.code.clone(), lobby);
+                    }
+                    JoinLobby { code } => todo!(),
+                    LeaveLobby => todo!(),
+                    LobbyInfo => todo!(),
+                    StopGame => todo!(),
+                    StartGame => todo!(),
+                    ReadyBlind => todo!(),
+                    UnreadyBlind => todo!(),
+                    PlayHand { score, hands_left } => todo!(),
+                    GameInfo => todo!(),
+                    PlayerInfo => todo!(),
+                    EnemyInfo => todo!(),
+                    FailRound => todo!(),
+                    SetAnte { ante } => todo!(),
+                    Version { version } => todo!(),
+                }
             }
         });
     }

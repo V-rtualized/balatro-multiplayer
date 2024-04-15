@@ -1,6 +1,7 @@
 use rand::Rng;
 use uuid::Uuid;
 
+#[derive(Debug, PartialEq)]
 pub enum GameMode {
     Attrition,
     Draft,
@@ -12,6 +13,32 @@ impl ToString for GameMode {
             GameMode::Attrition => "attrition".to_string(),
             GameMode::Draft => "draft".to_string(),
         }
+    }
+}
+
+impl TryFrom<&str> for GameMode {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "attrition" => Ok(GameMode::Attrition),
+            "draft" => Ok(GameMode::Draft),
+            _ => Err(()),
+        }
+    }
+}
+
+impl TryFrom<String> for GameMode {
+    type Error = ();
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        GameMode::try_from(value.as_str())
+    }
+}
+
+impl Default for GameMode {
+    fn default() -> Self {
+        GameMode::Attrition
     }
 }
 
@@ -44,6 +71,11 @@ impl Lobby {
         lobby.host = host;
 
         lobby
+    }
+
+    pub fn with_gamemode(mut self, game_mode: GameMode) -> Self {
+        self.game_mode = game_mode;
+        self
     }
 }
 
