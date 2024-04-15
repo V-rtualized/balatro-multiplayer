@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "action")]
 #[serde(rename_all = "camelCase")]
 pub enum ActionServerToClient {
@@ -46,7 +46,7 @@ pub enum ActionServerToClient {
     Version,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "action")]
 #[serde(rename_all = "camelCase")]
 pub enum ActionClientToServer {
@@ -83,7 +83,7 @@ pub enum ActionClientToServer {
     },
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "action")]
 #[serde(rename_all = "camelCase")]
 pub enum ActionUtility {
@@ -91,7 +91,7 @@ pub enum ActionUtility {
     KeepAliveAck,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum Action {
     ServerToClient(ActionServerToClient),

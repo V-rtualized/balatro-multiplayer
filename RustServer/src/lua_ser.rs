@@ -379,7 +379,7 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
-mod tests {
+mod test {
     use crate::{
         actions::{Action, ActionClientToServer, ActionServerToClient},
         lobby::GameMode,

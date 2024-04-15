@@ -2,10 +2,11 @@ pub mod actions;
 pub mod client;
 pub mod error;
 pub mod lobby;
+pub mod lua_parser;
 pub mod lua_ser;
 
 use crate::client::Client;
-use crate::lobby::Lobby;
+// use crate::lobby::Lobby;
 use dashmap::DashMap;
 use std::env;
 use std::error::Error;
@@ -33,11 +34,11 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
     info!("Listening on: {}", addr);
 
     let clients: Arc<DashMap<Uuid, Client>> = Arc::new(DashMap::new());
-    let lobbies: Arc<DashMap<String, Lobby>> = Arc::new(DashMap::new());
+    // let lobbies: Arc<DashMap<String, Lobby>> = Arc::new(DashMap::new());
 
     loop {
         let clients_ref = clients.clone();
-        let lobbies_ref = lobbies.clone();
+        // let lobbies_ref = lobbies.clone();
 
         let (socket, client_addr) = listener.accept().await?;
         info!(?client_addr, "Accepted connection");
