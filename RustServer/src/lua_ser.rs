@@ -382,6 +382,7 @@ impl<'a> ser::SerializeStructVariant for &'a mut Serializer {
 mod test {
     use crate::{
         actions::{Action, ActionClientToServer, ActionServerToClient},
+        game_mode::GameInfo,
         lobby::GameMode,
     };
 
@@ -462,12 +463,23 @@ mod test {
 
     #[test]
     fn test_game_info() {
-        let game_info = Action::ServerToClient(ActionServerToClient::GameInfo {
+        let game_info = Action::ServerToClient(ActionServerToClient::GameInfo(GameInfo {
             small: None,
             big: Some("bigBlind".to_string()),
             boss: None,
-        });
+        }));
         let expected = "action:gameInfo,big:bigBlind\n";
         assert_eq!(to_string(&game_info).unwrap(), expected);
+    }
+
+    #[test]
+    fn test_start_game() {
+        let start_game = Action::ServerToClient(ActionServerToClient::StartGame {
+            deck: "deck".to_string(),
+            stake: Some(1),
+            seed: None,
+        });
+        let expected = "action:startGame,deck:deck,stake:1\n";
+        assert_eq!(to_string(&start_game).unwrap(), expected);
     }
 }

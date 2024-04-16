@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::game_mode::GameInfo;
+
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "action")]
 #[serde(rename_all = "camelCase")]
@@ -19,18 +21,16 @@ pub enum ActionServerToClient {
         is_host: bool,
     },
     StopGame,
-    StartGame,
+    StartGame {
+        deck: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        stake: Option<i32>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        seed: Option<String>,
+    },
     StartBlind,
     WinGame,
     LoseGame,
-    GameInfo {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        small: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        big: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        boss: Option<String>,
-    },
     PlayerInfo {
         lives: i32,
     },
@@ -44,6 +44,7 @@ pub enum ActionServerToClient {
     },
     LobbyOptions,
     Version,
+    GameInfo(GameInfo),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]

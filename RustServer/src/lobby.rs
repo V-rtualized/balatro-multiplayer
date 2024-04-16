@@ -1,7 +1,8 @@
+use dashmap::DashMap;
 use rand::Rng;
 use uuid::Uuid;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum GameMode {
     Attrition,
     Draft,
@@ -47,6 +48,7 @@ pub struct Lobby {
     pub host: Option<Uuid>,
     pub guests: Vec<Uuid>,
     pub game_mode: GameMode,
+    pub options: DashMap<String, String>,
 }
 
 pub fn generate_lobby_code() -> String {
@@ -86,6 +88,7 @@ impl Default for Lobby {
             host: None,
             guests: Vec::new(),
             game_mode: GameMode::Attrition,
+            options: DashMap::new(),
         }
     }
 }

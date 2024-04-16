@@ -1,20 +1,28 @@
+pub mod action_handlers;
 pub mod actions;
 pub mod client;
 pub mod error;
+pub mod game_mode;
 pub mod lobby;
 pub mod lua_parser;
 pub mod lua_ser;
 
+use crate::action_handlers::{
+    create_lobby_action, join_lobby_action, leave_lobby_action, lobby_info_action,
+    start_game_action, stop_game_action, username_action,
+};
 use crate::actions::ActionClientToServer;
 use crate::client::Client;
-use crate::lobby::{GameMode, Lobby};
+use crate::lobby::Lobby;
 use crate::lua_parser::action_from_string;
 use dashmap::DashMap;
+use game_mode::{initialize_gamemodes, GAME_MODES};
 use std::env;
 use std::error::Error;
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 use tracing::*;
 use tracing_subscriber;
 use uuid::Uuid;
@@ -39,26 +47,28 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
     let lobbies: Arc<DashMap<String, Lobby>> = Arc::new(DashMap::new());
 
     loop {
-        let clients_ref = clients.clone();
-        let lobbies_ref = lobbies.clone();
-
         let (socket, client_addr) = listener.accept().await?;
+        let buf_reader = Arc::new(Mutex::new(BufReader::new(socket)));
+
+        let clients_ref = Arc::clone(&clients);
+        let lobbies_ref = Arc::clone(&lobbies);
         info!(?client_addr, "Accepted connection");
 
         let client_id = Uuid::new_v4();
-        let client = Client::new(client_id, client_addr);
+        let client = Client::new(client_id, client_addr, Arc::clone(&buf_reader));
         clients_ref.insert(client_id, client);
 
         print_client_ids(&clients_ref);
 
         tokio::spawn(async move {
             let mut buf: Vec<u8> = vec![0; 1024];
-            let mut br = BufReader::new(socket);
 
             loop {
                 buf.clear();
 
-                let result = br
+                let result = buf_reader
+                    .lock()
+                    .await
                     .read_until(b'\n', &mut buf)
                     .await
                     .expect("Could not read from socket");
@@ -75,27 +85,50 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
                 let msg = String::from_utf8_lossy(&buf);
                 let action = action_from_string(&msg);
 
-                if action.is_err() {
-                    error!("Could not parse action {}", msg);
+                if let Err(error) = action {
+                    error!("Could not parse action {}: {}", msg, error);
                     continue;
                 }
 
                 use ActionClientToServer::*;
                 match action.unwrap() {
                     Username { username } => {
-                        let mut client = clients_ref.get_mut(&client_id).unwrap();
-                        client.username = username;
+                        username_action(Arc::clone(&clients_ref), &client_id, username)
                     }
-                    CreateLobby { game_mode } => {
-                        let game_mode: GameMode = game_mode.try_into().unwrap_or_default();
-                        let lobby = Lobby::new(Some(client_id)).with_gamemode(game_mode);
-                        lobbies_ref.insert(lobby.code.clone(), lobby);
+                    CreateLobby { game_mode } => create_lobby_action(
+                        Arc::clone(&clients_ref),
+                        Arc::clone(&lobbies_ref),
+                        &client_id,
+                        game_mode,
+                    ),
+                    JoinLobby { code } => {
+                        join_lobby_action(Arc::clone(&lobbies_ref), &client_id, code.as_str())
                     }
-                    JoinLobby { code } => todo!(),
-                    LeaveLobby => todo!(),
-                    LobbyInfo => todo!(),
-                    StopGame => todo!(),
-                    StartGame => todo!(),
+                    LeaveLobby => leave_lobby_action(Arc::clone(&lobbies_ref), &client_id),
+                    LobbyInfo => {
+                        lobby_info_action(
+                            Arc::clone(&lobbies_ref),
+                            Arc::clone(&clients_ref),
+                            &client_id,
+                        )
+                        .await
+                    }
+                    StopGame => {
+                        stop_game_action(
+                            Arc::clone(&lobbies_ref),
+                            Arc::clone(&clients_ref),
+                            &client_id,
+                        )
+                        .await
+                    }
+                    StartGame => {
+                        start_game_action(
+                            Arc::clone(&lobbies_ref),
+                            Arc::clone(&clients_ref),
+                            &client_id,
+                        )
+                        .await
+                    }
                     ReadyBlind => todo!(),
                     UnreadyBlind => todo!(),
                     PlayHand { score, hands_left } => todo!(),
@@ -115,5 +148,6 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
 async fn main() -> Result<(), Box<dyn Error>> {
     tracing_subscriber::fmt::init();
 
+    GAME_MODES.get_or_init(initialize_gamemodes).await;
     server().await
 }

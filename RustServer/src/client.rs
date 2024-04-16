@@ -1,9 +1,11 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
+use tokio::{io::BufReader, net::TcpStream, sync::Mutex};
 use uuid::Uuid;
 
 pub struct Client {
     pub id: Uuid,
     pub address: SocketAddr,
+    pub socket: Arc<Mutex<BufReader<TcpStream>>>,
     pub username: String,
     pub lobby: Option<String>,
     pub is_ready: bool,
@@ -13,10 +15,11 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(id: Uuid, address: SocketAddr) -> Self {
+    pub fn new(id: Uuid, address: SocketAddr, socket: Arc<Mutex<BufReader<TcpStream>>>) -> Self {
         Self {
             id,
             address,
+            socket,
             username: "Guest".to_string(),
             lobby: None,
             is_ready: false,
