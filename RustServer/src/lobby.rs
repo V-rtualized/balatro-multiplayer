@@ -2,8 +2,9 @@ use dashmap::DashMap;
 use rand::Rng;
 use uuid::Uuid;
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, PartialEq, Eq, Hash)]
 pub enum GameMode {
+    #[default]
     Attrition,
     Draft,
 }
@@ -37,12 +38,6 @@ impl TryFrom<String> for GameMode {
     }
 }
 
-impl Default for GameMode {
-    fn default() -> Self {
-        GameMode::Attrition
-    }
-}
-
 pub struct Lobby {
     pub code: String,
     pub host: Option<Uuid>,
@@ -52,7 +47,7 @@ pub struct Lobby {
 }
 
 pub fn generate_lobby_code() -> String {
-    const CHARSET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const CHARSET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const CODE_LENGTH: usize = 5;
 
     let mut rng = rand::thread_rng();
@@ -69,10 +64,10 @@ pub fn generate_lobby_code() -> String {
 
 impl Lobby {
     pub fn new(host: Option<Uuid>) -> Self {
-        let mut lobby = Self::default();
-        lobby.host = host;
-
-        lobby
+        Lobby {
+            host,
+            ..Self::default()
+        }
     }
 
     pub fn with_gamemode(mut self, game_mode: GameMode) -> Self {

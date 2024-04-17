@@ -40,7 +40,7 @@ pub async fn broadcast_action(
 }
 
 pub fn username_action(clients: Arc<DashMap<Uuid, Client>>, client_id: &Uuid, username: String) {
-    let mut client = clients.get_mut(&client_id).unwrap();
+    let mut client = clients.get_mut(client_id).unwrap();
     client.username = username;
 }
 
@@ -143,7 +143,7 @@ pub async fn stop_game_action(
 }
 
 pub fn generate_seed() -> String {
-    const CHARSET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const CHARSET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     const CODE_LENGTH: usize = 5;
 
     let mut rng = rand::thread_rng();

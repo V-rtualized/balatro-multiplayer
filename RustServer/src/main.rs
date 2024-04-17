@@ -24,16 +24,12 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 use tracing::*;
-use tracing_subscriber;
 use uuid::Uuid;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn print_client_ids(clients: &DashMap<Uuid, Client>) {
-    let client_ids = clients
-        .iter()
-        .map(|pair| pair.key().clone())
-        .collect::<Vec<_>>();
+    let client_ids = clients.iter().map(|pair| *pair.key()).collect::<Vec<_>>();
     info!(?client_ids);
 }
 

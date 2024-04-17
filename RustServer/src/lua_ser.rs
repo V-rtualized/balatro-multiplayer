@@ -344,7 +344,7 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     where
         T: ?Sized + Serialize,
     {
-        if self.output.len() > 0 {
+        if !self.output.is_empty() {
             self.output += ",";
         }
         key.serialize(&mut **self)?;
