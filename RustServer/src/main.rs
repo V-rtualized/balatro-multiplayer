@@ -8,8 +8,8 @@ pub mod lua_parser;
 pub mod lua_ser;
 
 use crate::action_handlers::{
-    create_lobby_action, join_lobby_action, leave_lobby_action, lobby_info_action,
-    start_game_action, stop_game_action, username_action,
+    action_ready_blind, create_lobby_action, join_lobby_action, leave_lobby_action,
+    lobby_info_action, start_game_action, stop_game_action, username_action,
 };
 use crate::actions::ActionClientToServer;
 use crate::client::Client;
@@ -127,7 +127,14 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
                         )
                         .await
                     }
-                    ReadyBlind => todo!(),
+                    ReadyBlind => {
+                        action_ready_blind(
+                            Arc::clone(&lobbies_ref),
+                            Arc::clone(&clients_ref),
+                            &client_id,
+                        )
+                        .await
+                    }
                     UnreadyBlind => todo!(),
                     PlayHand { score, hands_left } => todo!(),
                     GameInfo => todo!(),

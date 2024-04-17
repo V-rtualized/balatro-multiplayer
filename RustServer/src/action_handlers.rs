@@ -240,3 +240,40 @@ pub async fn action_version(
         client.send_action(&action).await;
     }
 }
+
+pub async fn action_ready_blind(
+    lobbies: Arc<DashMap<String, Lobby>>,
+    clients: Arc<DashMap<Uuid, Client>>,
+    client_id: &Uuid,
+) {
+    let mut client = clients.get_mut(client_id).expect("Client does not exist");
+    if client.lobby.is_none() {
+        return;
+    }
+    client.is_ready = true;
+
+    let lobby = lobbies
+        .get(client.lobby.as_ref().unwrap())
+        .expect("Lobby does not exist");
+
+    let players = iter::once(lobby.host.as_ref().unwrap())
+        .chain(lobby.guests.iter())
+        .map(|g| clients.get_mut(g).expect("Client does not exist"))
+        .collect::<Vec<_>>();
+
+    let all_ready = players.iter().all(|c| c.is_ready);
+    if all_ready {
+        let action = ActionServerToClient::StartBlind;
+        broadcast_action(
+            Arc::clone(&clients),
+            Arc::clone(&lobbies),
+            client_id,
+            action,
+        )
+        .await;
+    }
+
+    for mut player in players {
+        player.is_ready = false;
+    }
+}
