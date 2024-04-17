@@ -27,6 +27,8 @@ use tracing::*;
 use tracing_subscriber;
 use uuid::Uuid;
 
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub fn print_client_ids(clients: &DashMap<Uuid, Client>) {
     let client_ids = clients
         .iter()

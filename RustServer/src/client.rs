@@ -1,6 +1,12 @@
 use std::{net::SocketAddr, sync::Arc};
-use tokio::{io::BufReader, net::TcpStream, sync::Mutex};
+use tokio::{
+    io::{AsyncWriteExt, BufReader},
+    net::TcpStream,
+    sync::Mutex,
+};
 use uuid::Uuid;
+
+use crate::{actions::ActionServerToClient, lua_ser};
 
 pub struct Client {
     pub id: Uuid,
@@ -27,5 +33,13 @@ impl Client {
             score: 0,
             hands_left: 4,
         }
+    }
+
+    pub async fn send_action(&self, action: &ActionServerToClient) {
+        let mut socket = self.socket.lock().await;
+        socket
+            .write_all(lua_ser::to_string(action).unwrap().as_bytes())
+            .await
+            .unwrap();
     }
 }

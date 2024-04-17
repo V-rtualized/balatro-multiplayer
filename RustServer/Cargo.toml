@@ -1,6 +1,6 @@
 [package]
 name = "balatro-multiplayer-server"
-version = "0.1.0"
+version = "0.1.2-MULTIPLAYER"
 edition = "2021"
 
 [dependencies]

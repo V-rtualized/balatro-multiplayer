@@ -3,12 +3,11 @@ use crate::{
     client::Client,
     game_mode::GAME_MODES,
     lobby::{GameMode, Lobby},
-    lua_ser,
+    VERSION,
 };
 use dashmap::DashMap;
 use rand::Rng;
 use std::{iter, sync::Arc};
-use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 pub async fn broadcast_action(
@@ -36,11 +35,7 @@ pub async fn broadcast_action(
         .map(|g| clients.get(g).expect("Client does not exist"));
 
     for client in iter::once(host).chain(guests) {
-        let mut socket = client.socket.lock().await;
-        socket
-            .write_all(lua_ser::to_string(&action).unwrap().as_bytes())
-            .await
-            .unwrap();
+        client.send_action(&action).await;
     }
 }
 
@@ -122,12 +117,7 @@ pub async fn lobby_info_action(
         is_host: true,
     };
 
-    host.socket
-        .lock()
-        .await
-        .write_all(lua_ser::to_string(&action).unwrap().as_bytes())
-        .await
-        .unwrap();
+    host.send_action(&action).await;
 
     if let ActionServerToClient::LobbyInfo {
         host: _,
@@ -139,13 +129,7 @@ pub async fn lobby_info_action(
     }
 
     for guest in guests {
-        guest
-            .socket
-            .lock()
-            .await
-            .write_all(lua_ser::to_string(&action).unwrap().as_bytes())
-            .await
-            .unwrap();
+        guest.send_action(&action).await;
     }
 }
 
@@ -239,5 +223,20 @@ pub async fn start_game_action(
     // Set players lives
     for mut player in iter::once(host).chain(guests) {
         player.lives = lives;
+    }
+}
+
+pub async fn action_version(
+    client_version: &str,
+    clients: Arc<DashMap<Uuid, Client>>,
+    client_id: &Uuid,
+) {
+    if client_version != VERSION {
+        let client = clients.get(client_id).expect("Client does not exist");
+        let action = ActionServerToClient::Error {
+            message: format!("WARN: Server expecting version {}", VERSION),
+        };
+
+        client.send_action(&action).await;
     }
 }
