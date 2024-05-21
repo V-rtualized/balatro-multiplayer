@@ -1,0 +1,48 @@
+# workflow name
+name: Generate DLLs
+
+# on events
+on:
+  release:
+    types:
+      - created
+
+# workflow tasks
+jobs:
+  build:
+    name: Build cross-platform DLLs
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: [1.22]
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build DLL
+        run: |
+          mkdir -p dist
+          if [[ $RUNNER_OS == 'Windows' ]]; then
+            go build -o dist/multiplayer.dll -buildmode=c-shared
+          elif [[ $RUNNER_OS == 'macOS' ]]; then
+            go build -o dist/multiplayer.dylib -buildmode=c-shared
+          else
+            go build -o dist/multiplayer.so -buildmode=c-shared
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts
+          path: dist/
