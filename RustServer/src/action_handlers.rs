@@ -277,3 +277,38 @@ pub async fn action_ready_blind(
         player.is_ready = false;
     }
 }
+
+pub fn action_unready_blind(clients: Arc<DashMap<Uuid, Client>>, client_id: &Uuid) {
+    let mut client = clients.get_mut(client_id).expect("Client does not exist");
+    client.is_ready = false;
+}
+
+pub async fn action_play_hand(
+    lobbies: Arc<DashMap<String, Lobby>>,
+    clients: Arc<DashMap<Uuid, Client>>,
+    client_id: &Uuid,
+    score: i32,
+    hands_left: i32,
+) {
+    let mut client = clients.get_mut(client_id).expect("Client does not exist");
+    if client.lobby.is_none() {
+        return;
+    }
+    client.score = score;
+    client.hands_left = hands_left;
+
+    let lobby = lobbies
+        .get(client.lobby.as_ref().unwrap())
+        .expect("Lobby does not exist");
+
+    let players = iter::once(lobby.host.as_ref().unwrap())
+        .chain(lobby.guests.iter())
+        .map(|g| clients.get_mut(g).expect("Client does not exist"))
+        .filter(|p| p.id != *client_id)
+        .collect::<Vec<_>>();
+
+    let action = ActionServerToClient::EnemyInfo { score, hands_left };
+    for player in players {
+        player.send_action(&action).await;
+    }
+}
