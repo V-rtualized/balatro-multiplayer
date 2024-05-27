@@ -70,9 +70,21 @@ function G.MULTIPLAYER.update_connection_status()
 	if G.LOBBY.connected and G.LOBBY.code then
 		-- Disable achievements when connected to server
 		G.F_NO_ACHIEVEMENTS = true
+		local status = string.format("In Lobby: %s", G.LOBBY.code)
+		sendDebugMessage(status)
+		if G.MP_STEAM_Initiated then
+			G.STEAM.friends.setRichPresence("status", status)
+			G.STEAM.friends.setRichPresence("connect", G.LOBBY.code)
+		end
 	else
 		-- Restore them when disconnected
 		G.F_NO_ACHIEVEMENTS = PREV_ACHIEVEMENT_VALUE
+		-- Restore them when disconnected
+		if G.MP_STEAM_Initiated then
+			sendDebugMessage("disabling setRichPresence", "MP_DEBUG")
+			G.STEAM.friends.setRichPresence("status", "")
+			G.STEAM.friends.setRichPresence("connect", "")
+		end
 	end
 
 	-- Game does not have locatization, and therefore does not support steam_display, status, or text right now, but we can hope

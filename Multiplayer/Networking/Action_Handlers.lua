@@ -29,12 +29,6 @@ local function action_joinedLobby(code, type)
 	reset_gamemode_modifiers()
 	G.MULTIPLAYER.lobby_info()
 	G.MULTIPLAYER.update_connection_status()
-	local status = string.format("In Lobby: %s", code)
-	sendDebugMessage(status)
-	if G.MP_STEAM_Initiated then
-		G.STEAM.friends.setRichPresence("status", status)
-		G.STEAM.friends.setRichPresence("connect", "-mp --code")
-	end
 end
 
 local function action_lobbyInfo(host, guest, is_host)
@@ -71,11 +65,6 @@ local function action_disconnected()
 		G.LOBBY.code = nil
 	end
 	G.MULTIPLAYER.update_connection_status()
-
-	if G.MP_STEAM_Initiated then
-		G.STEAM.friends.setRichPresence("status", "")
-		G.STEAM.friends.setRichPresence("connect", "")
-	end
 end
 
 ---@param deck string
