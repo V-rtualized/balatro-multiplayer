@@ -33,6 +33,7 @@ function SMODS.INIT.VirtualizedMultiplayer()
 	require("UI.Main_Menu")
 	require("UI.Mod_Description").load_description_gui()
 	require("UI.Game_UI")
+	require("Misc.disable-restart")
 
 	CONFIG = require("Config")
 	NETWORKING_THREAD = love.thread.newThread(string.format("%sNetworking/Socket.lua", relativeModPath))
