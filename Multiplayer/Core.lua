@@ -3,7 +3,6 @@
 --- MOD_ID: VirtualizedMultiplayer
 --- MOD_AUTHOR: [virtualized, TGMM]
 --- MOD_DESCRIPTION: Allows players to compete with their friends!
-
 ----------------------------------------------
 ------------MOD CORE--------------------------
 

@@ -1,6 +1,3 @@
---- STEAMODDED HEADER
---- STEAMODDED SECONDARY FILE
-
 ----------------------------------------------
 ------------MOD BLIND-------------------------
 
@@ -52,7 +49,9 @@ function set_discover_tallies()
 end
 
 function is_pvp_boss()
-	if not G.GAME or not G.GAME.blind then return false end
+	if not G.GAME or not G.GAME.blind then
+		return false
+	end
 	return G.GAME.blind.name == "Your Nemesis"
 end
 

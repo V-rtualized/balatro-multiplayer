@@ -1,12 +1,9 @@
---- STEAMODDED HEADER
---- STEAMODDED SECONDARY FILE
-
 ----------------------------------------------
 ------------MOD MAIN MENU---------------------
 
 local Utils = require("Utils")
 
-MULTIPLAYER_VERSION = "0.1.2-MULTIPLAYER"
+MULTIPLAYER_VERSION = "0.1.3-MULTIPLAYER"
 
 local game_main_menu_ref = Game.main_menu
 ---@diagnostic disable-next-line: duplicate-set-field

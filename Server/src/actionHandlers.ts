@@ -94,6 +94,8 @@ const readyBlindAction = (client: Client) => {
 		client.lobby.guest.handsLeft = 4;
 
 		client.lobby.broadcastAction({ action: "startBlind" });
+		client.lobby.host.resetBlocker()
+		client.lobby.guest.resetBlocker()
 	}
 };
 
@@ -152,10 +154,7 @@ const playHandAction = (
 			roundWinner.id === lobby.host.id ? lobby.guest : lobby.host;
 
 		if (lobby.host.score !== lobby.guest.score) {
-			if (!lobby.options.death_on_round_loss) {
-				roundLoser.lives -= 1;
-			}
-			roundLoser.sendAction({ action: "playerInfo", lives: roundLoser.lives });
+			roundLoser.loseLife();
 
 			// If no lives are left, we end the game
 			if (lobby.host.lives === 0 || lobby.guest.lives === 0) {
@@ -196,8 +195,7 @@ const failRoundAction = (client: Client) => {
 	if (!lobby) return;
 
 	if (lobby.options.death_on_round_loss) {
-		client.lives -= 1;
-		client.sendAction({ action: "playerInfo", lives: client.lives });
+		client.loseLife()
 	}
 
 	if (client.lives === 0) {
@@ -224,14 +222,14 @@ const setAnteAction = (
 };
 
 // TODO: Fix this
-const serverVersion = "0.1.2-MULTIPLAYER";
+const serverVersion = "0.1.3-MULTIPLAYER";
 /** Verifies the client version and allows connection if it matches the server's */
 const versionAction = (
 	{ version }: ActionHandlerArgs<ActionVersion>,
 	client: Client,
 ) => {
 	if (version !== serverVersion) {
-		client.sendAction({ action: "error", message: `WARN: Server expecting version ${serverVersion}` });
+		client.sendAction({ action: "error", message: `[WARN] Server expecting version ${serverVersion}` });
 	}
 };
 
