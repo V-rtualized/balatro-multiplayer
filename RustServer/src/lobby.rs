@@ -74,6 +74,10 @@ impl Lobby {
         self.game_mode = game_mode;
         self
     }
+
+    pub fn get_option(&self, key: &str) -> Option<String> {
+        self.options.get(key).map(|v| (*v).clone())
+    }
 }
 
 impl Default for Lobby {

@@ -309,14 +309,15 @@ pub async fn action_play_hand(
     let players = iter::once(lobby.host.as_ref().unwrap())
         .chain(lobby.guests.iter())
         .map(|g| clients.get_mut(g).expect("Client does not exist"))
-        // except the current player
-        .filter(|p| p.id != *client_id)
         .collect::<Vec<_>>();
 
     // Update the other players about the enemy's score and hands left
     // TODO: Change action for more than 2 players
     let action = ActionServerToClient::EnemyInfo { score, hands_left };
-    for player in players.iter() {
+    for player in players
+        .iter() // All except the current player
+        .filter(|p| p.id != *client_id)
+    {
         player.send_action(&action).await;
     }
 
@@ -388,5 +389,72 @@ pub async fn action_game_info(
 
     client
         .send_action(&ActionServerToClient::GameInfo(game_info))
+        .await;
+}
+
+pub async fn action_fail_round(
+    lobbies: Arc<DashMap<String, Lobby>>,
+    clients: Arc<DashMap<Uuid, Client>>,
+    client_id: &Uuid,
+) {
+    let mut client = clients.get_mut(client_id).expect("Client does not exist");
+    let lobby = lobbies
+        .get(client.lobby.as_ref().unwrap())
+        .expect("Lobby does not exist");
+
+    let death_on_round_loss = lobby.get_option("death_on_round_loss");
+    if death_on_round_loss.is_none() {
+        return;
+    }
+
+    let death_on_round_loss = death_on_round_loss.unwrap() == "true";
+    if death_on_round_loss {
+        client.lives -= 1;
+    }
+
+    // Get all players in the lobby
+    let players = iter::once(lobby.host.as_ref().unwrap())
+        .chain(lobby.guests.iter())
+        .map(|g| clients.get_mut(g).expect("Client does not exist"))
+        .collect::<Vec<_>>();
+
+    // TODO: Change logic for more than 2 players
+    // If any player has no lives left, we end the game
+    if players.iter().any(|p| p.lives == 0) {
+        let win_action = ActionServerToClient::WinGame;
+        let lost_action = ActionServerToClient::LoseGame;
+
+        let winner = players
+            .iter()
+            .max_by(|p1, p2| p1.score.cmp(&p2.score))
+            .map(|p| p.id)
+            .unwrap();
+
+        let losers = players
+            .iter()
+            .filter(|p| p.id != winner)
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+
+        clients
+            .get_mut(&winner)
+            .unwrap()
+            .send_action(&win_action)
+            .await;
+
+        for loser in losers.iter() {
+            clients
+                .get_mut(loser)
+                .unwrap()
+                .send_action(&lost_action)
+                .await;
+        }
+    }
+}
+
+pub async fn action_lobby_options(clients: Arc<DashMap<Uuid, Client>>, client_id: &Uuid) {
+    let client = clients.get_mut(client_id).expect("Client does not exist");
+    client
+        .send_action(&ActionServerToClient::LobbyOptions)
         .await;
 }

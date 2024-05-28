@@ -155,8 +155,8 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
                         )
                         .await
                     }
-                    PlayerInfo => todo!(),
-                    EnemyInfo => todo!(),
+                    PlayerInfo => {}
+                    EnemyInfo => {}
                     FailRound => todo!(),
                     SetAnte { ante } => todo!(),
                     Version { version } => todo!(),
