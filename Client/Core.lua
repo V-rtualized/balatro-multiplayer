@@ -7,39 +7,55 @@
 ----------------------------------------------
 ------------MOD CORE--------------------------
 
--- Credit to Nyoxide for this custom loader
-local moduleCache = {}
-local relativeModPath = "Mods/Multiplayer/"
-local function customLoader(moduleName)
-	local filename = moduleName:gsub("%.", "/") .. ".lua"
-	if moduleCache[filename] then
-		return moduleCache[filename]
-	end
+local modPath = ""
+local baseDirectory = love.filesystem.getSourceBaseDirectory() .. "\\"
 
-	local filePath = relativeModPath .. filename
-	local fileContent = love.filesystem.read(filePath)
-	if fileContent then
-		local moduleFunc = assert(load(fileContent, "@" .. filePath))
-		moduleCache[filename] = moduleFunc
-		return moduleFunc
+local function loadModule(path)
+	sendDebugMessage(path)
+	if path:sub(-1) == "/" then
+		files = NFS.getDirectoryItemsInfo(path)
+		for fileName = 1, #files do
+			loadModule(path .. files[fileName].name)
+		end
+	else
+		local module = assert(load(NFS.read(path), "@" .. path))
+		module()
 	end
-
-	return "\nNo module found: " .. moduleName
 end
 
 function SMODS.INIT.VirtualizedMultiplayer()
-	---@diagnostic disable-next-line: deprecated
-	table.insert(package.loaders, 1, customLoader)
-	
-	G.MP = require("multipalyer-windows")
-	G.MP.Init(relativeModPath)
-end
+	for modsIndex = 1, #SMODS.MODS do
+		if SMODS.MODS[modsIndex].id == "VirtualizedMultiplayer" then
+			modPath = SMODS.MODS[modsIndex].path
+		end
+	end
 
-function luaFunction()
-  sendDebugMessage("Lua function called from Go")
-	G.MP.setState("Lua has changed the state")
-  local currentState = G.MP.getState()
-  sendDebugMessage("Current state in Go is: " .. currentState)
+	loadModule(string.format("%sUI/", modPath))
+
+	local osString = love.system.getOS()
+	local extern = "multiplayer-windows.dll"
+	if osString == "OS X" then
+		extern = "multiplayer-darwin.dylib"
+	elseif osString == "Linux" then
+		extern = "multiplayer-linux.so"
+	end
+
+	local ffi = require("ffi")
+	local goLib = ffi.load(baseDirectory .. extern)
+	ffi.cdef([[
+	int luaEntryPoint();
+	const char* getLobbyCode();
+	const char* getUsername();
+	]])
+
+	local response = goLib.luaEntryPoint()
+	sendDebugMessage("luaEntryPoint() returned: " .. tostring(response))
+
+	local lobbyCode = ffi.string(goLib.getLobbyCode())
+	sendDebugMessage("getLobbyCode() returned: " .. lobbyCode)
+
+	local username = ffi.string(goLib.getUsername())
+	sendDebugMessage("getUsername() returned: " .. username)
 end
 
 ----------------------------------------------
