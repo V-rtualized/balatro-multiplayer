@@ -32,16 +32,8 @@ function SMODS.INIT.VirtualizedMultiplayer()
 
 	loadModule(string.format("%sUI/", modPath))
 
-	local osString = love.system.getOS()
-	local extern = "multiplayer-windows.dll"
-	if osString == "OS X" then
-		extern = "multiplayer-darwin.dylib"
-	elseif osString == "Linux" then
-		extern = "multiplayer-linux.so"
-	end
-
 	local ffi = require("ffi")
-	local goLib = ffi.load(baseDirectory .. extern)
+	local goLib = ffi.load(baseDirectory .. "multiplayer", true)
 	ffi.cdef([[
 	int luaEntryPoint();
 	const char* getLobbyCode();
