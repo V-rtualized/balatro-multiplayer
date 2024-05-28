@@ -10,7 +10,7 @@ use rand::Rng;
 use std::{iter, sync::Arc};
 use uuid::Uuid;
 
-pub async fn broadcast_action(
+pub async fn broadcast_action_to_lobby(
     clients: Arc<DashMap<Uuid, Client>>,
     lobbies: Arc<DashMap<String, Lobby>>,
     client_id: &Uuid,
@@ -139,7 +139,7 @@ pub async fn stop_game_action(
     client_id: &Uuid,
 ) {
     let action = ActionServerToClient::StopGame;
-    broadcast_action(clients, lobbies, client_id, action).await;
+    broadcast_action_to_lobby(clients, lobbies, client_id, action).await;
 }
 
 pub fn generate_seed() -> String {
@@ -203,7 +203,7 @@ pub async fn start_game_action(
             Some(generate_seed().to_string())
         },
     };
-    broadcast_action(
+    broadcast_action_to_lobby(
         Arc::clone(&clients),
         Arc::clone(&lobbies),
         client_id,
@@ -264,7 +264,7 @@ pub async fn action_ready_blind(
     let all_ready = players.iter().all(|c| c.is_ready);
     if all_ready {
         let action = ActionServerToClient::StartBlind;
-        broadcast_action(
+        broadcast_action_to_lobby(
             Arc::clone(&clients),
             Arc::clone(&lobbies),
             client_id,
@@ -301,14 +301,64 @@ pub async fn action_play_hand(
         .get(client.lobby.as_ref().unwrap())
         .expect("Lobby does not exist");
 
+    if lobby.host.is_none() || lobby.guests.is_empty() {
+        return;
+    }
+
+    // Get all players in the lobby
     let players = iter::once(lobby.host.as_ref().unwrap())
         .chain(lobby.guests.iter())
         .map(|g| clients.get_mut(g).expect("Client does not exist"))
+        // except the current player
         .filter(|p| p.id != *client_id)
         .collect::<Vec<_>>();
 
+    // Update the other players about the enemy's score and hands left
+    // TODO: Change action for more than 2 players
     let action = ActionServerToClient::EnemyInfo { score, hands_left };
-    for player in players {
+    for player in players.iter() {
         player.send_action(&action).await;
+    }
+
+    // If all players have no hands left, the winner is the one with the highest score
+    // If all but one player has no hands left, and their score is higher than the other player's score, they win
+    let all_hands_empty = players.iter().all(|p| p.hands_left == 0);
+    if all_hands_empty {
+        // TODO: Fix edge case where someone ties
+        let winner = players
+            .iter()
+            .max_by(|p1, p2| p1.score.cmp(&p2.score))
+            .map(|p| p.id)
+            .unwrap();
+
+        let losers = players
+            .iter()
+            .filter(|p| p.id != winner)
+            .map(|p| p.id)
+            .collect::<Vec<_>>();
+
+        let mut win_action = ActionServerToClient::EndPvP { lost: false };
+        let mut lost_action = ActionServerToClient::EndPvP { lost: true };
+
+        // TODO: Change logic for more than 2 players
+        // If any player has no lives left, we end the game
+        if players.iter().any(|p| p.lives == 0) {
+            win_action = ActionServerToClient::WinGame;
+            lost_action = ActionServerToClient::LoseGame;
+        }
+
+        clients
+            .get_mut(&winner)
+            .unwrap()
+            .send_action(&win_action)
+            .await;
+
+        for loser in losers.iter() {
+            clients
+                .get_mut(loser)
+                .unwrap()
+                .send_action(&lost_action)
+                .await;
+        }
     }
 }
