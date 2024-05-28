@@ -362,3 +362,31 @@ pub async fn action_play_hand(
         }
     }
 }
+
+pub async fn action_game_info(
+    lobbies: Arc<DashMap<String, Lobby>>,
+    clients: Arc<DashMap<Uuid, Client>>,
+    client_id: &Uuid,
+) {
+    let client = clients.get_mut(client_id).expect("Client does not exist");
+    if client.lobby.is_none() {
+        client
+            .send_action(&ActionServerToClient::Error {
+                message: "Client not in lobby".to_string(),
+            })
+            .await;
+
+        return;
+    }
+
+    let lobby = lobbies
+        .get(client.lobby.as_ref().unwrap())
+        .expect("Lobby does not exist");
+
+    let game_mode = GAME_MODES.get().unwrap().get(&lobby.game_mode).unwrap();
+    let game_info = (game_mode.get_blind_from_ante)(0, lobby.options.clone());
+
+    client
+        .send_action(&ActionServerToClient::GameInfo(game_info))
+        .await;
+}
