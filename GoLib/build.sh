@@ -1,2 +1,1 @@
 env CGO_ENABLED=1 go build -buildmode=c-shared -o ./bin/multiplayer.so main.go
-env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc go build -buildmode=c-shared -o ./bin/multiplayer.dll main.go
