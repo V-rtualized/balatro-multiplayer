@@ -13,8 +13,8 @@ function st.init()
 			sendInfoMessage(msg, "MP_STEAM")
 			G.MULTIPLAYER.join_lobby(G.LOBBY.temp_code)
 		end
+		G.MP_STEAM_Initiated = true
 	end
-	G.MP_STEAM_Initiated = true
 end
 
 local game_update_ref = Game.update
