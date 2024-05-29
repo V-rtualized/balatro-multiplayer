@@ -1,22 +1,38 @@
-# workflow name
 name: Generate DLLs
 
-# on events
 on:
   release:
     types:
       - created
+  workflow_dispatch:
+    inputs:
+      goVersion:
+        description: 'Go version'
+        required: true
+        default: '1.22'
+      buildType:
+        description: 'Build type (macOS, Windows, or both)'
+        required: true
+        default: 'both'
 
-# workflow tasks
 jobs:
   build:
     name: Build cross-platform DLLs
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        go-version: [1.22]
+        os: [macos-latest, windows-latest]
+        buildType: [macOS, Windows, both]
+        include:
+          - os: macos-latest
+            buildType: 'macOS'
+          - os: windows-latest
+            buildType: 'Windows'
+          - os: macos-latest
+            buildType: 'both'
+          - os: windows-latest
+            buildType: 'both'
 
     steps:
       - name: Checkout the repository
@@ -25,24 +41,30 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ github.event.inputs.goVersion }}
 
       - name: Install dependencies
         run: go mod tidy
 
-      - name: Build DLL
+      - name: Build DLL for macOS
+        if: matrix.os == 'macos-latest' && (matrix.buildType == 'macOS' || matrix.buildType == 'both')
         run: |
           mkdir -p dist
-          if [[ $RUNNER_OS == 'Windows' ]]; then
-            go build -o dist/multiplayer.dll -buildmode=c-shared
-          elif [[ $RUNNER_OS == 'macOS' ]]; then
-            go build -o dist/multiplayer.dylib -buildmode=c-shared
-          else
-            go build -o dist/multiplayer.so -buildmode=c-shared
-          fi
+          go build -o dist/multiplayer.dylib -buildmode=c-shared
+
+      - name: Setup MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Run build script for Windows
+        if: matrix.os == 'windows-latest' && (matrix.buildType == 'Windows' || matrix.buildType == 'both')
+        shell: pwsh
+        run: ./GoLib/build.ps1
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build-artifacts
-          path: dist/
+          path: ./GoLib/bin/

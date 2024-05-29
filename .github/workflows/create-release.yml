@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "*.*.*" # Matches tags like 1.0.0, 2.3.4, etc.
+  workflow_dispatch:
 
 jobs:
   release:
@@ -18,6 +19,18 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo "::set-output name=version::$VERSION"
+
+      - name: Download macOS build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifacts-macos-latest
+          path: ./release/Multiplayer/macos
+
+      - name: Download Windows build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifacts-windows-latest
+          path: ./release/Multiplayer/windows
 
       - name: Prepare release assets
         env:
@@ -62,7 +75,27 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload release asset
+      - name: Upload macOS DLL
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/Multiplayer/macos/multiplayer.dylib
+          asset_name: multiplayer-macos-${{ steps.extract_version.outputs.version }}.dylib
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows DLL
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/Multiplayer/windows/multiplayer.dll
+          asset_name: multiplayer-windows-${{ steps.extract_version.outputs.version }}.dll
+          asset_content_type: application/octet-stream
+
+      - name: Upload beta zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
