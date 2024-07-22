@@ -49,6 +49,7 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
         let (socket, client_addr) = listener.accept().await?;
         let buf_reader = Arc::new(Mutex::new(BufReader::new(socket)));
 
+        // Every time someone connects, add one to the reference count for the clients and lobbies
         let clients_ref = Arc::clone(&clients);
         let lobbies_ref = Arc::clone(&lobbies);
         info!(?client_addr, "Accepted connection");
@@ -89,58 +90,41 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
                     continue;
                 }
 
+                let lobbies_action_ref = Arc::clone(&lobbies_ref);
+                let clients_action_ref = Arc::clone(&clients_ref);
+
                 use ActionClientToServer::*;
                 match action.unwrap() {
                     Username { username } => {
                         username_action(Arc::clone(&clients_ref), &client_id, username)
                     }
                     CreateLobby { game_mode } => create_lobby_action(
-                        Arc::clone(&clients_ref),
-                        Arc::clone(&lobbies_ref),
+                        clients_action_ref,
+                        lobbies_action_ref,
                         &client_id,
                         game_mode,
                     ),
                     JoinLobby { code } => {
-                        join_lobby_action(Arc::clone(&lobbies_ref), &client_id, code.as_str())
+                        join_lobby_action(lobbies_action_ref, &client_id, code.as_str())
                     }
-                    LeaveLobby => leave_lobby_action(Arc::clone(&lobbies_ref), &client_id),
+                    LeaveLobby => leave_lobby_action(lobbies_action_ref, &client_id),
                     LobbyInfo => {
-                        lobby_info_action(
-                            Arc::clone(&lobbies_ref),
-                            Arc::clone(&clients_ref),
-                            &client_id,
-                        )
-                        .await
+                        lobby_info_action(lobbies_action_ref, clients_action_ref, &client_id).await
                     }
                     StopGame => {
-                        stop_game_action(
-                            Arc::clone(&lobbies_ref),
-                            Arc::clone(&clients_ref),
-                            &client_id,
-                        )
-                        .await
+                        stop_game_action(lobbies_action_ref, clients_action_ref, &client_id).await
                     }
                     StartGame => {
-                        start_game_action(
-                            Arc::clone(&lobbies_ref),
-                            Arc::clone(&clients_ref),
-                            &client_id,
-                        )
-                        .await
+                        start_game_action(lobbies_action_ref, clients_action_ref, &client_id).await
                     }
                     ReadyBlind => {
-                        action_ready_blind(
-                            Arc::clone(&lobbies_ref),
-                            Arc::clone(&clients_ref),
-                            &client_id,
-                        )
-                        .await
+                        action_ready_blind(lobbies_action_ref, clients_action_ref, &client_id).await
                     }
-                    UnreadyBlind => action_unready_blind(Arc::clone(&clients_ref), &client_id),
+                    UnreadyBlind => action_unready_blind(clients_action_ref, &client_id),
                     PlayHand { score, hands_left } => {
                         action_play_hand(
-                            Arc::clone(&lobbies_ref),
-                            Arc::clone(&clients_ref),
+                            lobbies_action_ref,
+                            clients_action_ref,
                             &client_id,
                             score,
                             hands_left,
@@ -148,12 +132,7 @@ pub async fn server() -> Result<(), Box<dyn Error>> {
                         .await
                     }
                     GameInfo => {
-                        action_game_info(
-                            Arc::clone(&lobbies_ref),
-                            Arc::clone(&clients_ref),
-                            &client_id,
-                        )
-                        .await
+                        action_game_info(lobbies_action_ref, clients_action_ref, &client_id).await
                     }
                     PlayerInfo => {}
                     EnemyInfo => {}

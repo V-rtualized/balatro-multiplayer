@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.82"
-dashmap = "5.5.3"
+dashmap = "6.0.1"
 rand = "0.8.5"
 regex = "1.10.4"
 serde = { version = "1.0.197", features = ["derive"] }
