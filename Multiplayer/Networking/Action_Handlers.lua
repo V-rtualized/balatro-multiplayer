@@ -43,7 +43,7 @@ local function action_lobbyInfo(host, hostHash, guest, guestHash, is_host)
 	end
 	-- TODO: This should check for player count instead
 	-- once we enable more than 2 players
-	G.LOBBY.ready_to_start = G.LOBBY.is_host and guest ~= nil
+	G.LOBBY.ready_to_start = false
 
 	if G.STAGE == G.STAGES.MAIN_MENU then
 		G.MULTIPLAYER.update_player_usernames()

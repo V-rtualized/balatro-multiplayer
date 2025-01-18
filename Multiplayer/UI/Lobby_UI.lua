@@ -157,10 +157,7 @@ function G.UIDEF.create_UIBox_lobby_menu()
 								minw = 3.65,
 								minh = 1.55,
 								label = { G.localization.misc.dictionary["start"] or "START" },
-								disabled_text = G.LOBBY.is_host and {
-									G.localization.misc.dictionary["wait_for"] or "WAITING FOR",
-									G.localization.misc.dictionary["players"] or "PLAYERS",
-								} or {
+								disabled_text = {
 									G.localization.misc.dictionary["wait_for"] or "WAITING FOR",
 									G.localization.misc.dictionary["host_start"] or "HOST TO START",
 								},
