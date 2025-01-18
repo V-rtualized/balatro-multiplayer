@@ -27,7 +27,7 @@ const createLobbyAction = (
 	client: Client,
 ) => {
 	/** Also sets the client lobby to this newly created one */
-	new Lobby(client, gameMode);
+	//new Lobby(client, gameMode);
 };
 
 const joinLobbyAction = (
@@ -166,7 +166,7 @@ const playHandAction = (
 		}
 
 		roundWinner.sendAction({ action: "endPvP", lost: false });
-		roundLoser.sendAction({ action: "endPvP", lost: true });
+		roundLoser.sendAction({ action: "endPvP", lost: lobby.host.score !== lobby.guest.score? true : false });
 	}
 };
 

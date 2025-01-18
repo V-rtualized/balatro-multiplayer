@@ -16,6 +16,8 @@ import type {
 	ActionUtility,
 	ActionVersion,
 } from './actions.js'
+import { startGame, addLives, getLobbyInfo } from './Lobby.js'
+import readline from 'node:readline'
 
 const PORT = 8789
 
@@ -82,9 +84,9 @@ const sendActionToSocket =
 		const { action: actionName, ...actionArgs } = action
 
 		if (actionName !== 'keepAlive' && actionName !== 'keepAliveAck') {
-			console.log(
-				`${new Date().toISOString()}: Sent action ${actionName} to client: ${JSON.stringify(actionArgs)}`,
-			)
+			//console.log(
+			//	`${new Date().toISOString()}: Sent action ${actionName} to client: ${JSON.stringify(actionArgs)}`,
+			//)
 		}
 
 		socket.write(`${data}\n`)
@@ -141,11 +143,11 @@ const server = createServer((socket) => {
 				const { action, ...actionArgs } = message
 				
 				if (action !== 'keepAlive' && action !== 'keepAliveAck') {
-					console.log(
-						`${new Date().toISOString()}: Received action ${action} from ${client.id}: ${JSON.stringify(
-						actionArgs,
-					)}`,
-					)
+					//console.log(
+					//	`${new Date().toISOString()}: Received action ${action} from ${client.id}: ${JSON.stringify(
+					//	actionArgs,
+					//)}`,
+					//)
 				}
 
 				switch (action) {
@@ -264,6 +266,70 @@ const server = createServer((socket) => {
 	)
 })
 
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: 'server> '
+});
+
+const handleCommand = (line: string) => {
+  const [command, ...args] = line.trim().split(' ');
+  
+  switch (command) {
+    case 'startgame':
+      if (args.length < 1) {
+        console.log('Usage: startgame <seed> <lobbyCode>');
+        break;
+      }
+      const [seed, lobbyCode_startgame] = args;
+      startGame(seed, lobbyCode_startgame);
+      console.log(`Started game with seed ${seed} in lobby ${lobbyCode_startgame}`);
+      break;
+      
+    case 'addlives':
+      if (args.length < 3) {
+        console.log('Usage: addlives <lobbyCode> <host(true/false)> <lives>');
+        break;
+      }
+      const [targetLobby, hostStr, livesStr] = args;
+      const host = hostStr.toLowerCase() === 'true';
+      const lives = parseInt(livesStr, 10);
+      
+      if (isNaN(lives)) {
+        console.log('Lives must be a number');
+        break;
+      }
+      
+      addLives(targetLobby, host, lives);
+      console.log(`Added ${lives} lives to ${host ? 'host' : 'players'} in lobby ${targetLobby}`);
+      break;
+
+		case 'getlobbyinfo':
+			if (args.length < 1) {
+				console.log('Usage: getlobbyinfo <lobbyCode>');
+				break;
+			}
+
+			const [lobbyCode_getlobbyinfo] = args;
+			getLobbyInfo(lobbyCode_getlobbyinfo);
+			break
+      
+    case 'exit':
+      console.log('Shutting down server...');
+      process.exit(0);
+      break;
+  }
+  
+  rl.prompt();
+};
+
+rl.on('line', handleCommand);
+rl.on('close', () => {
+  console.log('Server console terminated');
+  process.exit(0);
+});
+
 server.listen(PORT, '0.0.0.0', () => {
 	console.log(`Server listening on port ${PORT}`)
+	rl.prompt()
 })

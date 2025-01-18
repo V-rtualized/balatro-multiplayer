@@ -26,23 +26,21 @@ class Lobby {
 	options: { [key: string]: any };
 
 	// Attrition is the default game mode
-	constructor(host: Client, gameMode: GameMode = "attrition") {
-		do {
-			this.code = generateUniqueLobbyCode();
-		} while (Lobbies.get(this.code));
+	constructor(gameMode: GameMode = "attrition", code: string) {
+		this.code = code;
 		Lobbies.set(this.code, this);
 
-		this.host = host;
+		this.host = null;
 		this.guest = null;
 		this.gameMode = gameMode;
 		this.options = {};
 
-		host.setLobby(this);
-		host.sendAction({
-			action: "joinedLobby",
-			code: this.code,
-			type: this.gameMode,
-		});
+		//host.setLobby(this);
+		//host.sendAction({
+		//	action: "joinedLobby",
+		//	code: this.code,
+		//	type: this.gameMode,
+		//});
 	}
 
 	static get = (code: string) => {
@@ -58,15 +56,9 @@ class Lobby {
 		}
 
 		client.setLobby(null);
-		if (this.host === null) {
-			Lobbies.delete(this.code);
-		} else {
-			// TODO: Refactor for more than 2 players
-			// Stop game if someone leaves
-			this.broadcastAction({ action: "stopGame" });
-			this.resetPlayers();
-			this.broadcastLobbyInfo();
-		}
+		this.broadcastAction({ action: "stopGame" });
+		this.resetPlayers();
+		this.broadcastLobbyInfo();
 	};
 
 	join = (client: Client) => {
@@ -77,7 +69,11 @@ class Lobby {
 			});
 			return;
 		}
-		this.guest = client;
+		if (!this.host) {
+			this.host = client;
+		} else {			
+			this.guest = client;
+		}
 		client.setLobby(this);
 		client.sendAction({
 			action: "joinedLobby",
@@ -117,7 +113,6 @@ class Lobby {
 	};
 
 	setPlayersLives = (lives: number) => {
-		// TODO: Refactor for more than 2 players
 		if (this.host) this.host.lives = lives;
 		if (this.guest) this.guest.lives = lives;
 
@@ -154,14 +149,86 @@ class Lobby {
 		if (this.host) {
 			this.host.isReady = false;
 			this.host.resetBlocker();
-			this.host.setLocation("Blind Select");
+			this.host.setLocation("loc_selecting");
 		}
 		if (this.guest) {
 			this.guest.isReady = false;
 			this.guest.resetBlocker();
-			this.guest.setLocation("Blind Select");
+			this.guest.setLocation("loc_selecting");
 		}
 	}
 }
+
+
+export const addLives = (lobbyCode: string, host: boolean, lives: number) => {
+	const lobby = Lobbies.get(lobbyCode)
+	if (!lobby) {
+		return
+	}
+
+	if (host) {
+		if (!lobby.host) {
+			return
+		}
+		lobby.host.lives += lives
+		lobby.host.sendAction({ action: "playerInfo", lives: lobby.host.lives });
+	} else {
+		if (!lobby.guest) {
+			return
+		}
+		lobby.guest.lives += lives
+		lobby.guest.sendAction({ action: "playerInfo", lives: lobby.guest.lives });
+	}
+}
+
+export const startGame = (seed: string, lobbyCode: string | undefined) => {
+	if (!lobbyCode) {
+		Lobbies.forEach((lobby) => {
+			lobby.broadcastAction({ 
+				action: "startGame",
+				deck: "c_multiplayer_1",
+				seed: seed, 
+			})
+			lobby.setPlayersLives(4);
+		})
+		return
+	}
+	
+	const lobby = Lobbies.get(lobbyCode)
+	if (!lobby) {
+		return
+	}
+
+	lobby.broadcastAction({
+		action: "startGame",
+		deck: "c_multiplayer_1",
+		seed: seed
+	})
+	lobby.setPlayersLives(4);
+}
+
+export const getLobbyInfo = (lobbyCode: string) => {
+	const lobby = Lobbies.get(lobbyCode)
+	if (!lobby) {
+		return
+	}
+
+	const host = lobby.host?.username
+	const guest = lobby.guest?.username
+
+	const ante = lobby.host?.ante
+
+	console.log(`Lobby: ${lobbyCode} Host: ${host} Guest: ${guest} Ante: ${ante}`)
+}
+
+new Lobby("attrition", "AAAAA")
+new Lobby("attrition", "BBBBB")
+new Lobby("attrition", "CCCCC")
+new Lobby("attrition", "DDDDD")
+new Lobby("attrition", "EEEEE")
+new Lobby("attrition", "FFFFF")
+new Lobby("attrition", "GGGGG")
+new Lobby("attrition", "HHHHH")
+new Lobby("attrition", "IIIII")
 
 export default Lobby;
