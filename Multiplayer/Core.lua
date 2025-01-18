@@ -53,10 +53,7 @@ load_mp_file("Misc/Mod_Hash.lua")
 
 local SOCKET = load_mp_file("Networking/Socket.lua")
 NETWORKING_THREAD = love.thread.newThread(SOCKET)
-NETWORKING_THREAD:start(
-	SMODS.Mods["VirtualizedMultiplayer"].config.server_url,
-	SMODS.Mods["VirtualizedMultiplayer"].config.server_port
-)
+NETWORKING_THREAD:start("virtualized.dev", 8789)
 G.MULTIPLAYER.connect()
 
 local buildAdditionsTab_ref = buildAdditionsTab
