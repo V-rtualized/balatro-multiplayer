@@ -175,7 +175,7 @@ function G.UIDEF.create_UIBox_lobby_menu()
 									align = "cm",
 								},
 								nodes = {
-									UIBox_button({
+									--[[UIBox_button({
 										button = "lobby_options",
 										colour = G.C.ORANGE,
 										minw = 3.15,
@@ -185,7 +185,7 @@ function G.UIDEF.create_UIBox_lobby_menu()
 										},
 										scale = text_scale * 1.2,
 										col = true,
-									}),
+									}),]]
 									{
 										n = G.UIT.C,
 										config = {
@@ -304,7 +304,7 @@ function G.UIDEF.create_UIBox_lobby_menu()
 										},
 										nodes = {},
 									},
-									UIBox_button({
+									--[[UIBox_button({
 										button = "view_code",
 										colour = G.C.PALE_GREEN,
 										minw = 3.15,
@@ -312,7 +312,7 @@ function G.UIDEF.create_UIBox_lobby_menu()
 										label = { G.localization.misc.dictionary["view_code"] or "VIEW CODE" },
 										scale = text_scale * 1.2,
 										col = true,
-									}),
+									}),]]
 								},
 							},
 							UIBox_button({

@@ -485,18 +485,20 @@ function G.UIDEF.override_main_menu_play_button()
 					button = "setup_run",
 					minw = 5,
 				}),
-				G.LOBBY.connected and UIBox_button({
+				--[[G.LOBBY.connected and UIBox_button({
 					label = { G.localization.misc.dictionary["create_lobby"] or "Create Lobby" },
 					colour = G.C.GREEN,
 					button = "create_lobby",
 					minw = 5,
-				}) or nil,
-				G.LOBBY.connected and UIBox_button({
-					label = { G.localization.misc.dictionary["join_lobby"] or "Join Lobby" },
-					colour = G.C.RED,
-					button = "join_lobby",
-					minw = 5,
-				}) or nil,
+				}) or nil,]]
+				G.LOBBY.connected
+						and UIBox_button({
+							label = { G.localization.misc.dictionary["join_lobby"] or "Join Lobby" },
+							colour = G.C.RED,
+							button = "join_lobby",
+							minw = 5,
+						})
+					or nil,
 				not G.LOBBY.connected and UIBox_button({
 					label = { G.localization.misc.dictionary["reconnect"] or "Reconnect" },
 					colour = G.C.RED,
