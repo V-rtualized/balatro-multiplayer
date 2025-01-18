@@ -1,5 +1,5 @@
 if SMODS.Mods["Cryptid"] and SMODS.Mods["Cryptid"].can_load then
-	sendDebugMessage("Cryptid compatibility detected", "MULTIPLAYER")
+	--sendDebugMessage("Cryptid compatibility detected", "MULTIPLAYER")
 	G.MULTIPLAYER.DECK.ban_card("j_cry_fleshpanopticon")
 	G.MULTIPLAYER.DECK.ban_card("j_cry_candy_sticks")
 	G.MULTIPLAYER.DECK.ban_card("j_cry_redeo")
@@ -43,11 +43,11 @@ if SMODS.Mods["Cryptid"] and SMODS.Mods["Cryptid"].can_load then
 
 			for _, banned in ipairs(G.MULTIPLAYER.DECK.BANNED_CARDS) do
 				if card.key == banned.id then
-					sendWarnMessage("Attempted to create banned card: " .. card.key .. ", trying again", "MULTIPLAYER")
+					--sendWarnMessage("Attempted to create banned card: " .. card.key .. ", trying again", "MULTIPLAYER")
 					tries = tries - 1
 					is_banned = true
 					if tries <= 0 then
-						sendWarnMessage("Attempted to create banned cards too many times, giving up.", "MULTIPLAYER")
+						--sendWarnMessage("Attempted to create banned cards too many times, giving up.", "MULTIPLAYER")
 						return card
 					end
 					break

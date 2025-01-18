@@ -764,7 +764,7 @@ local function reset_blind_HUD()
 end
 
 function G.FUNCS.mp_toggle_ready(e)
-	sendTraceMessage("Toggling Ready", "MULTIPLAYER")
+	--sendTraceMessage("Toggling Ready", "MULTIPLAYER")
 	G.MULTIPLAYER_GAME.ready_blind = not G.MULTIPLAYER_GAME.ready_blind
 	G.MULTIPLAYER_GAME.ready_blind_text = G.MULTIPLAYER_GAME.ready_blind
 			and (G.localization.misc.dictionary["unready"] or "Unready")
@@ -2033,8 +2033,8 @@ function reset_blinds()
 		if G.LOBBY.config.gamemode == "attrition" then
 			G.GAME.round_resets.blind_choices.Boss = "bl_pvp"
 		end
-		sendDebugMessage(G.GAME.round_resets.ante, "MULTIPLAYER")
-		sendDebugMessage(G.LOBBY.config.draft_starting_antes, "MULTIPLAYER")
+		--sendDebugMessage(G.GAME.round_resets.ante, "MULTIPLAYER")
+		--sendDebugMessage(G.LOBBY.config.draft_starting_antes, "MULTIPLAYER")
 		if G.LOBBY.config.gamemode == "draft" and G.GAME.round_resets.ante >= G.LOBBY.config.draft_starting_antes then
 			G.GAME.round_resets.blind_choices.Small = "bl_pvp"
 			G.GAME.round_resets.blind_choices.Big = "bl_pvp"

@@ -44,7 +44,7 @@ G.MULTIPLAYER_GAME = {
 }
 
 function reset_game_states()
-	sendDebugMessage("Resetting game states", "MULTIPLAYER")
+	--sendDebugMessage("Resetting game states", "MULTIPLAYER")
 	G.MULTIPLAYER_GAME = {
 		ready_blind = false,
 		ready_blind_text = G.localization.misc.dictionary["ready"] or "Ready",

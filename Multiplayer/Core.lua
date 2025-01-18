@@ -14,10 +14,10 @@ function G.MULTIPLAYER.load_mp_file(file)
 		if ok then
 			return func
 		else
-			sendWarnMessage("Failed to process file: " .. func, "MULTIPLAYER")
+			--sendWarnMessage("Failed to process file: " .. func, "MULTIPLAYER")
 		end
 	else
-		sendWarnMessage("Failed to find or compile file: " .. tostring(err), "MULTIPLAYER")
+		--sendWarnMessage("Failed to find or compile file: " .. tostring(err), "MULTIPLAYER")
 	end
 	return nil
 end
