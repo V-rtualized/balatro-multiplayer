@@ -1,6 +1,6 @@
 import net from 'node:net'
 import { ActionMessage, ParsedMessage } from './types.ts'
-import { Client, ConnectedClient } from './state_manager.ts'
+import { Client, ConnectedClient } from './client.ts'
 import ActionHandler from './action_handler.ts'
 
 const PORT = 8788
