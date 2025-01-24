@@ -1,5 +1,5 @@
-import { Client, ConnectedClient } from './state_manager.ts'
-import { ActionMessage, ConnectMessage, JoinLobbyMessage } from './types.ts'
+import { Client, ConnectedClient } from '../src/state_manager.ts'
+import { ActionMessage, ConnectMessage, JoinLobbyMessage } from '../src/types.ts'
 
 const relayToHost = async (client: ConnectedClient, message: ActionMessage) => {
 	const lobby = client.getLobby()

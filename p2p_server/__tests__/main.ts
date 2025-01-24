@@ -1,8 +1,8 @@
 import { assertEquals, assertNotEquals } from 'jsr:@std/assert'
-import { Client, serializeMessage } from './state_manager.ts'
-import { ActionMessage, Socket } from './types.ts'
-import ActionHandler from './action_handler.ts'
-import { parseMessage } from './main.ts'
+import { Client, serializeMessage } from '../src/state_manager.ts'
+import { ActionMessage, Socket } from '../src/types.ts'
+import ActionHandler from '../src/action_handler.ts'
+import { parseMessage } from '../src/main.ts'
 
 class MockSocket implements Partial<Socket> {
 	public writtenData: string[] = []
