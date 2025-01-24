@@ -7,121 +7,121 @@ const clients = new Map<Socket, Client>()
 const codes = new Map<string, Socket>()
 
 const sendMessage =
-  (socket: Socket, code: string): ClientSend => (message, sendType, from) => {
-    return new Promise<void>((resolve, reject) => {
-      if (typeof message !== 'string') {
-        message = serializeMessage(message)
-      }
-      if (!message.endsWith('\n')) {
-        message += '\n'
-      }
-      if (from) {
-        console.log(
-          `[${new Date().toISOString()}] [${
-            sendType ?? 'Sending'
-          }] [${from}]->[${code}]: ${message}`,
-        )
-      } else {
-        console.log(
-          `[${new Date().toISOString()}] [${
-            sendType ?? 'Sending'
-          }] [${code}]: ${message}`,
-        )
-      }
-      socket.write(message, (err) => {
-        if (err) {
-          console.error('Error sending message:', err)
-          reject(err)
-        } else {
-          socket.uncork()
-          resolve()
-        }
-      })
-    })
-  }
+	(socket: Socket, code: string): ClientSend => (message, sendType, from) => {
+		return new Promise<void>((resolve, reject) => {
+			if (typeof message !== 'string') {
+				message = serializeMessage(message)
+			}
+			if (!message.endsWith('\n')) {
+				message += '\n'
+			}
+			if (from) {
+				console.log(
+					`[${new Date().toISOString()}] [${
+						sendType ?? 'Sending'
+					}] [${from}]->[${code}]: ${message}`,
+				)
+			} else {
+				console.log(
+					`[${new Date().toISOString()}] [${
+						sendType ?? 'Sending'
+					}] [${code}]: ${message}`,
+				)
+			}
+			socket.write(message, (err) => {
+				if (err) {
+					console.error('Error sending message:', err)
+					reject(err)
+				} else {
+					socket.uncork()
+					resolve()
+				}
+			})
+		})
+	}
 
 export class Client {
-  private code: string
-  private state: 'connecting' | 'connected'
-  private username?: string
-  private currentLobby?: Lobby | null
+	private code: string
+	private state: 'connecting' | 'connected'
+	private username?: string
+	private currentLobby?: Lobby | null
 
-  public send: ClientSend
+	public send: ClientSend
 
-  static getClientFromCode(code: string) {
-    const socket = codes.get(code)
-    if (socket) {
-      return clients.get(socket)
-    }
-  }
+	static getClientFromCode(code: string) {
+		const socket = codes.get(code)
+		if (socket) {
+			return clients.get(socket)
+		}
+	}
 
-  static getClientFromSocket(socket: Socket) {
-    return clients.get(socket)
-  }
+	static getClientFromSocket(socket: Socket) {
+		return clients.get(socket)
+	}
 
-  constructor(socket: Socket) {
-    this.code = generateUniqueCode()
-    this.send = sendMessage(socket, this.code)
-    this.state = 'connecting'
-    this.currentLobby = null
-    codes.set(this.code, socket)
-    clients.set(socket, this)
-  }
+	constructor(socket: Socket) {
+		this.code = generateUniqueCode()
+		this.send = sendMessage(socket, this.code)
+		this.state = 'connecting'
+		this.currentLobby = null
+		codes.set(this.code, socket)
+		clients.set(socket, this)
+	}
 
-  getCode() {
-    return this.code
-  }
+	getCode() {
+		return this.code
+	}
 
-  setConnected(username: string): asserts this is ConnectedClient {
-    this.state = 'connected'
-    this.username = username
-  }
+	setConnected(username: string): asserts this is ConnectedClient {
+		this.state = 'connected'
+		this.username = username
+	}
 
-  isConnected(): this is ConnectedClient {
-    return this.state === 'connected'
-  }
+	isConnected(): this is ConnectedClient {
+		return this.state === 'connected'
+	}
 
-  setUsername(username: string) {
-    this.username = username
-  }
+	setUsername(username: string) {
+		this.username = username
+	}
 
-  getUsername(): string | undefined {
-    return this.username
-  }
+	getUsername(): string | undefined {
+		return this.username
+	}
 
-  joinLobby(lobby: Lobby) {
-    this.currentLobby = lobby
-  }
+	joinLobby(lobby: Lobby) {
+		this.currentLobby = lobby
+	}
 
-  leaveLobby() {
-    if (this.currentLobby) {
-      this.currentLobby.removeClient(this)
-      this.currentLobby = null
-    }
-  }
+	leaveLobby() {
+		if (this.currentLobby) {
+			this.currentLobby.removeClient(this)
+			this.currentLobby = null
+		}
+	}
 
-  getCurrentLobby(): Lobby | null | undefined {
-    return this.currentLobby
-  }
+	getCurrentLobby(): Lobby | null | undefined {
+		return this.currentLobby
+	}
 
-  isHost(): boolean {
-    return this.currentLobby?.getHost()?.getCode() === this.code
-  }
+	isHost(): boolean {
+		return this.currentLobby?.getHost()?.getCode() === this.code
+	}
 
-  delete() {
-    this.leaveLobby()
-    const socket = codes.get(this.code)
-    if (socket) {
-      clients.delete(socket)
-      codes.delete(this.code)
-    }
-  }
+	delete() {
+		this.leaveLobby()
+		const socket = codes.get(this.code)
+		if (socket) {
+			clients.delete(socket)
+			codes.delete(this.code)
+		}
+	}
 }
 
 export interface ConnectedClient extends Client {
-  _state: 'connected'
-  _username: string
-  _currentLobby: Lobby | null
-  getUsername(): string
-  getCurrentLobby(): Lobby | null
+	_state: 'connected'
+	_username: string
+	_currentLobby: Lobby | null
+	getUsername(): string
+	getCurrentLobby(): Lobby | null
 }

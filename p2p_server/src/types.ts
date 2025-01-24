@@ -17,7 +17,7 @@ export const MessageType = {
 	connect: ['username'] as const,
 	openLobby: [] as const,
 	joinLobby: ['code'] as const,
-	error: ['message'] as const
+	error: ['message'] as const,
 }
 
 export type MessageWithKeys<T extends keyof typeof MessageType> =

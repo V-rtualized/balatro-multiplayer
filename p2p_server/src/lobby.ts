@@ -6,109 +6,109 @@ const LOBBY_MAX_SIZE = 8
 const lobbies = new Map<string, Lobby>()
 
 export class Lobby {
-  private code: string
-  private host: ConnectedClient
-  private clients: Set<ConnectedClient>
-  private state: 'waiting' | 'playing'
+	private code: string
+	private host: ConnectedClient
+	private clients: Set<ConnectedClient>
+	private state: 'waiting' | 'playing'
 
-  static getLobby(code: string): Lobby | undefined {
-    return lobbies.get(code)
-  }
+	static getLobby(code: string): Lobby | undefined {
+		return lobbies.get(code)
+	}
 
-  static getOrCreateLobby(host: ConnectedClient): Lobby {
-    const existingLobby = Array.from(lobbies.values()).find(
-      lobby => lobby.getHost()?.getCode() === host.getCode()
-    )
-    
-    if (existingLobby) {
-      return existingLobby
-    }
+	static getOrCreateLobby(host: ConnectedClient): Lobby {
+		const existingLobby = Array.from(lobbies.values()).find(
+			(lobby) => lobby.getHost()?.getCode() === host.getCode(),
+		)
 
-    return new Lobby(host)
-  }
+		if (existingLobby) {
+			return existingLobby
+		}
 
-  static getLobbies(): Lobby[] {
-    return Array.from(lobbies.values())
-  }
+		return new Lobby(host)
+	}
 
-  constructor(host: ConnectedClient) {
-    this.code = host.getCode()
-    this.host = host
-    this.clients = new Set([host])
-    this.state = 'waiting'
-    host.joinLobby(this)
-    lobbies.set(this.code, this)
-  }
+	static getLobbies(): Lobby[] {
+		return Array.from(lobbies.values())
+	}
 
-  getCode(): string {
-    return this.code
-  }
+	constructor(host: ConnectedClient) {
+		this.code = host.getCode()
+		this.host = host
+		this.clients = new Set([host])
+		this.state = 'waiting'
+		host.joinLobby(this)
+		lobbies.set(this.code, this)
+	}
 
-  getHost(): ConnectedClient {
-    return this.host
-  }
+	getCode(): string {
+		return this.code
+	}
 
-  getClients(): ConnectedClient[] {
-    return Array.from(this.clients)
-  }
+	getHost(): ConnectedClient {
+		return this.host
+	}
 
-  isPlaying(): boolean {
-    return this.state == 'playing'
-  }
+	getClients(): ConnectedClient[] {
+		return Array.from(this.clients)
+	}
 
-  setPlaying(playing: boolean) {
-    this.state = playing? "playing" : 'waiting'
-  }
+	isPlaying(): boolean {
+		return this.state == 'playing'
+	}
 
-  addClient(client: ConnectedClient, forceJoin: boolean = false) {
-    if (!client.isConnected()) {
-      throw new Error('Client must be connected to join lobby')
-    }
-    
-    const currentLobby = client.getCurrentLobby()
-    if (currentLobby && currentLobby !== this) {
-      client.leaveLobby()
-    }
+	setPlaying(playing: boolean) {
+		this.state = playing ? 'playing' : 'waiting'
+	}
 
-    if (this.clients.size >= LOBBY_MAX_SIZE && !forceJoin) {
-      const lobbyFullResponse: ErrorMessage = {
-        action: "error",
-        message: "[ERROR] Attempted to join lobby that is full"
-      }
-      client.send(lobbyFullResponse, "Error")
-    }
+	addClient(client: ConnectedClient, forceJoin: boolean = false) {
+		if (!client.isConnected()) {
+			throw new Error('Client must be connected to join lobby')
+		}
 
-    this.clients.add(client)
-    client.joinLobby(this)
-  }
+		const currentLobby = client.getCurrentLobby()
+		if (currentLobby && currentLobby !== this) {
+			client.leaveLobby()
+		}
 
-  removeClient(client: Client) {
-    if (this.clients.has(client as ConnectedClient)) {
-      this.clients.delete(client as ConnectedClient)
-      
-      if (client === this.host) {
-        const remainingClients = Array.from(this.clients)
-        if (remainingClients.length > 0) {
-          this.host = remainingClients[0]
-        } else {
-          this.close()
-        }
-      }
-    }
-  }
+		if (this.clients.size >= LOBBY_MAX_SIZE && !forceJoin) {
+			const lobbyFullResponse: ErrorMessage = {
+				action: 'error',
+				message: '[ERROR] Attempted to join lobby that is full',
+			}
+			client.send(lobbyFullResponse, 'Error')
+		}
 
-  close() {
-    for (const client of this.clients) {
-      client.leaveLobby()
-    }
-    this.clients.clear()
-    lobbies.delete(this.code)
-  }
+		this.clients.add(client)
+		client.joinLobby(this)
+	}
 
-  broadcast(message: string, sender?: Client) {
-    const promises = Array.from(this.clients).map(client => 
-      client.send(message, 'Broadcasting', sender?.getCode())
-    )
-    return Promise.all(promises)
-  }
+	removeClient(client: Client) {
+		if (this.clients.has(client as ConnectedClient)) {
+			this.clients.delete(client as ConnectedClient)
+
+			if (client === this.host) {
+				const remainingClients = Array.from(this.clients)
+				if (remainingClients.length > 0) {
+					this.host = remainingClients[0]
+				} else {
+					this.close()
+				}
+			}
+		}
+	}
+
+	close() {
+		for (const client of this.clients) {
+			client.leaveLobby()
+		}
+		this.clients.clear()
+		lobbies.delete(this.code)
+	}
+
+	broadcast(message: string, sender?: Client) {
+		const promises = Array.from(this.clients).map((client) =>
+			client.send(message, 'Broadcasting', sender?.getCode())
+		)
+		return Promise.all(promises)
+	}
 }
