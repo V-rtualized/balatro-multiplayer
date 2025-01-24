@@ -1,4 +1,7 @@
 import { Client, ConnectedClient } from './client.ts'
+import { ErrorMessage } from './types.ts'
+
+const LOBBY_MAX_SIZE = 8
 
 const lobbies = new Map<string, Lobby>()
 
@@ -49,15 +52,15 @@ export class Lobby {
     return Array.from(this.clients)
   }
 
-  getState(): 'waiting' | 'playing' {
-    return this.state
+  isPlaying(): boolean {
+    return this.state == 'playing'
   }
 
-  setState(state: 'waiting' | 'playing') {
-    this.state = state
+  setPlaying(playing: boolean) {
+    this.state = playing? "playing" : 'waiting'
   }
 
-  addClient(client: ConnectedClient) {
+  addClient(client: ConnectedClient, forceJoin: boolean = false) {
     if (!client.isConnected()) {
       throw new Error('Client must be connected to join lobby')
     }
@@ -65,6 +68,14 @@ export class Lobby {
     const currentLobby = client.getCurrentLobby()
     if (currentLobby && currentLobby !== this) {
       client.leaveLobby()
+    }
+
+    if (this.clients.size >= LOBBY_MAX_SIZE && !forceJoin) {
+      const lobbyFullResponse: ErrorMessage = {
+        action: "error",
+        message: "[ERROR] Attempted to join lobby that is full"
+      }
+      client.send(lobbyFullResponse, "Error")
     }
 
     this.clients.add(client)
@@ -75,7 +86,6 @@ export class Lobby {
     if (this.clients.has(client as ConnectedClient)) {
       this.clients.delete(client as ConnectedClient)
       
-      // If the host leaves, assign a new host or close the lobby
       if (client === this.host) {
         const remainingClients = Array.from(this.clients)
         if (remainingClients.length > 0) {
@@ -88,7 +98,6 @@ export class Lobby {
   }
 
   close() {
-    // Notify all clients that the lobby is closing
     for (const client of this.clients) {
       client.leaveLobby()
     }

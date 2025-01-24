@@ -17,6 +17,7 @@ export const MessageType = {
 	connect: ['username'] as const,
 	openLobby: [] as const,
 	joinLobby: ['code'] as const,
+	error: ['message'] as const
 }
 
 export type MessageWithKeys<T extends keyof typeof MessageType> =
@@ -31,9 +32,11 @@ export type KeepAliveMessage = MessageWithKeys<'keepAlive'>
 export type ConnectMessage = MessageWithKeys<'connect'>
 export type OpenLobbyMessage = MessageWithKeys<'openLobby'>
 export type JoinLobbyMessage = MessageWithKeys<'joinLobby'>
+export type ErrorMessage = MessageWithKeys<'error'>
 
 export type ActionMessage =
 	| KeepAliveMessage
 	| ConnectMessage
 	| OpenLobbyMessage
 	| JoinLobbyMessage
+	| ErrorMessage

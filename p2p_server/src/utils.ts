@@ -22,7 +22,7 @@ export const parseMessage = (message: string): ParsedMessage => {
   const data: Record<string, string> = {}
   for (const part of parts) {
     const [key, value] = part.split(':')
-    data[key] = value
+    data[key] = value.trim()
   }
   return data
 }

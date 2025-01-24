@@ -41,11 +41,12 @@ const sendMessage =
   }
 
 export class Client {
-  _code: string
-  _state: 'connecting' | 'connected'
-  _username?: string
-  _currentLobby?: Lobby | null
-  send: ClientSend
+  private code: string
+  private state: 'connecting' | 'connected'
+  private username?: string
+  private currentLobby?: Lobby | null
+
+  public send: ClientSend
 
   static getClientFromCode(code: string) {
     const socket = codes.get(code)
@@ -59,60 +60,60 @@ export class Client {
   }
 
   constructor(socket: Socket) {
-    this._code = generateUniqueCode()
-    this.send = sendMessage(socket, this._code)
-    this._state = 'connecting'
-    this._currentLobby = null
-    codes.set(this._code, socket)
+    this.code = generateUniqueCode()
+    this.send = sendMessage(socket, this.code)
+    this.state = 'connecting'
+    this.currentLobby = null
+    codes.set(this.code, socket)
     clients.set(socket, this)
   }
 
   getCode() {
-    return this._code
+    return this.code
   }
 
   setConnected(username: string): asserts this is ConnectedClient {
-    this._state = 'connected'
-    this._username = username
+    this.state = 'connected'
+    this.username = username
   }
 
   isConnected(): this is ConnectedClient {
-    return this._state === 'connected'
+    return this.state === 'connected'
   }
 
   setUsername(username: string) {
-    this._username = username
+    this.username = username
   }
 
   getUsername(): string | undefined {
-    return this._username
+    return this.username
   }
 
   joinLobby(lobby: Lobby) {
-    this._currentLobby = lobby
+    this.currentLobby = lobby
   }
 
   leaveLobby() {
-    if (this._currentLobby) {
-      this._currentLobby.removeClient(this)
-      this._currentLobby = null
+    if (this.currentLobby) {
+      this.currentLobby.removeClient(this)
+      this.currentLobby = null
     }
   }
 
   getCurrentLobby(): Lobby | null | undefined {
-    return this._currentLobby
+    return this.currentLobby
   }
 
   isHost(): boolean {
-    return this._currentLobby?.getHost()?.getCode() === this._code
+    return this.currentLobby?.getHost()?.getCode() === this.code
   }
 
   delete() {
     this.leaveLobby()
-    const socket = codes.get(this._code)
+    const socket = codes.get(this.code)
     if (socket) {
       clients.delete(socket)
-      codes.delete(this._code)
+      codes.delete(this.code)
     }
   }
 }

@@ -1,6 +1,6 @@
 import { assertEquals, assertNotEquals } from 'jsr:@std/assert'
 import { Client } from '../src/client.ts'
-import { getMockSocket } from './testing_utils.ts'
+import { assertTrue, getMockSocket } from './testing_utils.ts'
 import { Lobby } from '../src/lobby.ts'
 
 Deno.test('Client - Basic Operations', async (t) => {
@@ -19,9 +19,9 @@ Deno.test('Client - Basic Operations', async (t) => {
     const socket = getMockSocket()
     const client: Client = new Client(socket)
 
-    assertEquals(client._state, 'connecting')
+    assertTrue(!client.isConnected())
     client.setConnected('testUser')
-    assertEquals(client._state, 'connected')
+    assertTrue(client.isConnected())
     assertEquals(client.getUsername(), 'testUser')
   })
 

@@ -1,6 +1,6 @@
 import { assertEquals } from 'jsr:@std/assert'
 import { Client } from '../src/client.ts'
-import { assertTrue, getMockSocket } from './testing_utils.ts'
+import { assertAction, assertTrue, getMockSocket } from './testing_utils.ts'
 import ActionHandler from '../src/action_handler.ts'
 
 Deno.test('ActionHandler - Message Handling', async (t) => {
@@ -16,9 +16,9 @@ Deno.test('ActionHandler - Message Handling', async (t) => {
     const writtenData = await socket.toArray()
     const lastMessage = writtenData[writtenData.length - 1]
 
-    assertEquals(client._state, 'connected')
+    assertTrue(client.isConnected())
     assertEquals(client.getUsername(), 'testUser')
-    assertTrue(lastMessage.includes('action:connect_ack'))
+    assertAction(lastMessage, 'connect_ack')
   })
 
   await t.step('should reject invalid connect message', async () => {
@@ -33,8 +33,8 @@ Deno.test('ActionHandler - Message Handling', async (t) => {
     const writtenData = await socket.toArray()
     const lastMessage = writtenData[writtenData.length - 1]
 
-    assertEquals(client._state, 'connecting')
-    assertTrue(lastMessage.includes('action:error'))
+    assertTrue(!client.isConnected())
+    assertAction(lastMessage, 'error')
   })
 
   await t.step('should handle lobby creation', async () => {
@@ -47,6 +47,6 @@ Deno.test('ActionHandler - Message Handling', async (t) => {
     const lastMessage = writtenData[writtenData.length - 1]
 
     assertTrue(client.getCurrentLobby()?.getHost().getCode() === client.getCode())
-    assertTrue(lastMessage.includes('action:openLobby_ack'))
+    assertAction(lastMessage, 'openLobby_ack')
   })
 })

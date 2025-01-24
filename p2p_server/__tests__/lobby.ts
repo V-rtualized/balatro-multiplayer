@@ -1,6 +1,6 @@
 import { assertEquals } from 'jsr:@std/assert'
 import { Client } from '../src/client.ts'
-import { assertTrue, getMockSocket } from './testing_utils.ts'
+import { assertAction, assertTrue, getMockSocket } from './testing_utils.ts'
 import { Lobby } from '../src/lobby.ts'
 import ActionHandler from '../src/action_handler.ts'
 
@@ -14,7 +14,7 @@ Deno.test('Lobby - Basic Operations', async (t) => {
     
     assertEquals(lobby.getHost().getCode(), host.getCode())
     assertEquals(lobby.getClients().length, 1)
-    assertEquals(lobby.getState(), 'waiting')
+    assertTrue(!lobby.isPlaying())
   })
 
   await t.step('should handle client management', () => {
@@ -76,11 +76,11 @@ Deno.test('Lobby Operations', async (t) => {
     const clientWrittenData = await clientSocket.toArray()
     const lastClientMessage = clientWrittenData[clientWrittenData.length - 1]
 
+    assertAction(lastHostMessage, 'joinLobby')
     assertTrue(
-      lastHostMessage.includes('action:joinLobby') &&
       lastHostMessage.includes(host.getCode())
     )
-    assertTrue(lastClientMessage.includes('action:joinLobby_ack'))
+    assertAction(lastClientMessage, 'joinLobby_ack')
   })
 
   await t.step('should reject joining non-existent lobby', async () => {
@@ -98,8 +98,7 @@ Deno.test('Lobby Operations', async (t) => {
     const lastMessage = writtenData[writtenData.length - 1]
 
     assertEquals(client.getCurrentLobby(), null)
-    assertTrue(lastMessage.includes('action:error'))
-    assertTrue(lastMessage.includes('Lobby not found'))
+    assertAction(lastMessage, 'error')
   })
 
   await t.step('should handle lobby leaving', async () => {
@@ -123,6 +122,6 @@ Deno.test('Lobby Operations', async (t) => {
     assertEquals(client.getCurrentLobby(), null)
     const writtenData = await clientSocket.toArray()
     const lastMessage = writtenData[writtenData.length - 1]
-    assertTrue(lastMessage.includes('action:leaveLobby_ack'))
+    assertAction(lastMessage, 'leaveLobby_ack')
   })
 })

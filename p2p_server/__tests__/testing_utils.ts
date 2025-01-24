@@ -1,5 +1,6 @@
 import { assertEquals } from 'jsr:@std/assert'
-import { Socket } from '../src/types.ts'
+import { ActionMessage, ParsedMessage, Socket } from '../src/types.ts'
+import { parseMessage } from '../src/utils.ts'
 
 class MockSocket implements Partial<Socket> {
   public writtenData: string[] = []
@@ -24,4 +25,12 @@ export const getMockSocket = (): Socket => {
 
 export const assertTrue = (condition: boolean) => {
   assertEquals(condition, true)
+}
+
+export const assertAction = (message: string | ParsedMessage, action: string) => {
+  if (typeof message === 'string') {
+    message = parseMessage(message)
+  }
+
+  assertEquals(message.action, action)
 }
