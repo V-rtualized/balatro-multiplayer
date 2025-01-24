@@ -4,7 +4,7 @@ import { ActionMessage, ClientSend, Socket } from "./types.ts"
 const clients = new Map<Socket, Client>()
 const codes = new Map<string, Socket>()
 
-const generateUniqueCode = (): string => {
+export const generateUniqueCode = (): string => {
   let code;
   do {
     code = crypto.randomBytes(3).toString("hex").toUpperCase();
@@ -12,9 +12,9 @@ const generateUniqueCode = (): string => {
   return code;
 }
 
-const serializeMessage = (message: ActionMessage): string => {
-  const message_str = "action:" + message.action;
-  return message_str + Object.entries({ ...message, action: undefined }).map(([key, value]) => `${key}:${value}`).join(",");
+export const serializeMessage = (message: ActionMessage): string => {
+  const message_parts = Object.entries(message).map(([key, value]) => `${key}:${value}`)
+  return message_parts.join(",")
 }
 
 const sendMessage = (socket: Socket, code: string): ClientSend => (message, sendType, from) => {
@@ -64,15 +64,16 @@ export class Client {
     return clients.get(socket)
   }
 
-  // Probably could use some form of caching
   static getClientsInLobby(lobby: string) {
-    return Array.from(clients.values()).filter((client) => client.getLobby() === lobby)
+    return Array.from(clients.values()).filter((client: Client) => client.getLobby() === lobby)
   }
 
   constructor(socket: Socket) {
     this._code = generateUniqueCode()
     this.send = sendMessage(socket, this._code)
     this._state = "connecting"
+    codes.set(this._code, socket)
+    clients.set(socket, this)
   }
 
   getCode() {

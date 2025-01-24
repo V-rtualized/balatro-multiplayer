@@ -95,7 +95,7 @@ const ActionHandler = {
       return;
     }
 
-    lobbyClient.send(`[Join] [${client._code}]`, "join");
+    lobbyClient.send(`action:joinLobby,code:${lobby}`);
 
     client.setLobby(lobby);
 

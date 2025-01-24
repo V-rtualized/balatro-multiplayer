@@ -5,7 +5,7 @@ import ActionHandler from "./action_handler.ts";
 
 const PORT = 8788
 
-const parseMessage = (message: string): ParsedMessage => {
+export const parseMessage = (message: string): ParsedMessage => {
   const parts = message.split(",");
   const data: Record<string, string> = {};
   for (const part of parts) {
@@ -33,7 +33,7 @@ const handleClientMessage = async (socket: net.Socket, data: string) => {
       continue;
     }
 
-    console.log(`[Received] [${client.getCode()}]: ${message}`);
+    console.log(`Received :: ${client.getCode()} :: ${message}`);
 
     const parsedMessage = parseMessage(message);
 
@@ -89,10 +89,10 @@ const server = net.createServer((socket) => {
   socket.on("error", (err) => {
     const client = Client.getClientFromSocket(socket)
     if (!client) {
-      console.error(`[Error]: ${err.message}`);
+      console.error(`Error :: Unknown :: ${err.message}`);
       return;
     }
-    console.error(`[Error] [${client.getCode()}]: ${err.message}`);
+    console.error(`Error :: ${client.getCode()} :: ${err.message}`);
     client.delete()
   })
 })

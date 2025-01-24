@@ -61,6 +61,7 @@ export const serializeAction = (action: Action): string => {
 	const parts = entries
 		.filter(([_key, value]) => value !== undefined && value !== null)
 		.map(([key, value]) => `${key}:${value}`)
+	console.log(parts)
 	return parts.join(',')
 }
 
