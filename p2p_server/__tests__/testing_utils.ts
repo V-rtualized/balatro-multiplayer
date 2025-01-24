@@ -1,3 +1,4 @@
+import { assertEquals } from 'jsr:@std/assert'
 import { Socket } from '../src/types.ts'
 
 class MockSocket implements Partial<Socket> {
@@ -19,4 +20,8 @@ class MockSocket implements Partial<Socket> {
 
 export const getMockSocket = (): Socket => {
   return new MockSocket() as unknown as Socket
+}
+
+export const assertTrue = (condition: boolean) => {
+  assertEquals(condition, true)
 }

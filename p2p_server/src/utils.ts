@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { ActionMessage } from './types.ts'
+import { ActionMessage, ParsedMessage } from './types.ts'
 import { Lobby } from './lobby.ts'
 
 export const generateUniqueCode = (): string => {
@@ -15,4 +15,14 @@ export const serializeMessage = (message: ActionMessage): string => {
     `${key}:${value}`
   )
   return message_parts.join(',')
+}
+
+export const parseMessage = (message: string): ParsedMessage => {
+  const parts = message.split(',')
+  const data: Record<string, string> = {}
+  for (const part of parts) {
+    const [key, value] = part.split(':')
+    data[key] = value
+  }
+  return data
 }

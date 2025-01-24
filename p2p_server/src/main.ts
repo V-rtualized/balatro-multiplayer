@@ -1,19 +1,10 @@
 import net from 'node:net'
-import { ActionMessage, ParsedMessage } from './types.ts'
+import { ActionMessage } from './types.ts'
 import { Client, ConnectedClient } from './client.ts'
 import ActionHandler from './action_handler.ts'
+import { parseMessage } from './utils.ts'
 
 const PORT = 8788
-
-export const parseMessage = (message: string): ParsedMessage => {
-	const parts = message.split(',')
-	const data: Record<string, string> = {}
-	for (const part of parts) {
-		const [key, value] = part.split(':')
-		data[key] = value
-	}
-	return data
-}
 
 const assertClientConnected = (client: Client): client is ConnectedClient => {
 	if (!client.isConnected()) {
