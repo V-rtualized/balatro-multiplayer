@@ -1,38 +1,6 @@
 import { Client, ConnectedClient } from './client.ts'
 import { Lobby } from './lobby.ts'
-import { ActionMessage, ConnectMessage, JoinLobbyMessage } from './types.ts'
-import { serializeMessage } from './utils.ts'
-
-const relayToHost = async (client: ConnectedClient, message: ActionMessage) => {
-  const lobby = client.getCurrentLobby()
-  if (!lobby) {
-    await client.send('action:error,message:Not in a lobby')
-    return
-  }
-
-  const host = lobby.getHost()
-  if (!host) {
-    await client.send('action:error,message:Lobby host not found')
-    return
-  }
-
-  host.send(message, 'relay', client.getCode())
-}
-
-const broadcastToLobby = async (
-  client: ConnectedClient,
-  message: ActionMessage,
-) => {
-  const lobby = client.getCurrentLobby()
-  if (!lobby) {
-    await client.send('action:error,message:Not in a lobby')
-    return
-  }
-
-	const message_str = serializeMessage(message)
-
-  await lobby.broadcast(message_str, client)
-}
+import { ConnectMessage, JoinLobbyMessage } from './types.ts'
 
 const ActionHandler = {
   connect: async (client: Client, message: ConnectMessage) => {
@@ -54,20 +22,6 @@ const ActionHandler = {
 
     client.setConnected(username)
     await client.send(`action:connect_ack,code:${client.getCode()}`)
-  },
-
-  relay: async (client: Client, message: ActionMessage) => {
-    if (!client.isConnected()) {
-      await client.send('action:error,message:Not connected')
-      return
-    }
-
-    if (client.isHost()) {
-      await broadcastToLobby(client as ConnectedClient, message)
-      return
-    }
-
-    await relayToHost(client as ConnectedClient, message)
   },
 
   openLobby: async (client: Client) => {
@@ -103,9 +57,8 @@ const ActionHandler = {
     const connectedClient = client as ConnectedClient
     targetLobby.addClient(connectedClient)
     
-    // Notify host about the new joiner
     const host = targetLobby.getHost()
-    await host.send(`action:joinLobby,code:${lobby}`, 'notify', client.getCode())
+    await host.send(`action:joinLobby,code:${lobby}`)
     
     await client.send('action:joinLobby_ack')
   },
