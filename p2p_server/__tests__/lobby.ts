@@ -3,7 +3,6 @@ import { Client, ConnectedClient } from '../src/client.ts'
 import { assertAction, assertTrue, getMockSocket } from './testing_utils.ts'
 import { Lobby } from '../src/lobby.ts'
 import { ToMessage } from '../src/types.ts'
-import ActionHandler from '../src/action_handler.ts'
 import { parseMessage } from '../src/utils.ts'
 
 Deno.test('Lobby - Static Methods', async (t) => {
@@ -217,7 +216,7 @@ Deno.test('Lobby - Relaying', async (t) => {
 
 		lobby.addClient(client2)
     
-    ActionHandler.sendTo(client2, parseMessage(`action:score,to:${client.getCode()},from:${client2.getCode()},score:123`) as ToMessage, client.getCode())
+    lobby.sendTo(client.getCode(), parseMessage(`action:score,to:${client.getCode()},from:${client2.getCode()},score:123`) as ToMessage)
 
 		const clientMessages = await clientSocket.toArray()
 		const lastClientMessage = clientMessages[clientMessages.length - 1]

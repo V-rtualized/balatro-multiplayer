@@ -1,7 +1,10 @@
 import { assertEquals } from 'jsr:@std/assert'
-import { Client } from '../src/client.ts'
+import { Client, ConnectedClient } from '../src/client.ts'
 import { assertAction, assertTrue, getMockSocket } from './testing_utils.ts'
 import ActionHandler from '../src/action_handler.ts'
+import { Lobby } from '../src/lobby.ts'
+import { parseMessage } from '../src/utils.ts'
+import { ToMessage } from '../src/types.ts'
 
 Deno.test('ActionHandler - connect', async (t) => {
 	await t.step('should handle connect message', async () => {
@@ -219,5 +222,62 @@ Deno.test('ActionHandler - leaveLobby', async (t) => {
 		const lastMessage = writtenData[writtenData.length - 1]
 
 		assertAction(lastMessage, 'error')
+	})
+})
+
+Deno.test('ActionHandler - sendTo', async (t) => {
+	await t.step('should reject if sending client is not in lobby', async () => {		
+		const clientSocket = getMockSocket()
+		const client: Client = new Client(clientSocket)
+
+		ActionHandler.sendTo(client, parseMessage(`action:score,to:ABC123,from:${client.getCode()},score:123`) as ToMessage, 'ABC123')
+
+		const clientMessages = await clientSocket.toArray()
+		const lastClientMessage = clientMessages[clientMessages.length - 1]
+
+		assertAction(lastClientMessage, 'error')
+	})
+
+	const hostSocket = getMockSocket()
+	const host: Client = new Client(hostSocket)
+	host.setConnected('hostUser')
+
+	const lobby = Lobby.getOrCreateLobby(host)
+	
+	const clientSocket = getMockSocket()
+	const client: Client = new Client(clientSocket)
+	client.setConnected('clientUser')
+
+	lobby.addClient(client)
+
+	const client2Socket = getMockSocket()
+	const client2: Client = new Client(client2Socket)
+	client2.setConnected('clientUser2')
+
+	await t.step('should reject if receiving client is not in lobby', async () => {
+		ActionHandler.sendTo(client, parseMessage(`action:score,to:${client2.getCode()},from:${client.getCode()},score:123`) as ToMessage, client2.getCode())
+
+		const clientMessages = await clientSocket.toArray()
+		const lastClientMessage = clientMessages[clientMessages.length - 1]
+
+		assertTrue(!lastClientMessage)
+	})
+
+	lobby.addClient(client2)
+	
+	ActionHandler.sendTo(client2, parseMessage(`action:score,to:${client.getCode()},from:${client2.getCode()},score:123`) as ToMessage, client.getCode())
+
+	await t.step('should handle sending to specific clients', async () => {
+		const clientMessages = await clientSocket.toArray()
+		const lastClientMessage = clientMessages[clientMessages.length - 1]
+
+		assertAction(lastClientMessage, 'score')
+	})
+
+	await t.step('should not send message to other clients', async () => {
+		const hostMessages = await hostSocket.toArray()
+		const lastHostMessage = hostMessages[hostMessages.length - 1]
+
+		assertTrue(!lastHostMessage)
 	})
 })
