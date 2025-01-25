@@ -1,7 +1,31 @@
 -- Localization by @KilledByLava, @FaLNioNe, and @astryder75 on discord
 return {
+	Joker = {
+		j_broken = {
+			name = "Ошибка",
+			text = {
+				"Эта карта либо сломана",
+				"либо ещё не добавлена в",
+				"данной версии мода.",
+			},
+		},
+	},
+	descriptions = {
+		Blind = {
+			bl_pvp = {
+				name = "Ваш соперник",
+				text = {
+					"Сражение с вашим соперником,",
+					"наибольший счёт побеждает",
+				},
+			},
+		},
+	},
 	misc = {
-		mp = {
+		challenge_names = {
+			c_multiplayer_1 = "Сетевая игра",
+		},
+		dictionary = {
 			singleplayer = "Одиночная Игра",
 			join_lobby = "Подключиться к лобби",
 			return_lobby = "Вернуться в лобби",
@@ -28,8 +52,6 @@ return {
 			royale_desc = "Истощение, но играют до 8 игроков и каждый игрок имеет только одну жизнь.",
 			vanilla_plus_name = "Ванилла+",
 			vp_desc = "Первый игрок, проигравший раунд, проигрывает, ПвП блайндов нет.",
-			headup_name = "Хедз Ап",
-			hu_desc = "Оба игрока играют первый анте, потом должны продолжать побеждать счёт противника.",
 			enter_lobby_code = "Введите код лобби",
 			join_clip = "Вставить код",
 			username = "Имя:",
@@ -60,15 +82,22 @@ return {
 			opts_diff_seeds = "Игроки имеют разные сиды",
 			opts_lives = "Количество жизней",
 			opts_gm = "Настройки игры",
-			bl_pvp_name = "Ваш соперник",
-			bl_pvp_desc1 = "Сражение с вашим соперником,",
-			bl_pvp_desc2 = "наибольший счёт побеждает",
 			bl_or = "или",
 			bl_life = "Жизнь",
 			bl_death = "Смерть",
 			lobby = "Лобби",
 			return_to = "Вернуться в",
-			multiplayer_c = "Сетевая игра",
+			enemy_loc_1 = "Статус",
+			enemy_loc_2 = "соперника",
+			loc_ready = "Готов к ПвП",
+			loc_selecting = "Выбирает Блайнд",
+			loc_shop = "В магазине",
+			loc_playing = "Против ",
+			current_seed = "Сид лобби: ",
+			random = "Случайный",
+			set_custom_seed = "Использовать Свой",
+			reset = "Сбросить",
+			mod_hash_warning = "У игроков разные моды либо разные версии модов! Это может привести к ошибкам!",
 		},
 	},
 }

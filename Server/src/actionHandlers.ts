@@ -8,16 +8,18 @@ import type {
 	ActionJoinLobby,
 	ActionPlayHand,
 	ActionSetAnte,
+	ActionSetLocation,
 	ActionUsername,
 	ActionVersion,
 } from "./actions.js";
 import { generateSeed } from "./utils.js";
 
 const usernameAction = (
-	{ username }: ActionHandlerArgs<ActionUsername>,
+	{ username, modHash }: ActionHandlerArgs<ActionUsername>,
 	client: Client,
 ) => {
 	client.setUsername(username);
+	client.setModHash(modHash);
 };
 
 const createLobbyAction = (
@@ -94,8 +96,6 @@ const readyBlindAction = (client: Client) => {
 		client.lobby.guest.handsLeft = 4;
 
 		client.lobby.broadcastAction({ action: "startBlind" });
-		client.lobby.host.resetBlocker()
-		client.lobby.guest.resetBlocker()
 	}
 };
 
@@ -111,7 +111,7 @@ const playHandAction = (
 		return;
 	}
 
-	client.score = BigInt(score);
+	client.score = BigInt(String(score));
 	client.handsLeft =
 		typeof handsLeft === "number" ? handsLeft : Number(handsLeft);
 
@@ -132,10 +132,6 @@ const playHandAction = (
 			score,
 		});
 	}
-
-	console.log(
-		`Host hands: ${lobby.host?.handsLeft}, Guest hands: ${lobby.guest?.handsLeft}`,
-	);
 
 	if (!lobby.host || !lobby.guest) {
 		stopGameAction(client);
@@ -175,9 +171,14 @@ const playHandAction = (
 };
 
 const stopGameAction = (client: Client) => {
-	client.lobby?.broadcastAction({ action: "stopGame" });
+	if (!client.lobby) {
+		return;
+	}
+	client.lobby.broadcastAction({ action: "stopGame" });
+	client.lobby.resetPlayers();
 };
 
+// Deprecated
 const gameInfoAction = (client: Client) => {
 	client.lobby?.sendGameInfo(client);
 };
@@ -222,13 +223,13 @@ const setAnteAction = (
 };
 
 // TODO: Fix this
-const serverVersion = "0.1.6-MULTIPLAYER";
+const serverVersion = "0.1.7-MULTIPLAYER";
 /** Verifies the client version and allows connection if it matches the server's */
 const versionAction = (
 	{ version }: ActionHandlerArgs<ActionVersion>,
 	client: Client,
 ) => {
-	const versionMatch = version.match(/^(\d+\.\d+\.\d+)-MULTIPLAYER$/);
+	const versionMatch = version.match(/^(\d+\.\d+\.\d+)$/);
 	if (versionMatch) {
 			const clientVersion = versionMatch[1];
 			const serverVersionNumber = serverVersion.split('-')[0];
@@ -246,6 +247,14 @@ const versionAction = (
 			}
 	}
 };
+
+const setLocation = ({ location }: ActionHandlerArgs<ActionSetLocation>, client: Client) => {
+	client.setLocation(location);
+}
+
+const newRound = (client: Client) => {
+	client.resetBlocker()
+}
 
 // Declared partial for now untill all action handlers are defined
 export const actionHandlers = {
@@ -265,4 +274,6 @@ export const actionHandlers = {
 	failRound: failRoundAction,
 	setAnte: setAnteAction,
 	version: versionAction,
+	setLocation: setLocation,
+	newRound: newRound,
 } satisfies Partial<ActionHandlers>;

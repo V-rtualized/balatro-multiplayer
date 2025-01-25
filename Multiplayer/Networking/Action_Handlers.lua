@@ -1,6 +1,9 @@
 Client = {}
 
 function Client.send(msg)
+	if not (msg == "action:keepAliveAck") then
+		sendTraceMessage(string.format("Client sent message: %s", msg), "MULTIPLAYER")
+	end
 	love.thread.getChannel("uiToNetwork"):push(msg)
 end
 
@@ -8,19 +11,17 @@ end
 function G.MULTIPLAYER.set_username(username)
 	G.LOBBY.username = username or "Guest"
 	if G.LOBBY.connected then
-		Client.send(string.format("action:username,username:%s", G.LOBBY.username))
+		Client.send(string.format("action:username,username:%s,modHash:%s", G.LOBBY.username, G.MULTIPLAYER.MOD_STRING))
 	end
 end
 
 local function action_connected()
-	sendDebugMessage("Client connected to multiplayer server")
 	G.LOBBY.connected = true
 	G.MULTIPLAYER.update_connection_status()
-	Client.send(string.format("action:username,username:%s", G.LOBBY.username))
+	Client.send(string.format("action:username,username:%s,modHash:%s", G.LOBBY.username, G.MULTIPLAYER.MOD_STRING))
 end
 
 local function action_joinedLobby(code, type)
-	sendDebugMessage(string.format("Joining lobby %s", code))
 	G.LOBBY.code = code
 	G.LOBBY.type = type
 	reset_gamemode_modifiers()
@@ -28,15 +29,15 @@ local function action_joinedLobby(code, type)
 	G.MULTIPLAYER.update_connection_status()
 end
 
-local function action_lobbyInfo(host, guest, is_host)
+local function action_lobbyInfo(host, hostHash, guest, guestHash, is_host)
 	G.LOBBY.players = {}
 	G.LOBBY.is_host = is_host == "true"
 	if is_host == "true" then
 		G.MULTIPLAYER.lobby_options()
 	end
-	G.LOBBY.host = { username = host }
+	G.LOBBY.host = { username = host, hash_str = hostHash, hash = hash(hostHash) }
 	if guest ~= nil then
-		G.LOBBY.guest = { username = guest }
+		G.LOBBY.guest = { username = guest, hash_str = guestHash, hash = hash(guestHash) }
 	else
 		G.LOBBY.guest = {}
 	end
@@ -50,7 +51,7 @@ local function action_lobbyInfo(host, guest, is_host)
 end
 
 local function action_error(message)
-	sendDebugMessage(message)
+	sendWarnMessage(message, "MULTIPLAYER")
 
 	G.MULTIPLAYER.UTILS.overlay_message(message)
 end
@@ -74,14 +75,19 @@ local function action_start_game(deck, seed, stake_str)
 	reset_game_states()
 	local stake = tonumber(stake_str)
 	G.MULTIPLAYER.set_ante(0)
+	if not G.LOBBY.config.different_seeds and G.LOBBY.config.custom_seed ~= "random" then
+		seed = G.LOBBY.config.custom_seed
+	end
 	G.FUNCS.lobby_start_run(nil, { deck = deck, seed = seed, stake = stake })
 end
 
 local function action_start_blind()
 	G.MULTIPLAYER_GAME.ready_blind = false
-	-- TODO: This should check that player is in a
-	-- multiplayer game
-	G.FUNCS.toggle_shop()
+	if G.MULTIPLAYER_GAME.next_blind_context then
+		G.FUNCS.select_blind(G.MULTIPLAYER_GAME.next_blind_context)
+	else
+		sendErrorMessage("No next blind context", "MULTIPLAYER")
+	end
 end
 
 ---@param score_str string
@@ -91,13 +97,25 @@ local function action_enemy_info(score_str, hands_left_str)
 	local hands_left = tonumber(hands_left_str)
 
 	if score == nil or hands_left == nil then
-		sendDebugMessage("Invalid score or hands_left")
+		sendDebugMessage("Invalid score or hands_left", "MULTIPLAYER")
 		return
 	end
 
-	G.MULTIPLAYER_GAME.enemy.score = score
-	G.MULTIPLAYER_GAME.enemy.score_text = number_format(score)
+	G.E_MANAGER:add_event(Event({
+		blockable = false,
+		blocking = false,
+		trigger = "ease",
+		delay = 3,
+		ref_table = G.MULTIPLAYER_GAME.enemy,
+		ref_value = "score",
+		ease_to = score,
+		func = function(t)
+			return math.floor(t)
+		end,
+	}))
+
 	G.MULTIPLAYER_GAME.enemy.hands = hands_left
+
 	if is_pvp_boss() then
 		G.HUD_blind:get_UIE_by_ID("HUD_blind_count"):juice_up()
 		G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned"):juice_up()
@@ -138,18 +156,12 @@ local function action_lose_game()
 	G.STATE = G.STATES.GAME_OVER
 end
 
-local function action_game_info(small, big, boss)
-	G.GAME.round_resets.blind_choices = {
-		Small = small or "bl_small",
-		Big = big or "bl_big",
-		Boss = boss or get_new_boss(),
-	}
-	G.MULTIPLAYER_GAME.loaded_ante = G.GAME.round_resets.ante
-	G.MULTIPLAYER.loading_blinds = false
-end
-
 local function action_lobby_options(options)
 	for k, v in pairs(options) do
+		if k == "gamemode" then
+			G.LOBBY.config.gamemode = v
+			goto continue
+		end
 		local parsed_v = v
 		if v == "true" then
 			parsed_v = true
@@ -166,7 +178,41 @@ local function action_lobby_options(options)
 				G.FUNCS.toggle(config_uie)
 			end
 		end
+		::continue::
 	end
+end
+
+local function enemyLocation(options)
+	local location = options.location
+	local value = ""
+
+	if string.find(location, "-") then
+		local split = {}
+		for str in string.gmatch(location, "([^-]+)") do
+			table.insert(split, str)
+		end
+		location = split[1]
+		value = split[2]
+	end
+
+	loc_name = localize({ type = "name_text", key = value, set = "Blind" })
+	if loc_name ~= "ERROR" then
+		value = loc_name
+	else
+		value = (G.P_BLINDS[value] and G.P_BLINDS[value].name) or value
+	end
+
+	loc_location = G.localization.misc.dictionary[location]
+
+	if loc_location == nil then
+		if location ~= nil then
+			loc_location = location
+		else
+			loc_location = "Unknown"
+		end
+	end
+
+	G.MULTIPLAYER_GAME.enemy.location = loc_location .. value
 end
 
 local function action_version()
@@ -175,6 +221,7 @@ end
 
 -- #region Client to Server
 function G.MULTIPLAYER.create_lobby(gamemode)
+	G.LOBBY.config.gamemode = gamemode
 	Client.send(string.format("action:createLobby,gameMode:%s", gamemode))
 end
 
@@ -194,7 +241,8 @@ function G.MULTIPLAYER.start_game()
 	Client.send("action:startGame")
 end
 
-function G.MULTIPLAYER.ready_blind()
+function G.MULTIPLAYER.ready_blind(e)
+	G.MULTIPLAYER_GAME.next_blind_context = e
 	Client.send("action:readyBlind")
 end
 
@@ -204,10 +252,6 @@ end
 
 function G.MULTIPLAYER.stop_game()
 	Client.send("action:stopGame")
-end
-
-function G.MULTIPLAYER.game_info()
-	Client.send("action:gameInfo")
 end
 
 function G.MULTIPLAYER.fail_round()
@@ -221,10 +265,25 @@ function G.MULTIPLAYER.version()
 	Client.send(string.format("action:version,version:%s", MULTIPLAYER_VERSION))
 end
 
+function G.MULTIPLAYER.set_location(location)
+	if G.MULTIPLAYER_GAME.location == location then
+		return
+	end
+	G.MULTIPLAYER_GAME.location = location
+	Client.send(string.format("action:setLocation,location:%s", location))
+end
+
 ---@param score number
 ---@param hands_left number
 function G.MULTIPLAYER.play_hand(score, hands_left)
-	Client.send(string.format("action:playHand,score:" .. tostring(score) .. ",handsLeft:%d", hands_left))
+	local fixed_score = tostring(to_big(score))
+	-- Credit to sidmeierscivilizationv on discord for this fix for Talisman
+	if string.match(fixed_score, "[eE]") == nil and string.match(fixed_score, "[.]") then
+		-- Remove decimal from non-exponential numbers
+		fixed_score = string.sub(string.gsub(fixed_score, "%.", ","), 1, -3)
+	end
+	fixed_score = string.gsub(fixed_score, ",", "") -- Remove commas
+	Client.send(string.format("action:playHand,score:" .. fixed_score .. ",handsLeft:%d", hands_left))
 end
 
 function G.MULTIPLAYER.lobby_options()
@@ -237,6 +296,10 @@ end
 
 function G.MULTIPLAYER.set_ante(ante)
 	Client.send(string.format("action:setAnte,ante:%d", ante))
+end
+
+function G.MULTIPLAYER.new_round()
+	Client.send("action:newRound")
 end
 -- #endregion Client to Server
 
@@ -266,7 +329,13 @@ function Game:update(dt)
 		if msg then
 			local parsedAction = string_to_table(msg)
 
-			sendDebugMessage(string.format("Client got %s message", parsedAction.action))
+			if not ((parsedAction.action == "keepAlive") or (parsedAction.action == "keepAliveAck")) then
+				local log = string.format("Client got %s message: ", parsedAction.action)
+				for k, v in pairs(parsedAction) do
+					log = log .. string.format(" (%s: %s) ", k, v)
+				end
+				sendTraceMessage(log, "MULTIPLAYER")
+			end
 
 			if parsedAction.action == "connected" then
 				action_connected()
@@ -277,7 +346,13 @@ function Game:update(dt)
 			elseif parsedAction.action == "joinedLobby" then
 				action_joinedLobby(parsedAction.code, parsedAction.type)
 			elseif parsedAction.action == "lobbyInfo" then
-				action_lobbyInfo(parsedAction.host, parsedAction.guest, parsedAction.isHost)
+				action_lobbyInfo(
+					parsedAction.host,
+					parsedAction.hostHash,
+					parsedAction.guest,
+					parsedAction.guestHash,
+					parsedAction.isHost
+				)
 			elseif parsedAction.action == "startGame" then
 				action_start_game(parsedAction.deck, parsedAction.seed, parsedAction.stake)
 			elseif parsedAction.action == "startBlind" then
@@ -294,10 +369,10 @@ function Game:update(dt)
 				action_win_game()
 			elseif parsedAction.action == "loseGame" then
 				action_lose_game()
-			elseif parsedAction.action == "gameInfo" then
-				action_game_info(parsedAction.small, parsedAction.big, parsedAction.boss)
 			elseif parsedAction.action == "lobbyOptions" then
 				action_lobby_options(parsedAction)
+			elseif parsedAction.action == "enemyLocation" then
+				enemyLocation(parsedAction)
 			elseif parsedAction.action == "error" then
 				action_error(parsedAction.message)
 			elseif parsedAction.action == "keepAlive" then

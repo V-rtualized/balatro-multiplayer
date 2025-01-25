@@ -1,7 +1,31 @@
 -- Localization by @ieatmilk on discord
 return {
+	descriptions = {
+		Joker = {
+			j_broken = {
+				name = "ERRORE",
+				text = {
+					"Questa carta non funziona o non è",
+					"ancora stata implementata nella versione",
+					"attuale di una mod che stai usando.",
+				},
+			},
+		},
+		Blind = {
+			bl_pvp = {
+				name = "Il tuo Nemico",
+				text = {
+					"Sei contro un altro giocatore,",
+					"chi fa più punteggio vince",
+				},
+			},
+		},
+	},
 	misc = {
-		mp = {
+		challenge_names = {
+			c_multiplayer_1 = "Multigiocatore",
+		},
+		dictionary = {
 			singleplayer = "Giocatore singolo",
 			join_lobby = "Entra in una Lobby",
 			return_lobby = "Ritorna alla Lobby",
@@ -28,8 +52,6 @@ return {
 			royale_desc = "Una partita di Logoramento, ma si può giocare fino ad 8 giocatori e ognuno ha 1 sola vita.",
 			vanilla_plus_name = "Vanilla+",
 			vp_desc = "La prima persona che fallisce un round perde, non ci sono competizioni tra i giocatori.",
-			headup_name = "Avvertimento",
-			hu_desc = "Si gioca il primo Ante, poi ogni giocatore deve battere il punteggio precedente del nemico o perde.",
 			enter_lobby_code = "Inserisci il codice della Lobby",
 			join_clip = "Incolla dagli Appunti",
 			username = "Nome utente:",
@@ -60,15 +82,22 @@ return {
 			opts_diff_seeds = "I giocatori hanno seed diversi",
 			opts_lives = "Vite",
 			opts_gm = "Modificatori Modalità",
-			bl_pvp_name = "Il tuo Nemico",
-			bl_pvp_desc1 = "Sei contro un altro giocatore,",
-			bl_pvp_desc2 = "chi fa più punteggio vince",
 			bl_or = "oppure",
 			bl_life = "Vita",
 			bl_death = "Morte",
 			lobby = "Lobby",
 			return_to = "Ritorna alla",
-			multiplayer_c = "Multigiocatore",
+			enemy_loc_1 = "Posizione del",
+			enemy_loc_2 = "Nemico",
+			loc_ready = "Pronto per lo scontro",
+			loc_selecting = "Selezionando un buio",
+			loc_shop = "Nel negozio",
+			loc_playing = "Combattendo ",
+			current_seed = "Seed attuale: ",
+			random = "Casuale",
+			set_custom_seed = "Usa Seed personalizzato",
+			reset = "Resetta",
+			mod_hash_warning = "I giocatori hanno mod diverse o versioni di mod diverse! Potrebbero esserci degli errori!",
 		},
 	},
 }

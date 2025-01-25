@@ -10,15 +10,8 @@ SMODS.Atlas({
 
 SMODS.Blind({
 	key = "bl_pvp",
-	loc_txt = {
-		name = mp_localize("bl_pvp_name", "Your Nemesis"),
-		text = {
-			mp_localize("bl_pvp_desc1", "Face another player,"),
-			mp_localize("bl_pvp_desc2", "most chips wins"),
-		},
-	},
 	dollars = 5,
-	mult = 0,
+	mult = 1, -- Jen's Almanac crashes the game if the mult is 0
 	boss = { min = 1, max = 10 },
 	boss_colour = HEX("ac3232"),
 	atlas = "mp_player_blind_chip",

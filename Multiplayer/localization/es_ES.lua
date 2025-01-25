@@ -1,7 +1,31 @@
 -- Localization by @panbimbogd on discord
 return {
+	Joker = {
+		j_broken = {
+			name = "ROTA",
+			text = {
+				"Esta carta está rota o no está",
+				"implementada en la versión actual",
+				"de un mod que estás usando.",
+			},
+		},
+	},
+	descriptions = {
+		Blind = {
+			bl_pvp = {
+				name = "Tu Némesis",
+				text = {
+					"Enfrentándote a otros jugadores,",
+					"mas fichas gana",
+				},
+			},
+		},
+	},
 	misc = {
-		mp = {
+		challenge_names = {
+			c_multiplayer_1 = "Multijugador",
+		},
+		dictionary = {
 			singleplayer = "Un jugador",
 			join_lobby = "Entrar a la Lobby",
 			return_lobby = "Volver a la lobby",
@@ -28,8 +52,6 @@ return {
 			royale_desc = "Desgaste, excepto que hay hasta 8 jugadores y cada jugador solo tiene 1 vida.",
 			vanilla_plus_name = "Vanilla+",
 			vp_desc = "La primera persona que falle una ronda pierde, no hay ciegas en PvP.",
-			headup_name = "Heads Up",
-			hu_desc = "Ambos jugadores juegan la primera apuesta, luego deben seguir superando la puntuación anterior del oponente o perderán.",
 			enter_lobby_code = "Escribe el Código de la Lobby",
 			join_clip = "Pega desde el portapapeles",
 			username = "Nombre de usuario:",
@@ -50,25 +72,32 @@ return {
 			lobby_options = "Opciones de Lobby",
 			copy_clipboard = "Copiar al portapapeles",
 			connect_player = "Jugadores conectados:",
-			view_code = "VER_CÓDIGO",
+			view_code = "VER CÓDIGO",
 			leave = "SALIR",
 			opts_only_host = "Solo el anfitrión puede cambiar estas opciones",
-			opts_cb_money = "Vuelve a recibir oro por la pérdida de vidas",
-			opts_no_gold_on_loss = "No te quedes con el oro ciego si pierdes una ronda",
-			opts_death_on_loss = "Pierde una vida en una ronda que no sea PvP",
+			opts_cb_money = "Recibe oro al perder una vida para ayudarte a remontar",
+			opts_no_gold_on_loss = "No te quedas con el oro de la ciega si pierdes una ronda",
+			opts_death_on_loss = "Se pierden vidas en rondas no PvP",
 			opts_start_antes = "Iniciando Antes",
 			opts_diff_seeds = "Los jugadores tienen diferentes semillas",
 			opts_lives = "Vidas",
 			opts_gm = "Modificadores de juego",
-			bl_pvp_name = "Tu Némesis",
-			bl_pvp_desc1 = "Enfrentándote a otros jugadores,",
-			bl_pvp_desc2 = "mas fichas gana",
 			bl_or = "o",
 			bl_life = "Vida",
 			bl_death = "Muerte",
 			lobby = "Lobby",
 			return_to = "Vuelve a la",
-			multiplayer_c = "Multijugador",
+			enemy_loc_1 = "enemigo",
+			enemy_loc_2 = "Ubicación del",
+			loc_ready = "Listo para el PvP",
+			loc_selecting = "Seleccionando una ciega",
+			loc_shop = "Comprando",
+			loc_playing = "Enfrentandose a ",
+			current_seed = "Semilla actual: ",
+			random = "Aleatoria",
+			set_custom_seed = "Semilla personalizada",
+			reset = "Resetear",
+			mod_hash_warning = "¡Los jugadores tienen diferentes mods o diferentes versiones de mods! ¡Esto puede causar problemas!",
 		},
 	},
 }
