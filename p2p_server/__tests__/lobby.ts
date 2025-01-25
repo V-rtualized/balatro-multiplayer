@@ -1,127 +1,195 @@
 import { assertEquals } from 'jsr:@std/assert'
-import { Client } from '../src/client.ts'
+import { Client, ConnectedClient } from '../src/client.ts'
 import { assertAction, assertTrue, getMockSocket } from './testing_utils.ts'
 import { Lobby } from '../src/lobby.ts'
-import ActionHandler from '../src/action_handler.ts'
 
-Deno.test('Lobby - Basic Operations', async (t) => {
-	await t.step('should create and manage lobbies', () => {
-		const hostSocket = getMockSocket()
-		const host: Client = new Client(hostSocket)
-		host.setConnected('hostUser')
+Deno.test('Lobby - Static Methods', async (t) => {
+  await t.step('should get existing lobby', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    
+    const lobby = Lobby.getOrCreateLobby(host)
+    const retrieved = Lobby.getLobby(lobby.getCode())
+    assertEquals(retrieved, lobby)
+  })
 
-		const lobby = Lobby.getOrCreateLobby(host)
+  await t.step('should return undefined for invalid code', () => {
+    const retrieved = Lobby.getLobby('INVALID')
+    assertEquals(retrieved, undefined)
+  })
 
-		assertEquals(lobby.getHost().getCode(), host.getCode())
-		assertEquals(lobby.getClients().length, 1)
-		assertTrue(!lobby.isPlaying())
-	})
+  await t.step('should not create duplicate lobby for host', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    
+    const lobby1 = Lobby.getOrCreateLobby(host)
+    const lobby2 = Lobby.getOrCreateLobby(host)
+    assertEquals(lobby1, lobby2)
+  })
 
-	await t.step('should handle client management', () => {
-		const hostSocket = getMockSocket()
-		const host: Client = new Client(hostSocket)
-		host.setConnected('hostUser')
-
-		const clientSocket = getMockSocket()
-		const client: Client = new Client(clientSocket)
-		client.setConnected('testUser')
-
-		const lobby = Lobby.getOrCreateLobby(host)
-		lobby.addClient(client)
-
-		assertEquals(lobby.getClients().length, 2)
-		assertTrue(lobby.getClients().includes(client))
-	})
-
-	await t.step('should handle host migration', () => {
-		const hostSocket = getMockSocket()
-		const host: Client = new Client(hostSocket)
-		host.setConnected('hostUser')
-
-		const clientSocket = getMockSocket()
-		const client: Client = new Client(clientSocket)
-		client.setConnected('testUser')
-
-		const lobby = Lobby.getOrCreateLobby(host)
-		lobby.addClient(client)
-
-		host.leaveLobby()
-
-		assertEquals(lobby.getHost().getCode(), client.getCode())
-		assertEquals(lobby.getClients().length, 1)
-	})
+  await t.step('should list all lobbies', () => {
+    const hostSocket1 = getMockSocket()
+    const host1: Client = new Client(hostSocket1)
+    host1.setConnected('host1')
+    
+    const hostSocket2 = getMockSocket()
+    const host2: Client = new Client(hostSocket2)
+    host2.setConnected('host2')
+    
+    const lobby1 = Lobby.getOrCreateLobby(host1)
+    const lobby2 = Lobby.getOrCreateLobby(host2)
+    
+    const lobbies = Lobby.getLobbies()
+    assertTrue(lobbies.includes(lobby1))
+    assertTrue(lobbies.includes(lobby2))
+  })
 })
 
-Deno.test('Lobby Operations', async (t) => {
-	await t.step('should handle joining lobby', async () => {
-		const hostSocket = getMockSocket()
-		const host: Client = new Client(hostSocket)
-		host.setConnected('hostUser')
-		await ActionHandler.openLobby(host)
+Deno.test('Lobby - Client Management', async (t) => {
+  await t.step('should add clients up to max size', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    const lobby = Lobby.getOrCreateLobby(host)
 
-		const clientSocket = getMockSocket()
-		const client: Client = new Client(clientSocket)
-		client.setConnected('joinUser')
+    for (let i = 0; i < 7; i++) {
+      const clientSocket = getMockSocket()
+      const client: Client = new Client(clientSocket)
+      client.setConnected(`user${i}`)
+      lobby.addClient(client)
+    }
 
-		const joinMessage = {
-			action: 'joinLobby',
-			code: host.getCode(),
-		} as const
+    assertEquals(lobby.getClients().length, 8)
+  })
 
-		await ActionHandler.joinLobby(client, joinMessage)
+  await t.step('should reject clients when full', async () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    const lobby = Lobby.getOrCreateLobby(host)
 
-		assertTrue(client.getCurrentLobby()?.getCode() === host.getCode())
-		const hostWrittenData = await hostSocket.toArray()
-		const lastHostMessage = hostWrittenData[hostWrittenData.length - 1]
-		const clientWrittenData = await clientSocket.toArray()
-		const lastClientMessage = clientWrittenData[clientWrittenData.length - 1]
+    for (let i = 0; i < 7; i++) {
+      const clientSocket = getMockSocket()
+      const client: Client = new Client(clientSocket)
+      client.setConnected(`user${i}`)
+      lobby.addClient(client)
+    }
 
-		assertAction(lastHostMessage, 'joinLobby')
-		assertTrue(
-			lastHostMessage.includes(host.getCode()),
-		)
-		assertAction(lastClientMessage, 'joinLobby_ack')
-	})
+    const extraSocket = getMockSocket()
+    const extraClient: Client = new Client(extraSocket)
+    extraClient.setConnected('extraUser')
+    lobby.addClient(extraClient)
 
-	await t.step('should reject joining non-existent lobby', async () => {
-		const socket = getMockSocket()
-		const client: Client = new Client(socket)
-		client.setConnected('testUser')
+    const messages = await extraSocket.toArray()
+    assertAction(messages[messages.length - 1], 'error')
+  })
 
-		const joinMessage = {
-			action: 'joinLobby',
-			code: 'INVALID',
-		} as const
+  await t.step('should force join clients when specified', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    const lobby = Lobby.getOrCreateLobby(host)
 
-		await ActionHandler.joinLobby(client, joinMessage)
-		const writtenData = await socket.toArray()
-		const lastMessage = writtenData[writtenData.length - 1]
+    for (let i = 0; i < 7; i++) {
+      const clientSocket = getMockSocket()
+      const client: Client = new Client(clientSocket)
+      client.setConnected(`user${i}`)
+      lobby.addClient(client)
+    }
 
-		assertEquals(client.getCurrentLobby(), null)
-		assertAction(lastMessage, 'error')
-	})
+    const extraSocket = getMockSocket()
+    const extraClient: Client = new Client(extraSocket)
+    extraClient.setConnected('extraUser')
+    lobby.addClient(extraClient, true)
 
-	await t.step('should handle lobby leaving', async () => {
-		const hostSocket = getMockSocket()
-		const host: Client = new Client(hostSocket)
-		host.setConnected('hostUser')
-		await ActionHandler.openLobby(host)
+    assertTrue(lobby.getClients().includes(extraClient))
+  })
 
-		const clientSocket = getMockSocket()
-		const client: Client = new Client(clientSocket)
-		client.setConnected('joinUser')
+  await t.step('should reject unconnected clients', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    const lobby = Lobby.getOrCreateLobby(host)
 
-		const joinMessage = {
-			action: 'joinLobby',
-			code: host.getCode(),
-		} as const
+    const clientSocket = getMockSocket()
+    const client: Client = new Client(clientSocket)
+    
+    try {
+      lobby.addClient((client as ConnectedClient))
+      assertTrue(false)
+    } catch (e) {
+      assertTrue(e instanceof Error)
+      assertEquals((e as Error).message, 'Client must be connected to join lobby')
+    }
+  })
+})
 
-		await ActionHandler.joinLobby(client, joinMessage)
-		await ActionHandler.leaveLobby(client)
+Deno.test('Lobby - State Management', async (t) => {
+  await t.step('should manage playing state', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    const lobby = Lobby.getOrCreateLobby(host)
 
-		assertEquals(client.getCurrentLobby(), null)
-		const writtenData = await clientSocket.toArray()
-		const lastMessage = writtenData[writtenData.length - 1]
-		assertAction(lastMessage, 'leaveLobby_ack')
-	})
+    assertTrue(!lobby.isPlaying())
+    lobby.setPlaying(true)
+    assertTrue(lobby.isPlaying())
+    lobby.setPlaying(false)
+    assertTrue(!lobby.isPlaying())
+  })
+})
+
+Deno.test('Lobby - Host Management', async (t) => {
+  await t.step('should handle host migration on leave', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    
+    const clientSocket = getMockSocket()
+    const client: Client = new Client(clientSocket)
+    client.setConnected('clientUser')
+    
+    const lobby = Lobby.getOrCreateLobby(host)
+    lobby.addClient(client)
+    
+    host.leaveLobby()
+    assertEquals(lobby.getHost().getCode(), client.getCode())
+  })
+
+  await t.step('should close lobby when last client leaves', () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    
+    const lobby = Lobby.getOrCreateLobby(host)
+    const code = lobby.getCode()
+    
+    host.leaveLobby()
+    assertEquals(Lobby.getLobby(code), undefined)
+  })
+})
+
+Deno.test('Lobby - Broadcasting', async (t) => {
+  await t.step('should broadcast messages to all clients', async () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+    
+    const clientSocket = getMockSocket()
+    const client: Client = new Client(clientSocket)
+    client.setConnected('clientUser')
+    
+    const lobby = Lobby.getOrCreateLobby(host)
+    lobby.addClient(client)
+    
+    await lobby.broadcast('test message')
+    
+    const hostMessages = await hostSocket.toArray()
+    const clientMessages = await clientSocket.toArray()
+    
+    assertTrue(hostMessages[hostMessages.length - 1].includes('test message'))
+    assertTrue(clientMessages[clientMessages.length - 1].includes('test message'))
+  })
 })
