@@ -3,8 +3,7 @@ import { generateUniqueCode, serializeMessage } from './utils.ts'
 import { Lobby } from './lobby.ts'
 import { ClientSend } from './types.ts'
 
-const clients = new Map<Socket, Client>()
-const codes = new Map<string, Socket>()
+const clients = new Map<string, Client>()
 
 const sendMessage =
 	(socket: Socket, code: string): ClientSend => (message, sendType, from) => {
@@ -49,14 +48,7 @@ export class Client {
 	public send: ClientSend
 
 	static getClientFromCode(code: string) {
-		const socket = codes.get(code)
-		if (socket) {
-			return clients.get(socket)
-		}
-	}
-
-	static getClientFromSocket(socket: Socket) {
-		return clients.get(socket)
+		return clients.get(code)
 	}
 
 	constructor(socket: Socket) {
@@ -64,8 +56,7 @@ export class Client {
 		this.send = sendMessage(socket, this.code)
 		this.state = 'connecting'
 		this.currentLobby = null
-		codes.set(this.code, socket)
-		clients.set(socket, this)
+		clients.set(this.code, this)
 	}
 
 	getCode() {
@@ -110,11 +101,7 @@ export class Client {
 
 	delete() {
 		this.leaveLobby()
-		const socket = codes.get(this.code)
-		if (socket) {
-			clients.delete(socket)
-			codes.delete(this.code)
-		}
+		clients.delete(this.code)
 	}
 }
 

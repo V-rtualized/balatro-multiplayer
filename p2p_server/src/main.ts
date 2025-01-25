@@ -14,11 +14,10 @@ const assertClientConnected = (client: Client): client is ConnectedClient => {
 	return true
 }
 
-const handleClientMessage = async (socket: net.Socket, data: string) => {
+const handleClientMessage = async (client: Client, data: string) => {
 	const messages = data.toString().split('\n').filter((msg) => msg.length > 0)
 
 	for (const message of messages) {
-		const client = Client.getClientFromSocket(socket)
 		if (!client) {
 			console.log('Warning: Message received from unknown client')
 			continue
@@ -50,8 +49,6 @@ const handleClientMessage = async (socket: net.Socket, data: string) => {
 					ActionHandler.joinLobby(client, actionMessage)
 				}
 				break
-			default:
-				ActionHandler.relay(client, actionMessage)
 		}
 	}
 }
@@ -60,7 +57,7 @@ const server = net.createServer((socket) => {
 	socket.setKeepAlive(true, 1000)
 	socket.setNoDelay(true)
 
-	new Client(socket)
+	const client = new Client(socket)
 
 	let buffer = ''
 
@@ -71,16 +68,15 @@ const server = net.createServer((socket) => {
 		buffer = messages.pop() ?? ''
 
 		if (messages.length > 0) {
-			handleClientMessage(socket, messages.join('\n'))
+			handleClientMessage(client, messages.join('\n'))
 		}
 	})
 
 	socket.on('end', () => {
-		Client.getClientFromSocket(socket)?.delete()
+		client.delete()
 	})
 
 	socket.on('error', (err) => {
-		const client = Client.getClientFromSocket(socket)
 		if (!client) {
 			console.error(`Error :: Unknown :: ${err.message}`)
 			return
