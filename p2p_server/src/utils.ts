@@ -12,7 +12,7 @@ export const generateUniqueCode = (): string => {
 
 export const serializeMessage = (message: ActionMessage): string => {
 	const message_parts = Object.entries(message).map(([key, value]) =>
-		`${key}:${value}`
+		`${key.toString().replaceAll(",", "")}:${value.toString().replaceAll(",", "")}`
 	)
 	return message_parts.join(',')
 }
@@ -22,7 +22,7 @@ export const parseMessage = (message: string): ParsedMessage => {
 	const data: Record<string, string> = {}
 	for (const part of parts) {
 		const [key, value] = part.split(':')
-		data[key] = value.trim()
+		data[key.trim()] = value.trim()
 	}
 	return data
 }
