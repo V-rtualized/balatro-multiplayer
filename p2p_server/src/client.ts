@@ -16,15 +16,15 @@ const sendMessage =
 			}
 			if (from) {
 				console.log(
-					`[${new Date().toISOString()}] [${
+					`${new Date().toISOString()} :: ${
 						sendType ?? 'Sending'
-					}] [${from}]->[${code}]: ${message}`,
+					} :: ${from}->${code} :: ${message}`,
 				)
 			} else {
 				console.log(
-					`[${new Date().toISOString()}] [${
+					`${new Date().toISOString()} :: ${
 						sendType ?? 'Sending'
-					}] [${code}]: ${message}`,
+					} :: ${code} :: ${message}`,
 				)
 			}
 			socket.write(message, (err) => {

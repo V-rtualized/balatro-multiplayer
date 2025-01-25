@@ -1,5 +1,5 @@
 import net from 'node:net'
-import { ActionMessage } from './types.ts'
+import { ActionMessage, sendType, ToMessage } from './types.ts'
 import { Client, ConnectedClient } from './client.ts'
 import ActionHandler from './action_handler.ts'
 import { parseMessage } from './utils.ts'
@@ -8,7 +8,7 @@ const PORT = 8788
 
 const assertClientConnected = (client: Client): client is ConnectedClient => {
 	if (!client.isConnected()) {
-		client.send('action:error,message:Not finished connecting to the server')
+		client.send('action:error,message:Not finished connecting to the server', sendType.Error, "SERVER")
 		return false
 	}
 	return true
@@ -28,15 +28,21 @@ const handleClientMessage = async (client: Client, data: string) => {
 		const parsedMessage = parseMessage(message)
 
 		if (typeof parsedMessage.action !== 'string') {
-			await client.send('action:error,message:Message missing action')
+			await client.send('action:error,message:Message missing action', sendType.Error, "SERVER")
 			continue
 		}
 
-		const actionMessage = parsedMessage as ActionMessage
+		if (typeof(parsedMessage.to) === 'string' && typeof(parsedMessage.from) === 'string') {
+			const toMessage = parsedMessage as ToMessage
+			ActionHandler.sendTo(client, toMessage, toMessage.to)
+			return
+		}
 
+		const actionMessage = parsedMessage as ActionMessage
+		
 		switch (actionMessage.action) {
 			case 'keepAlive':
-				await client.send('action:keepAlive_ack')
+				await client.send('action:keepAlive_ack', sendType.Ack, "SERVER")
 				break
 			case 'connect':
 				ActionHandler.connect(client, actionMessage)

@@ -35,5 +35,5 @@ export const assertAction = (
 		message = parseMessage(message)
 	}
 
-	assertEquals(message.action, action)
+	assertEquals(message?.action, action)
 }

@@ -2,6 +2,7 @@ import { assertEquals, assertNotEquals } from 'jsr:@std/assert'
 import { Client } from '../src/client.ts'
 import { assertAction, assertTrue, getMockSocket } from './testing_utils.ts'
 import { Lobby } from '../src/lobby.ts'
+import { sendType } from '../src/types.ts'
 
 Deno.test('Client - Basic Operations', async (t) => {
 	await t.step('should generate unique codes', () => {
@@ -163,7 +164,7 @@ Deno.test('Client - Message Sending', async (t) => {
 		const socket = getMockSocket()
 		const client = new Client(socket)
 
-		await client.send('test message')
+		await client.send('test message', sendType.Sending, "SERVER")
 		const writtenData = await socket.toArray()
 		const lastMessage = writtenData[writtenData.length - 1]
 		assertEquals(lastMessage, 'test message\n')
@@ -173,7 +174,7 @@ Deno.test('Client - Message Sending', async (t) => {
 		const socket = getMockSocket()
 		const client = new Client(socket)
 
-		await client.send({ action: 'error', message: 'message' })
+		await client.send({ action: 'error', message: 'message' }, sendType.Sending, "SERVER")
 		const writtenData = await socket.toArray()
 		const lastMessage = writtenData[writtenData.length - 1]
 		assertAction(lastMessage, 'error')

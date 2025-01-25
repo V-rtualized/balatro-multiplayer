@@ -1,5 +1,5 @@
 import { Client, ConnectedClient } from './client.ts'
-import { ErrorMessage } from './types.ts'
+import { ErrorMessage, sendType, ToMessage } from './types.ts'
 
 const LOBBY_MAX_SIZE = 8
 
@@ -75,7 +75,7 @@ export class Lobby {
 				action: 'error',
 				message: '[ERROR] Attempted to join lobby that is full',
 			}
-			client.send(lobbyFullResponse, 'Error')
+			client.send(lobbyFullResponse, sendType.Error, "SERVER")
 		}
 
 		this.clients.add(client)
@@ -107,8 +107,20 @@ export class Lobby {
 
 	broadcast(message: string, sender?: Client) {
 		const promises = Array.from(this.clients).map((client) =>
-			client.send(message, 'Broadcasting', sender?.getCode())
+			client.send(message, sendType.Broadcasting, sender?.getCode())
 		)
 		return Promise.all(promises)
+	}
+
+	async sendTo(to: string, message: ToMessage) {
+		const toClient = Client.getClientFromCode(to)
+
+		if (!toClient || !toClient.isConnected()) {
+			return
+		}
+
+		if (this.clients.has(toClient)) {
+			await toClient.send(message, sendType.Direct, message.from)
+		}
 	}
 }

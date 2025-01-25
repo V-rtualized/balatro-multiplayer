@@ -2,6 +2,9 @@ import { assertEquals } from 'jsr:@std/assert'
 import { Client, ConnectedClient } from '../src/client.ts'
 import { assertAction, assertTrue, getMockSocket } from './testing_utils.ts'
 import { Lobby } from '../src/lobby.ts'
+import { ToMessage } from '../src/types.ts'
+import ActionHandler from '../src/action_handler.ts'
+import { parseMessage } from '../src/utils.ts'
 
 Deno.test('Lobby - Static Methods', async (t) => {
   await t.step('should get existing lobby', () => {
@@ -191,5 +194,37 @@ Deno.test('Lobby - Broadcasting', async (t) => {
     
     assertTrue(hostMessages[hostMessages.length - 1].includes('test message'))
     assertTrue(clientMessages[clientMessages.length - 1].includes('test message'))
+  })
+})
+
+Deno.test('Lobby - Relaying', async (t) => {
+  await t.step('should relay messages to specific clients', async () => {
+    const hostSocket = getMockSocket()
+    const host: Client = new Client(hostSocket)
+    host.setConnected('hostUser')
+
+		const lobby = Lobby.getOrCreateLobby(host)
+    
+    const clientSocket = getMockSocket()
+    const client: Client = new Client(clientSocket)
+    client.setConnected('clientUser')
+
+		lobby.addClient(client)
+
+		const client2Socket = getMockSocket()
+    const client2: Client = new Client(client2Socket)
+    client2.setConnected('clientUser2')
+
+		lobby.addClient(client2)
+    
+    ActionHandler.sendTo(client2, parseMessage(`action:score,to:${client.getCode()},from:${client2.getCode()},score:123`) as ToMessage, client.getCode())
+
+		const clientMessages = await clientSocket.toArray()
+		const lastClientMessage = clientMessages[clientMessages.length - 1]
+
+		assertAction(lastClientMessage, 'score')
+
+		const hostMessages = await hostSocket.toArray()
+		assertEquals(hostMessages[hostMessages.length - 1], undefined)
   })
 })

@@ -3,8 +3,8 @@ import net from 'node:net'
 export type Socket = net.Socket
 
 export type ClientSend = (
-	message: string | ActionMessage,
-	sendType?: string,
+	message: string | ActionMessage | ToMessage,
+	sendType?: sendType,
 	from?: string,
 ) => Promise<void>
 
@@ -34,9 +34,23 @@ export type OpenLobbyMessage = MessageWithKeys<'openLobby'>
 export type JoinLobbyMessage = MessageWithKeys<'joinLobby'>
 export type ErrorMessage = MessageWithKeys<'error'>
 
+export type ToMessage = {
+	action: string,
+	to: string,
+	from: string,
+}
+
 export type ActionMessage =
 	| KeepAliveMessage
 	| ConnectMessage
 	| OpenLobbyMessage
 	| JoinLobbyMessage
 	| ErrorMessage
+
+export enum sendType {
+	Sending = 'Sending',
+	Broadcasting = 'Broadcasting',
+	Direct = 'Direct',
+	Ack = 'Ack',
+	Error = 'Error'
+}
