@@ -1,22 +1,28 @@
-local NETWORKING_THREAD = nil
+MP = {}
 
-local networkToUiChannel = love.thread.getChannel("networkToUi")
-local uiToNetworkChannel = love.thread.getChannel("uiToNetwork")
-
-MP = {
+MP.network_state = {
 	connected = false,
 	code = nil,
 	is_host = false,
-	peer_connected = false,
-	game_state = {
-		initialized = false,
-		seed = nil,
-		current_hand = nil,
-		round = 1,
-		waiting_for_peer = false,
-	},
-	temp_code = "",
 }
+
+MP.game_state = {
+	initialized = false,
+	seed = nil,
+	current_hand = nil,
+	round = 1,
+}
+
+MP.temp_vals = {
+	code = "",
+}
+
+MP.networking = {}
+
+MP.networking.NETWORKING_THREAD = nil
+
+MP.networking.networkToUiChannel = love.thread.getChannel("networkToUi")
+MP.networking.uiToNetworkChannel = love.thread.getChannel("uiToNetwork")
 
 function load_mp_file(file)
 	local chunk, err = SMODS.load_file(file, "Multiplayer")
@@ -33,38 +39,22 @@ function load_mp_file(file)
 	return nil
 end
 
+load_mp_file("src/utils.lua")
+load_mp_file("src/networking/actions_in.lua")
+load_mp_file("src/networking/actions_out.lua")
 load_mp_file("src/ui.lua")
 
 local function initializeMultiplayer()
-	if not NETWORKING_THREAD then
+	if not MP.networking.NETWORKING_THREAD then
 		local SOCKET = load_mp_file("src/networking/server.lua")
-		NETWORKING_THREAD = love.thread.newThread(SOCKET)
-		NETWORKING_THREAD:start(
+		MP.networking.NETWORKING_THREAD = love.thread.newThread(SOCKET)
+		MP.networking.NETWORKING_THREAD:start(
 			SMODS.Mods["Multiplayer"].config.server_url,
 			SMODS.Mods["Multiplayer"].config.server_port
 		)
-		uiToNetworkChannel:push("connect")
-		uiToNetworkChannel:push("action:connect,username:" .. "GUEST")
-		uiToNetworkChannel:push("action:openLobby")
-	end
-end
-
-function MP.joinLobby(code)
-	uiToNetworkChannel:push("action:joinLobby,code:" .. code)
-end
-
-local function handleNetworkMessage(message)
-	sendTraceMessage("Received SERVER message: " .. message, "MULTIPLAYER")
-	if message:find("^action:connect_ack,code:") then
-		MP.connected = true
-		MP.code = message:match("code:(%w+)")
-	elseif message:find("^action:error") then
-		local error_msg = message:match("message:(.+)")
-		sendTraceMessage("Error: " .. error_msg, "MULTIPLAYER")
-	elseif message:find("^action:disconnected") then
-		MP.connected = false
-		MP.code = nil
-		sendTraceMessage("Disconnected from server", "MULTIPLAYER")
+		MP.networking.uiToNetworkChannel:push("connect")
+		MP.networking.uiToNetworkChannel:push("action:connect,username:" .. "GUEST")
+		MP.networking.uiToNetworkChannel:push("action:openLobby")
 	end
 end
 
@@ -73,9 +63,9 @@ function Game:update(dt)
 	game_update_ref(self, dt)
 
 	repeat
-		local msg = networkToUiChannel:pop()
+		local msg = MP.networking.networkToUiChannel:pop()
 		if msg then
-			handleNetworkMessage(msg)
+			MP.networking.handleNetworkMessage(msg)
 		end
 	until not msg
 end

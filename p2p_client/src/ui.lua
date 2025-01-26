@@ -58,7 +58,7 @@ function G.UIDEF.create_UIBox_connect_to_peer_button()
 									n = G.UIT.T,
 									config = {
 										scale = 0.3,
-										text = MP.code,
+										text = MP.network_state.code,
 										colour = G.C.UI.TEXT_LIGHT,
 									},
 								},
@@ -68,13 +68,14 @@ function G.UIDEF.create_UIBox_connect_to_peer_button()
 									max_length = 6,
 									prompt_text = "Enter Peer Code",
 									all_caps = true,
-									ref_table = MP,
-									ref_value = "temp_code",
+									ref_table = MP.temp_vals,
+									ref_value = "code",
 									extended_corpus = false,
 									keyboard_offset = 1,
 									minw = 5,
-									callback = function(val)
-										MP.joinLobby(MP.temp_code)
+									callback = function()
+										MP.send.joinLobby(MP.temp_vals.code)
+										MP.temp_vals.code = ""
 									end,
 								}),
 							},
