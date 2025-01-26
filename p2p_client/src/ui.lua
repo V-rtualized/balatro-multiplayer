@@ -67,13 +67,14 @@ function G.UIDEF.create_UIBox_connect_to_peer_button()
 									h = 1,
 									max_length = 6,
 									prompt_text = "Enter Peer Code",
+									all_caps = true,
 									ref_table = MP,
 									ref_value = "temp_code",
 									extended_corpus = false,
 									keyboard_offset = 1,
 									minw = 5,
 									callback = function(val)
-										MP.connectToPeer(MP.temp_code)
+										MP.joinLobby(MP.temp_code)
 									end,
 								}),
 							},

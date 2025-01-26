@@ -19,7 +19,7 @@ MP = {
 }
 
 function load_mp_file(file)
-	local chunk, err = SMODS.load_file(file, "VirtualizedMultiplayer")
+	local chunk, err = SMODS.load_file(file, "Multiplayer")
 	if chunk then
 		local ok, func = pcall(chunk)
 		if ok then
@@ -33,27 +33,29 @@ function load_mp_file(file)
 	return nil
 end
 
-load_mp_file("ui.lua")
+load_mp_file("src/ui.lua")
 
 local function initializeMultiplayer()
 	if not NETWORKING_THREAD then
-		local SOCKET = load_mp_file("server.lua")
+		local SOCKET = load_mp_file("src/networking/server.lua")
 		NETWORKING_THREAD = love.thread.newThread(SOCKET)
 		NETWORKING_THREAD:start(
-			SMODS.Mods["VirtualizedMultiplayer"].config.server_url,
-			SMODS.Mods["VirtualizedMultiplayer"].config.server_port
+			SMODS.Mods["Multiplayer"].config.server_url,
+			SMODS.Mods["Multiplayer"].config.server_port
 		)
 		uiToNetworkChannel:push("connect")
+		uiToNetworkChannel:push("action:connect,username:" .. "GUEST")
+		uiToNetworkChannel:push("action:openLobby")
 	end
 end
 
-function MP.connectToPeer(code)
-	uiToNetworkChannel:push("action:connect,code:" .. code)
+function MP.joinLobby(code)
+	uiToNetworkChannel:push("action:joinLobby,code:" .. code)
 end
 
 local function handleNetworkMessage(message)
 	sendTraceMessage("Received SERVER message: " .. message, "MULTIPLAYER")
-	if message:find("^action:connected,code:") then
+	if message:find("^action:connect_ack,code:") then
 		MP.connected = true
 		MP.code = message:match("code:(%w+)")
 	elseif message:find("^action:error") then

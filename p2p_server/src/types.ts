@@ -4,7 +4,7 @@ export type Socket = net.Socket
 
 export type ClientSend = (
 	message: string | ActionMessage | ToMessage,
-	sendType?: sendType,
+	type?: sendType,
 	from?: string,
 ) => Promise<void>
 
@@ -35,9 +35,9 @@ export type JoinLobbyMessage = MessageWithKeys<'joinLobby'>
 export type ErrorMessage = MessageWithKeys<'error'>
 
 export type ToMessage = {
-	action: string,
-	to: string,
-	from: string,
+	action: string
+	to: string
+	from: string
 }
 
 export type ActionMessage =
@@ -52,5 +52,6 @@ export enum sendType {
 	Broadcasting = 'Broadcasting',
 	Direct = 'Direct',
 	Ack = 'Ack',
-	Error = 'Error'
+	Error = 'Error',
+	Received = 'Received',
 }

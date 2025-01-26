@@ -164,7 +164,7 @@ Deno.test('Client - Message Sending', async (t) => {
 		const socket = getMockSocket()
 		const client = new Client(socket)
 
-		await client.send('test message', sendType.Sending, "SERVER")
+		await client.send('test message', sendType.Sending, 'SERVER')
 		const writtenData = await socket.toArray()
 		const lastMessage = writtenData[writtenData.length - 1]
 		assertEquals(lastMessage, 'test message\n')
@@ -174,7 +174,11 @@ Deno.test('Client - Message Sending', async (t) => {
 		const socket = getMockSocket()
 		const client = new Client(socket)
 
-		await client.send({ action: 'error', message: 'message' }, sendType.Sending, "SERVER")
+		await client.send(
+			{ action: 'error', message: 'message' },
+			sendType.Sending,
+			'SERVER',
+		)
 		const writtenData = await socket.toArray()
 		const lastMessage = writtenData[writtenData.length - 1]
 		assertAction(lastMessage, 'error')

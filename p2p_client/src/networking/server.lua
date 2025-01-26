@@ -76,7 +76,7 @@ local networkPacketQueue = function()
 					timerCoroutine = coroutine.create(timer)
 
 					networkToUiChannel:push(data)
-				elseif error == "closed" then
+				elseif error == "closed" and not isSocketClosed then
 					isSocketClosed = true
 					retryCount = 0
 					isRetry = false

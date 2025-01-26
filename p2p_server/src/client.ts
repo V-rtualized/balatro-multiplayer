@@ -1,12 +1,17 @@
 import { Socket } from './types.ts'
-import { generateUniqueCode, serializeMessage } from './utils.ts'
+import {
+	generateUniqueCode,
+	sendTraceMessage,
+	serializeMessage,
+} from './utils.ts'
 import { Lobby } from './lobby.ts'
 import { ClientSend } from './types.ts'
+import { sendType } from './types.ts'
 
 const clients = new Map<string, Client>()
 
 const sendMessage =
-	(socket: Socket, code: string): ClientSend => (message, sendType, from) => {
+	(socket: Socket, code: string): ClientSend => (message, type, from) => {
 		return new Promise<void>((resolve, reject) => {
 			if (typeof message !== 'string') {
 				message = serializeMessage(message)
@@ -14,22 +19,17 @@ const sendMessage =
 			if (!message.endsWith('\n')) {
 				message += '\n'
 			}
-			if (from) {
-				console.log(
-					`${new Date().toISOString()} :: ${
-						sendType ?? 'Sending'
-					} :: ${from}->${code} :: ${message}`,
-				)
-			} else {
-				console.log(
-					`${new Date().toISOString()} :: ${
-						sendType ?? 'Sending'
-					} :: ${code} :: ${message}`,
-				)
+			if (message !== 'action:keepAlive_ack\n') {
+				sendTraceMessage(type, from, code, message)
 			}
 			socket.write(message, (err) => {
 				if (err) {
-					console.error('Error sending message:', err)
+					sendTraceMessage(
+						sendType.Error,
+						undefined,
+						code,
+						'Error sending message: ' + err,
+					)
 					reject(err)
 				} else {
 					socket.uncork()

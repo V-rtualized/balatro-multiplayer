@@ -75,7 +75,7 @@ export class Lobby {
 				action: 'error',
 				message: '[ERROR] Attempted to join lobby that is full',
 			}
-			client.send(lobbyFullResponse, sendType.Error, "SERVER")
+			client.send(lobbyFullResponse, sendType.Error, 'SERVER')
 		}
 
 		this.clients.add(client)
