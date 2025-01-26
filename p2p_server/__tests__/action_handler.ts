@@ -113,7 +113,7 @@ Deno.test('ActionHandler - joinLobby', async (t) => {
 		client.setConnected('joinUser')
 
 		const joinMessage = {
-			action: 'joinLobby',
+			action: 'join_lobby',
 			code: host.getCode(),
 		} as const
 
@@ -134,7 +134,7 @@ Deno.test('ActionHandler - joinLobby', async (t) => {
 		const socket = getMockSocket()
 		const client = new Client(socket)
 		const joinMessage = {
-			action: 'joinLobby',
+			action: 'join_lobby',
 			code: 'TEST123',
 		} as const
 
@@ -150,7 +150,7 @@ Deno.test('ActionHandler - joinLobby', async (t) => {
 		const client: Client = new Client(socket)
 		client.setConnected('testUser')
 		const invalidMessage = {
-			action: 'joinLobby',
+			action: 'join_lobby',
 		} as const
 
 		// deno-lint-ignore no-explicit-any
@@ -166,7 +166,7 @@ Deno.test('ActionHandler - joinLobby', async (t) => {
 		const client: Client = new Client(socket)
 		client.setConnected('testUser')
 		const joinMessage = {
-			action: 'joinLobby',
+			action: 'join_lobby',
 			code: 'NONEXISTENT',
 		} as const
 
@@ -189,7 +189,7 @@ Deno.test('ActionHandler - leaveLobby', async (t) => {
 		const client: Client = new Client(clientSocket)
 		client.setConnected('joinUser')
 		await ActionHandler.joinLobby(client, {
-			action: 'joinLobby',
+			action: 'join_lobby',
 			code: host.getCode(),
 		})
 

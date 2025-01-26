@@ -19,7 +19,7 @@ const sendMessage =
 			if (!message.endsWith('\n')) {
 				message += '\n'
 			}
-			if (message !== 'action:keepAlive_ack\n') {
+			if (message !== 'action:keep_alive_ack\n') {
 				sendTraceMessage(type, from, code, message)
 			}
 			socket.write(message, (err) => {

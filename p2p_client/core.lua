@@ -3,7 +3,13 @@ MP = {}
 MP.network_state = {
 	connected = false,
 	code = nil,
+	username = "Guest",
+	lobby = nil,
+}
+
+MP.lobby_state = {
 	is_host = false,
+	players = {},
 }
 
 MP.game_state = {
@@ -21,8 +27,8 @@ MP.networking = {}
 
 MP.networking.NETWORKING_THREAD = nil
 
-MP.networking.networkToUiChannel = love.thread.getChannel("networkToUi")
-MP.networking.uiToNetworkChannel = love.thread.getChannel("uiToNetwork")
+MP.networking.network_to_ui_channel = love.thread.getChannel("networkToUi")
+MP.networking.ui_to_network_channel = love.thread.getChannel("uiToNetwork")
 
 function load_mp_file(file)
 	local chunk, err = SMODS.load_file(file, "Multiplayer")
@@ -42,32 +48,19 @@ end
 load_mp_file("src/utils.lua")
 load_mp_file("src/networking/actions_in.lua")
 load_mp_file("src/networking/actions_out.lua")
+load_mp_file("src/misc.lua")
 load_mp_file("src/ui.lua")
-
-local function initializeMultiplayer()
-	if not MP.networking.NETWORKING_THREAD then
-		local SOCKET = load_mp_file("src/networking/server.lua")
-		MP.networking.NETWORKING_THREAD = love.thread.newThread(SOCKET)
-		MP.networking.NETWORKING_THREAD:start(
-			SMODS.Mods["Multiplayer"].config.server_url,
-			SMODS.Mods["Multiplayer"].config.server_port
-		)
-		MP.networking.uiToNetworkChannel:push("connect")
-		MP.networking.uiToNetworkChannel:push("action:connect,username:" .. "GUEST")
-		MP.networking.uiToNetworkChannel:push("action:openLobby")
-	end
-end
 
 local game_update_ref = Game.update
 function Game:update(dt)
 	game_update_ref(self, dt)
 
 	repeat
-		local msg = MP.networking.networkToUiChannel:pop()
+		local msg = MP.networking.network_to_ui_channel:pop()
 		if msg then
-			MP.networking.handleNetworkMessage(msg)
+			MP.networking.handle_network_message(msg)
 		end
 	until not msg
 end
 
-initializeMultiplayer()
+MP.networking.initialize()

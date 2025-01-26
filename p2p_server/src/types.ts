@@ -13,10 +13,11 @@ export type ParsedMessage = {
 }
 
 export const MessageType = {
-	keepAlive: [] as const,
+	keep_alive: [] as const,
 	connect: ['username'] as const,
-	openLobby: [] as const,
-	joinLobby: ['code'] as const,
+	set_username: ['username'] as const,
+	open_lobby: [] as const,
+	join_lobby: ['code'] as const,
 	error: ['message'] as const,
 }
 
@@ -28,10 +29,11 @@ export type MessageWithKeys<T extends keyof typeof MessageType> =
 		[P in (typeof MessageType)[T][number]]: string
 	}
 
-export type KeepAliveMessage = MessageWithKeys<'keepAlive'>
+export type KeepAliveMessage = MessageWithKeys<'keep_alive'>
 export type ConnectMessage = MessageWithKeys<'connect'>
-export type OpenLobbyMessage = MessageWithKeys<'openLobby'>
-export type JoinLobbyMessage = MessageWithKeys<'joinLobby'>
+export type SetUsernameMessage = MessageWithKeys<'set_username'>
+export type OpenLobbyMessage = MessageWithKeys<'open_lobby'>
+export type JoinLobbyMessage = MessageWithKeys<'join_lobby'>
 export type ErrorMessage = MessageWithKeys<'error'>
 
 export type ToMessage = {
@@ -43,6 +45,7 @@ export type ToMessage = {
 export type ActionMessage =
 	| KeepAliveMessage
 	| ConnectMessage
+	| SetUsernameMessage
 	| OpenLobbyMessage
 	| JoinLobbyMessage
 	| ErrorMessage

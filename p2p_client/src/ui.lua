@@ -74,7 +74,7 @@ function G.UIDEF.create_UIBox_connect_to_peer_button()
 									keyboard_offset = 1,
 									minw = 5,
 									callback = function()
-										MP.send.joinLobby(MP.temp_vals.code)
+										MP.send.join_lobby(MP.temp_vals.code)
 										MP.temp_vals.code = ""
 									end,
 								}),

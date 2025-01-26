@@ -4,6 +4,7 @@ import {
 	ConnectMessage,
 	JoinLobbyMessage,
 	sendType,
+	SetUsernameMessage,
 	ToMessage,
 } from './types.ts'
 
@@ -39,7 +40,44 @@ const ActionHandler = {
 
 		client.setConnected(username)
 		await client.send(
-			`action:connect_ack,code:${client.getCode()}`,
+			`action:connect_ack,code:${client.getCode()},username:${username}`,
+			sendType.Ack,
+			'SERVER',
+		)
+	},
+
+	setUsername: async (client: Client, message: SetUsernameMessage) => {
+		if (!client.isConnected()) {
+			await client.send(
+				'action:error,message:Not connected',
+				sendType.Error,
+				'SERVER',
+			)
+			return
+		}
+
+		if (typeof message.username !== 'string') {
+			await client.send(
+				'action:error,message:Missing username',
+				sendType.Error,
+				'SERVER',
+			)
+			return
+		}
+
+		const username = message.username.trim().substring(0, 20)
+		if (username.length === 0) {
+			await client.send(
+				'action:error,message:Invalid username',
+				sendType.Error,
+				'SERVER',
+			)
+			return
+		}
+
+		client.setUsername(username)
+		await client.send(
+			`action:set_username_ack,username:${username}`,
 			sendType.Ack,
 			'SERVER',
 		)
@@ -58,7 +96,7 @@ const ActionHandler = {
 		const connectedClient = client as ConnectedClient
 		Lobby.getOrCreateLobby(connectedClient)
 
-		await client.send('action:openLobby_ack', sendType.Ack, 'SERVER')
+		await client.send('action:open_lobby_ack', sendType.Ack, 'SERVER')
 	},
 
 	joinLobby: async (client: Client, message: JoinLobbyMessage) => {
@@ -96,12 +134,12 @@ const ActionHandler = {
 
 		const host = targetLobby.getHost()
 		await host.send(
-			`action:joinLobby,code:${lobby}`,
+			`action:player_joined,code:${connectedClient.getCode()},username:${connectedClient.getUsername()}`,
 			sendType.Sending,
 			'SERVER',
 		)
 
-		await client.send('action:joinLobby_ack', sendType.Ack, 'SERVER')
+		await client.send(`action:join_lobby_ack,code:${lobby}`, sendType.Ack, 'SERVER')
 	},
 
 	leaveLobby: async (client: Client) => {
@@ -127,7 +165,7 @@ const ActionHandler = {
 		}
 
 		connectedClient.leaveLobby()
-		await client.send('action:leaveLobby_ack', sendType.Ack, 'SERVER')
+		await client.send('action:leave_lobby_ack', sendType.Ack, 'SERVER')
 	},
 
 	sendTo: async (client: Client, message: ToMessage, to: string) => {

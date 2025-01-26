@@ -32,7 +32,7 @@ const handleClientMessage = async (client: Client, data: string) => {
 			continue
 		}
 
-		if (message !== 'action:keepAlive') {
+		if (message !== 'action:keep_alive') {
 			sendTraceMessage(sendType.Received, client.getCode(), undefined, message)
 		}
 
@@ -59,16 +59,19 @@ const handleClientMessage = async (client: Client, data: string) => {
 		const actionMessage = parsedMessage as ActionMessage
 
 		switch (actionMessage.action) {
-			case 'keepAlive':
-				await client.send('action:keepAlive_ack', sendType.Ack, 'SERVER')
+			case 'keep_alive':
+				await client.send('action:keep_alive_ack', sendType.Ack, 'SERVER')
 				break
 			case 'connect':
 				ActionHandler.connect(client, actionMessage)
 				break
-			case 'openLobby':
+			case 'set_username':
+				ActionHandler.setUsername(client, actionMessage)
+				break
+			case 'open_lobby':
 				if (assertClientConnected(client)) ActionHandler.openLobby(client)
 				break
-			case 'joinLobby':
+			case 'join_lobby':
 				if (assertClientConnected(client)) {
 					ActionHandler.joinLobby(client, actionMessage)
 				}

@@ -115,7 +115,7 @@ while true do
 
 		if isRetry then
 			retryCount = retryCount + 1
-			uiToNetworkChannel:push("action:keepAlive")
+			uiToNetworkChannel:push("action:keep_alive")
 			timerCoroutine = coroutine.create(timer)
 			coroutine.resume(timerCoroutine, keepAliveRetryTimeout)
 		end
