@@ -55,3 +55,36 @@ function MP.serialize_networking_message(obj)
 	end
 	return table.concat(parts, ",")
 end
+
+function MP.get_player_count()
+	if MP.network_state.lobby == nil then
+		return 0
+	end
+	local count = 0
+	for _, _ in pairs(MP.lobby_state.players) do
+		count = count + 1
+	end
+	return count
+end
+
+function MP.get_player_by_index(index)
+	if MP.network_state.lobby == nil then
+		return
+	end
+	if index == 1 then
+		return MP.lobby_state.players[MP.network_state.lobby]
+	end
+	local count = 1
+	for k, v in pairs(MP.lobby_state.players) do
+		if k == MP.network_state.lobby then
+			goto continue
+		end
+		if count == index then return v end
+		count = count + 1
+		::continue::
+	end
+end
+
+function MP.is_in_lobby()
+	return MP.network_state.lobby ~= nil and MP.network_state.lobby ~= ""
+end
