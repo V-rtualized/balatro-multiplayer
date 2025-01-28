@@ -88,3 +88,17 @@ end
 function MP.is_in_lobby()
 	return MP.network_state.lobby ~= nil and MP.network_state.lobby ~= ""
 end
+
+-- Credit: https://gist.github.com/tylerneylon/81333721109155b2d244
+function MP.deep_copy(obj, seen)
+	-- Handle non-tables and previously-seen tables.
+	if type(obj) ~= 'table' then return obj end
+	if seen and seen[obj] then return seen[obj] end
+
+	-- New table; mark it as seen and copy recursively.
+	local s = seen or {}
+	local res = {}
+	s[obj] = res
+	for k, v in pairs(obj) do res[MP.deep_copy(k, s)] = MP.deep_copy(v, s) end
+	return setmetatable(res, getmetatable(obj))
+end

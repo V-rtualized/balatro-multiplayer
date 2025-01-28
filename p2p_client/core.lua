@@ -50,6 +50,7 @@ load_mp_file("src/networking/actions_in.lua")
 load_mp_file("src/networking/actions_out.lua")
 load_mp_file("src/misc.lua")
 load_mp_file("src/ui.lua")
+load_mp_file("src/jokers.lua")
 load_mp_file("src/galdur.lua")
 
 local game_update_ref = Game.update

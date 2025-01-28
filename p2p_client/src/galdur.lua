@@ -32,7 +32,7 @@ function MP.UI.generate_lobby_card_areas()
 	for i = 1, 12 do
 		Galdur.run_setup.player_select_areas[i] = CardArea(G.ROOM.T.w, G.ROOM.T.h, G.CARD_W, G.CARD_H, {
 			card_limit = 1,
-			type = "deck",
+			type = "joker",
 			highlight_limit = 0,
 			player_select = true,
 		})
@@ -89,48 +89,59 @@ function MP.UI.create_lobby_page_cycle()
 end
 
 function MP.UI.populate_player_card_areas(page)
-	local player_count = MP.get_player_count()
 	local count = 1 + (page - 1) * 12
 	for i = 1, 12 do
-		local card_number = Galdur.config.reduce and 1 or 10
-		for index = 1, card_number do
-			local card = Card(
+		local card = nil
+		local player = MP.get_player_by_index(count)
+		if player then
+			local lobby_center = MP.deep_copy(G.P_CENTERS["j_mp_player"])
+			lobby_center.config.extra.username = player.username
+			lobby_center.config.extra.text1 = MP.lobby_state.is_host and localize("lobby_host")
+				or localize("lobby_member")
+			lobby_center.config.extra.text2 = localize("lobby_deck")
+			lobby_center.pos = G.P_CENTER_POOLS.Joker[count].pos
+			card = Card(
 				Galdur.run_setup.player_select_areas[i].T.x,
 				Galdur.run_setup.player_select_areas[i].T.y,
 				G.CARD_W,
 				G.CARD_H,
 				G.P_CARDS.empty,
-				G.P_CENTER_POOLS.Joker[count]
+				lobby_center
 			)
+		else
+			local lobby_center = MP.deep_copy(G.P_CENTER_POOLS.Joker[count])
+			if count > 8 then
+				lobby_center.unlocked = false
+				lobby_center.discovered = false
+			end
+			card = Card(
+				Galdur.run_setup.player_select_areas[i].T.x,
+				Galdur.run_setup.player_select_areas[i].T.y,
+				G.CARD_W,
+				G.CARD_H,
+				G.P_CARDS.empty,
+				lobby_center
+			)
+			card.children.back:remove()
 			card.sprite_facing = "back"
 			card.facing = "back"
-			card.children.back:remove()
-
-			if count > player_count then
-				card.children.back =
-					Sprite(card.T.x, card.T.y, card.T.w, card.T.h, G.ASSET_ATLAS["centers"], { y = 4, x = 0 })
-			else
-				card.children.back = Sprite(
-					card.T.x,
-					card.T.y,
-					card.T.w,
-					card.T.h,
-					G.ASSET_ATLAS["Joker"],
-					G.P_CENTER_POOLS.Joker[count].pos
-				)
-				card.children.back.states.hover = card.states.hover
-				card.children.back.states.click = card.states.click
-				card.children.back.states.drag = card.states.drag
-			end
-
-			card.children.back.states.collide.can = false
-			card.children.back:set_role({ major = card, role_type = "Glued", draw_major = card })
-
-			if not Galdur.run_setup.player_select_areas[i].cards then
-				Galdur.run_setup.player_select_areas[i].cards = {}
-			end
-			Galdur.run_setup.player_select_areas[i]:emplace(card)
+			card.children.back = Sprite(
+				card.T.x,
+				card.T.y,
+				card.T.w,
+				card.T.h,
+				G.ASSET_ATLAS["centers"],
+				count > 8 and { y = 0, x = 4 } or { y = 4, x = 0 }
+			)
 		end
+
+		card.children.back.states.collide.can = false
+		card.children.back:set_role({ major = card, role_type = "Glued", draw_major = card })
+
+		if not Galdur.run_setup.player_select_areas[i].cards then
+			Galdur.run_setup.player_select_areas[i].cards = {}
+		end
+		Galdur.run_setup.player_select_areas[i]:emplace(card, "front", true)
 		count = count + 1
 	end
 end

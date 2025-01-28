@@ -18,6 +18,7 @@
 		"Talisman (>=2.1.0~dev)"
   ],
 	"conflicts": [
-		"Cryptid (<=0.5.3c)"
+		"Cryptid (<=0.5.3c)",
+		"VirtualizedMultiplayer"
 	]
 }
