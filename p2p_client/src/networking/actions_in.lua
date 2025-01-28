@@ -22,6 +22,8 @@ function MP.networking.funcs.connect_ack(args)
 	MP.network_state.username = args.username or "Guest"
 	MP.network_state.connected = true
 	MP.network_state.code = args.code
+
+	MP.draw_lobby_ui()
 end
 
 function MP.networking.funcs.set_username_ack(args)
@@ -46,6 +48,8 @@ function MP.networking.funcs.disconnected(args)
 	MP.network_state.connected = false
 	MP.network_state.code = nil
 	MP.send_warn_message("Disconnected from server")
+
+	MP.draw_lobby_ui()
 end
 
 function MP.networking.funcs.open_lobby_ack(args)

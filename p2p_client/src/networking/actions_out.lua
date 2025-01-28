@@ -10,25 +10,30 @@ function MP.networking.initialize()
 			SMODS.Mods["Multiplayer"].config.server_url,
 			SMODS.Mods["Multiplayer"].config.server_port
 		)
-		MP.send.raw("connect")
 
-		cached_username = G.PROFILES[G.SETTINGS.profile].name or "Guest"
-		local connect_data = MP.serialize_networking_message({
-			action = "connect",
-			username = cached_username,
-		})
-		MP.send.raw(connect_data)
-
-		local open_lobby = MP.serialize_networking_message({
-			action = "open_lobby",
-		})
-		MP.send.raw(open_lobby)
+		MP.send.connect()
 	end
 end
 
 function MP.send.raw(msg)
 	MP.send_trace_message("Sending message: " .. msg)
 	MP.networking.ui_to_network_channel:push(msg)
+end
+
+function MP.send.connect()
+	MP.send.raw("connect")
+
+	cached_username = G.PROFILES[G.SETTINGS.profile].name or "Guest"
+	MP.send.raw(MP.serialize_networking_message({
+		action = "connect",
+		username = cached_username,
+	}))
+end
+
+function MP.send.open_lobby()
+	MP.send.raw(MP.serialize_networking_message({
+		action = "open_lobby",
+	}))
 end
 
 function MP.send.join_lobby(code)
