@@ -17,7 +17,8 @@ export const MessageType = {
 	connect: ['username'] as const,
 	set_username: ['username'] as const,
 	open_lobby: [] as const,
-	join_lobby: ['code'] as const,
+	join_lobby: ['code', 'checking'] as const,
+	leave_lobby: [] as const,
 	error: ['message'] as const,
 }
 
@@ -34,6 +35,7 @@ export type ConnectMessage = MessageWithKeys<'connect'>
 export type SetUsernameMessage = MessageWithKeys<'set_username'>
 export type OpenLobbyMessage = MessageWithKeys<'open_lobby'>
 export type JoinLobbyMessage = MessageWithKeys<'join_lobby'>
+export type LeaveLobbyMessage = MessageWithKeys<'leave_lobby'>
 export type ErrorMessage = MessageWithKeys<'error'>
 
 export type ToMessage = {
@@ -48,6 +50,7 @@ export type ActionMessage =
 	| SetUsernameMessage
 	| OpenLobbyMessage
 	| JoinLobbyMessage
+	| LeaveLobbyMessage
 	| ErrorMessage
 
 export enum sendType {

@@ -169,6 +169,8 @@ Galdur.add_new_page({
 	--pre_start = "function to run before game is started",
 	--post_start = "function to run after game is started",
 	--confirm = "function to run on page confirm",
-	--quick_start_text = "function that returns the text to add to the tooltip",
+	quick_start_text = function()
+		return tostring(MP.get_player_count()) .. " Players"
+	end,
 	page = 1,
 })

@@ -102,3 +102,19 @@ function MP.deep_copy(obj, seen)
 	for k, v in pairs(obj) do res[MP.deep_copy(k, s)] = MP.deep_copy(v, s) end
 	return setmetatable(res, getmetatable(obj))
 end
+
+function MP.copy_to_clipboard(text)
+	if G.F_LOCAL_CLIPBOARD then
+		G.CLIPBOARD = text
+	else
+		love.system.setClipboardText(text)
+	end
+end
+
+function MP.get_from_clipboard()
+	if G.F_LOCAL_CLIPBOARD then
+		return G.F_LOCAL_CLIPBOARD
+	else
+		return love.system.getClipboardText()
+	end
+end

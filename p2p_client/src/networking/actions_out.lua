@@ -36,10 +36,17 @@ function MP.send.open_lobby()
 	}))
 end
 
-function MP.send.join_lobby(code)
+function MP.send.join_lobby(code, checking)
 	MP.send.raw(MP.serialize_networking_message({
 		action = "join_lobby",
-		code = code,
+		code = code:gsub("[oO]", "0"), -- Replaces the letter O with the number 0 because Balatro has a vendetta against zeros
+		checking = checking or false,
+	}))
+end
+
+function MP.send.leave_lobby()
+	MP.send.raw(MP.serialize_networking_message({
+		action = "leave_lobby",
 	}))
 end
 

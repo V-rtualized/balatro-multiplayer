@@ -110,6 +110,7 @@ const ActionHandler = {
 		}
 
 		const lobby = message.code
+		const checking = message.checking
 		if (typeof lobby !== 'string') {
 			await client.send(
 				'action:error,message:Missing lobby code',
@@ -121,11 +122,19 @@ const ActionHandler = {
 
 		const targetLobby = Lobby.getLobby(lobby)
 		if (!targetLobby) {
-			await client.send(
-				'action:error,message:Lobby not found',
-				sendType.Error,
-				'SERVER',
-			)
+			if (checking === 'true') {
+				await client.send(
+					'action:join_lobby_ack',
+					sendType.Error,
+					'SERVER',
+				)
+			} else {
+				await client.send(
+					'action:error,message:Lobby not found',
+					sendType.Error,
+					'SERVER',
+				)
+			}
 			return
 		}
 

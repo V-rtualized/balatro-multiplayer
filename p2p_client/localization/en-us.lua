@@ -10,6 +10,9 @@ return {
 			b_join_lobby = "Join Lobby",
 			not_connected = "Server Not Found",
 			b_reconnect = "Reconnect",
+			b_copy_code = "Copy Code",
+			b_leave_lobby = "Leave Lobby",
+			k_enter_code = "Enter Code",
 		},
 	},
 }

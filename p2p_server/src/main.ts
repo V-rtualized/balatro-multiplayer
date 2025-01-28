@@ -76,6 +76,11 @@ const handleClientMessage = async (client: Client, data: string) => {
 					ActionHandler.joinLobby(client, actionMessage)
 				}
 				break
+			case 'leave_lobby':
+				if (assertClientConnected(client)) {
+					ActionHandler.leaveLobby(client)
+				}
+				break
 		}
 	}
 }

@@ -41,15 +41,17 @@ function MP.networking.funcs.error(args)
 		return
 	end
 
+	MP.UI.show_mp_overlay_message(args.message)
 	MP.send_warn_message(args.message)
 end
 
 function MP.networking.funcs.disconnected(args)
 	MP.network_state.connected = false
 	MP.network_state.code = nil
-	MP.send_warn_message("Disconnected from server")
 
-	MP.draw_lobby_ui()
+	MP.networking.funcs.leave_lobby_ack()
+
+	MP.send_warn_message("Disconnected from server")
 end
 
 function MP.networking.funcs.open_lobby_ack(args)
@@ -60,20 +62,31 @@ function MP.networking.funcs.open_lobby_ack(args)
 		username = MP.network_state.username,
 		code = MP.network_state.code,
 	}
+
+	MP.draw_lobby_ui()
 end
 
 function MP.networking.funcs.leave_lobby_ack(args)
 	MP.network_state.lobby = nil
 	MP.lobby_state.is_host = false
+
+	MP.draw_lobby_ui()
 end
 
 function MP.networking.funcs.join_lobby_ack(args)
-	if not args or not args.code then
+	if not args then
 		MP.send_warn_message("Got join_lobby_ack with invalid args")
 		return
 	end
 
+	if not args.code then
+		MP.UI.join_lobby_overlay()
+		return
+	end
+
 	MP.network_state.lobby = args.code
+
+	MP.draw_lobby_ui()
 end
 
 function MP.networking.funcs.player_joined(args)
