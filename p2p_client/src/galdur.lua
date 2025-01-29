@@ -1,4 +1,7 @@
+MP.UI.should_watch_player_cards = false
+
 function MP.UI.lobby_page()
+	MP.UI.should_watch_player_cards = true
 	MP.UI.generate_lobby_card_areas()
 
 	return {
@@ -32,7 +35,7 @@ function MP.UI.generate_lobby_card_areas()
 	for i = 1, 12 do
 		Galdur.run_setup.player_select_areas[i] = CardArea(G.ROOM.T.w, G.ROOM.T.h, G.CARD_W, G.CARD_H, {
 			card_limit = 1,
-			type = "joker",
+			type = "shop",
 			highlight_limit = 0,
 			player_select = true,
 		})
@@ -69,7 +72,7 @@ function MP.UI.generate_lobby_card_areas_ui()
 end
 
 function MP.UI.create_lobby_page_cycle()
-	local player_count = MP.get_player_count()
+	local player_count = #MP.lobby_state.players
 	local options = {}
 	local cycle
 	local total_pages = math.ceil(player_count / 12)
@@ -88,53 +91,54 @@ function MP.UI.create_lobby_page_cycle()
 	return { n = G.UIT.R, config = { align = "cm" }, nodes = { cycle } }
 end
 
+function update_player_card(card, index)
+	local e_player = MP.lobby_state.players[index]
+	if e_player then
+		card.ability.extra.player_index = index
+		card.ability.extra.username = e_player.username
+		card.ability.extra.text1 = e_player.code == MP.network_state.lobby and localize("lobby_host")
+			or localize("lobby_member")
+		card.ability.extra.text2 = localize("lobby_deck")
+		card.area.config.highlighted_limit = 1
+		if card.facing == "back" then
+			card:flip()
+		end
+	else
+		card.area.config.highlighted_limit = 0
+		if card.facing == "front" then
+			card:flip()
+		end
+	end
+end
+
 function MP.UI.populate_player_card_areas(page)
 	local count = 1 + (page - 1) * 12
+	local joker_offset = 5
 	for i = 1, 12 do
 		local card = nil
-		local player = MP.get_player_by_index(count)
-		if player then
-			local lobby_center = MP.deep_copy(G.P_CENTERS["j_mp_player"])
-			lobby_center.config.extra.username = player.username
-			lobby_center.config.extra.text1 = MP.lobby_state.is_host and localize("lobby_host")
-				or localize("lobby_member")
-			lobby_center.config.extra.text2 = localize("lobby_deck")
-			lobby_center.pos = G.P_CENTER_POOLS.Joker[count].pos
-			card = Card(
-				Galdur.run_setup.player_select_areas[i].T.x,
-				Galdur.run_setup.player_select_areas[i].T.y,
-				G.CARD_W,
-				G.CARD_H,
-				G.P_CARDS.empty,
-				lobby_center
-			)
-		else
-			local lobby_center = MP.deep_copy(G.P_CENTER_POOLS.Joker[count])
-			if count > 8 then
-				lobby_center.unlocked = false
-				lobby_center.discovered = false
-			end
-			card = Card(
-				Galdur.run_setup.player_select_areas[i].T.x,
-				Galdur.run_setup.player_select_areas[i].T.y,
-				G.CARD_W,
-				G.CARD_H,
-				G.P_CARDS.empty,
-				lobby_center
-			)
-			card.children.back:remove()
+		local player = MP.lobby_state.players[count]
+		card = SMODS.create_card({
+			set = "Joker",
+			area = Galdur.run_setup.player_select_areas[i],
+			key = "j_mp_player",
+			no_edition = true,
+		})
+		card.children.center:set_sprite_pos(G.P_CENTER_POOLS.Joker[count + joker_offset].pos)
+
+		if not player then
 			card.sprite_facing = "back"
 			card.facing = "back"
-			card.children.back = Sprite(
-				card.T.x,
-				card.T.y,
-				card.T.w,
-				card.T.h,
-				G.ASSET_ATLAS["centers"],
-				count > 8 and { y = 0, x = 4 } or { y = 4, x = 0 }
-			)
 		end
 
+		card.children.back:remove()
+		card.children.back = Sprite(
+			card.T.x,
+			card.T.y,
+			card.T.w,
+			card.T.h,
+			G.ASSET_ATLAS["centers"],
+			count > 8 and { y = 0, x = 4 } or { y = 4, x = 0 }
+		)
 		card.children.back.states.collide.can = false
 		card.children.back:set_role({ major = card, role_type = "Glued", draw_major = card })
 
@@ -142,6 +146,26 @@ function MP.UI.populate_player_card_areas(page)
 			Galdur.run_setup.player_select_areas[i].cards = {}
 		end
 		Galdur.run_setup.player_select_areas[i]:emplace(card, "front", true)
+
+		update_player_card(card, count)
+
+		local event
+		event = Event({
+			trigger = "after",
+			blockable = false,
+			blocking = false,
+			delay = 0.5 * G.SETTINGS.GAMESPEED,
+			pause_force = true,
+			no_delete = true,
+			func = function(t)
+				update_player_card(card, event.player_index)
+				event.start_timer = false
+				return not MP.UI.should_watch_player_cards
+			end,
+		})
+		event.player_index = count
+		G.E_MANAGER:add_event(event)
+
 		count = count + 1
 	end
 end
@@ -159,6 +183,7 @@ function Galdur.clean_up_functions.clean_lobby_areas()
 end
 
 G.FUNCS.change_lobby_page = function(args)
+	MP.UI.should_watch_player_cards = false
 	Galdur.clean_up_functions.clean_deck_areas()
 	MP.UI.populate_player_card_areas(args.cycle_config.current_option)
 end
@@ -166,11 +191,11 @@ end
 Galdur.add_new_page({
 	name = "page_title_lobby",
 	definition = MP.UI.lobby_page,
-	--pre_start = "function to run before game is started",
-	--post_start = "function to run after game is started",
-	--confirm = "function to run on page confirm",
+	confirm = function()
+		MP.UI.should_watch_player_cards = false
+	end,
 	quick_start_text = function()
-		return tostring(MP.get_player_count()) .. " Players"
+		return tostring(#MP.lobby_state.players) .. " Players"
 	end,
 	page = 1,
 })

@@ -58,7 +58,7 @@ function MP.networking.funcs.open_lobby_ack(args)
 	MP.network_state.lobby = MP.network_state.code
 	MP.lobby_state.is_host = true
 
-	MP.lobby_state.players[MP.network_state.code] = {
+	MP.lobby_state.players[1] = {
 		username = MP.network_state.username,
 		code = MP.network_state.code,
 	}
@@ -95,7 +95,7 @@ function MP.networking.funcs.player_joined(args)
 		return
 	end
 
-	MP.lobby_state.players[args.code] = {
+	MP.lobby_state.players[#MP.lobby_state.players + 1] = {
 		username = args.username,
 		code = args.code,
 	}

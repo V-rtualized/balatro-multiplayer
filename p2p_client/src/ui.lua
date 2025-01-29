@@ -1,5 +1,13 @@
 MP.UI = {}
 
+local exit_overlay_menu_ref = G.FUNCS.exit_overlay_menu
+function G.FUNCS:exit_overlay_menu()
+	if MP.UI.should_watch_player_cards then
+		MP.UI.should_watch_player_cards = false
+	end
+	exit_overlay_menu_ref(self)
+end
+
 function MP.UI.show_mp_overlay_message(msg)
 	G.FUNCS.overlay_menu({
 		definition = create_UIBox_generic_options({
@@ -139,9 +147,9 @@ function MP.draw_lobby_ui()
 	if G.MAIN_MENU_UI then
 		MP.LOBBY_UI = UIBox({
 			definition = MP.create_UIBox_lobby(),
-			config = { align = "tl", offset = { x = 2, y = -10 }, major = G.ROOM_ATTACH, bond = "Weak" },
+			config = { align = "tl", offset = { x = 1.5, y = -10 }, major = G.ROOM_ATTACH, bond = "Weak" },
 		})
-		MP.LOBBY_UI.alignment.offset.y = MP.network_state.connected and 2.5 or 1.7
+		MP.LOBBY_UI.alignment.offset.y = MP.network_state.connected and 3 or 2.2
 		MP.LOBBY_UI:align_to_major()
 	end
 end

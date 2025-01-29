@@ -7,7 +7,13 @@ SMODS.Joker({
 			"#3#",
 		},
 	},
-	config = { extra = { username = "Player", text1 = "", text2 = "" } },
+	config = {
+		extra = {
+			username = "Player",
+			text1 = "",
+			text2 = "",
+		},
+	},
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.username, card.ability.extra.text1, card.ability.extra.text2 } }
 	end,

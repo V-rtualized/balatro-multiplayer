@@ -2,9 +2,9 @@ return {
 	misc = {
 		dictionary = {
 			page_title_lobby = "Lobby",
-			lobby_host = "Lobby Host",
-			lobby_member = "Lobby Member",
-			lobby_spectator = "Lobby Spectator",
+			lobby_host = "Host",
+			lobby_member = "Member",
+			lobby_spectator = "Spectator",
 			lobby_deck = "Lobby Deck",
 			b_open_lobby = "Open Lobby",
 			b_join_lobby = "Join Lobby",

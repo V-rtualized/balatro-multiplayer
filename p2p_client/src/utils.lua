@@ -56,32 +56,17 @@ function MP.serialize_networking_message(obj)
 	return table.concat(parts, ",")
 end
 
-function MP.get_player_count()
+function MP.get_player_by_code(code)
 	if MP.network_state.lobby == nil then
-		return 0
+		return { username = "ERROR", code = code }
 	end
-	local count = 0
-	for _, _ in pairs(MP.lobby_state.players) do
-		count = count + 1
+	if code == MP.network_state.lobby then
+		return MP.lobby_state.players[1]
 	end
-	return count
-end
-
-function MP.get_player_by_index(index)
-	if MP.network_state.lobby == nil then
-		return
-	end
-	if index == 1 then
-		return MP.lobby_state.players[MP.network_state.lobby]
-	end
-	local count = 1
-	for k, v in pairs(MP.lobby_state.players) do
-		if k == MP.network_state.lobby then
-			goto continue
+	for _, v in ipairs(MP.lobby_state.players) do
+		if v.code == code then
+			return v
 		end
-		if count == index then return v end
-		count = count + 1
-		::continue::
 	end
 end
 
@@ -92,14 +77,20 @@ end
 -- Credit: https://gist.github.com/tylerneylon/81333721109155b2d244
 function MP.deep_copy(obj, seen)
 	-- Handle non-tables and previously-seen tables.
-	if type(obj) ~= 'table' then return obj end
-	if seen and seen[obj] then return seen[obj] end
+	if type(obj) ~= "table" then
+		return obj
+	end
+	if seen and seen[obj] then
+		return seen[obj]
+	end
 
 	-- New table; mark it as seen and copy recursively.
 	local s = seen or {}
 	local res = {}
 	s[obj] = res
-	for k, v in pairs(obj) do res[MP.deep_copy(k, s)] = MP.deep_copy(v, s) end
+	for k, v in pairs(obj) do
+		res[MP.deep_copy(k, s)] = MP.deep_copy(v, s)
+	end
 	return setmetatable(res, getmetatable(obj))
 end
 
