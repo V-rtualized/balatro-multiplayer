@@ -86,6 +86,8 @@ function MP.networking.funcs.join_lobby_ack(args)
 
 	MP.network_state.lobby = args.code
 
+	MP.send.request_lobby_sync()
+
 	MP.draw_lobby_ui()
 end
 
@@ -99,4 +101,46 @@ function MP.networking.funcs.player_joined(args)
 		username = args.username,
 		code = args.code,
 	}
+end
+
+function MP.networking.funcs.player_left(args)
+	if not args or not args.code then
+		MP.send_warn_message("Got player_joined with invalid args")
+		return
+	end
+
+	local player_index = MP.get_player_by_code(args.code)
+
+	if player_index ~= nil then
+		table.remove(MP.lobby_state.players, player_index)
+	end
+end
+
+function MP.networking.funcs.request_lobby_sync(args)
+	if not args or not args.from then
+		MP.send_warn_message("Got request_lobby_sync with invalid args")
+		return
+	end
+
+	local data = MP.deep_copy(MP.lobby_state)
+	data.is_host = false
+	MP.send_debug_message(serialize(data))
+
+	MP.send.raw({
+		action = "request_lobby_sync_ack",
+		from = MP.network_state.code,
+		to = args.from,
+		data = MP.table_to_networking_message(data),
+	})
+end
+
+function MP.networking.funcs.request_lobby_sync_ack(args)
+	if not args or not args.data then
+		MP.send_warn_message("Got request_lobby_sync_ack with invalid args")
+		return
+	end
+
+	local parsed_data = MP.networking_message_to_table(args.data)
+	MP.send_debug_message(serialize(parsed_data))
+	MP.lobby_state = parsed_data
 end

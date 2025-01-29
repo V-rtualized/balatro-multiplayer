@@ -141,12 +141,8 @@ const ActionHandler = {
 		const connectedClient = client as ConnectedClient
 		targetLobby.addClient(connectedClient)
 
-		const host = targetLobby.getHost()
-		await host.send(
-			`action:player_joined,code:${connectedClient.getCode()},username:${connectedClient.getUsername()}`,
-			sendType.Sending,
-			'SERVER',
-		)
+		await targetLobby.broadcast(
+			`action:player_joined,code:${connectedClient.getCode()},username:${connectedClient.getUsername()}`)
 
 		await client.send(`action:join_lobby_ack,code:${lobby}`, sendType.Ack, 'SERVER')
 	},
@@ -172,6 +168,9 @@ const ActionHandler = {
 			)
 			return
 		}
+
+		await currentLobby.broadcast(
+			`action:player_left,code:${connectedClient.getCode()}`)
 
 		connectedClient.leaveLobby()
 		await client.send('action:leave_lobby_ack', sendType.Ack, 'SERVER')

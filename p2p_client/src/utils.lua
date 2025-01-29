@@ -33,7 +33,7 @@ function MP.parse_networking_message(str)
 				value = false
 
 			-- Parse number
-			elseif tonumber(value) then
+			elseif tonumber(value) and key ~= "code" then -- Prevent code like 92E011 from being turned into 9200000000000
 				value = tonumber(value)
 			end
 
@@ -63,9 +63,9 @@ function MP.get_player_by_code(code)
 	if code == MP.network_state.lobby then
 		return MP.lobby_state.players[1]
 	end
-	for _, v in ipairs(MP.lobby_state.players) do
+	for i, v in ipairs(MP.lobby_state.players) do
 		if v.code == code then
-			return v
+			return i
 		end
 	end
 end
@@ -108,4 +108,70 @@ function MP.get_from_clipboard()
 	else
 		return love.system.getClipboardText()
 	end
+end
+
+function MP.table_to_networking_message(t)
+	local function encode(val)
+		if val == nil then
+			return "n"
+		elseif type(val) == "string" then
+			return "s" .. val .. "#"
+		elseif type(val) == "number" then
+			return "d" .. tostring(val) .. "#"
+		elseif type(val) == "boolean" then
+			return "b" .. (val and "1" or "0")
+		elseif type(val) == "table" then
+			local parts = {}
+			for k, v in pairs(val) do
+				parts[#parts + 1] = encode(k)
+				parts[#parts + 1] = encode(v)
+			end
+			return "t" .. table.concat(parts) .. "e"
+		end
+	end
+	return encode(t)
+end
+
+function MP.networking_message_to_table(str)
+	local pos = 1
+
+	local function decode()
+		local typ = str:sub(pos, pos)
+		pos = pos + 1
+
+		if typ == "n" then
+			return nil
+		elseif typ == "s" then
+			local value = ""
+			while pos <= #str and str:sub(pos, pos) ~= "#" do
+				value = value .. str:sub(pos, pos)
+				pos = pos + 1
+			end
+			pos = pos + 1 -- Skip the #
+			return value
+		elseif typ == "d" then
+			local value = ""
+			while pos <= #str and str:sub(pos, pos) ~= "#" do
+				value = value .. str:sub(pos, pos)
+				pos = pos + 1
+			end
+			pos = pos + 1 -- Skip the #
+			return tonumber(value)
+		elseif typ == "b" then
+			local value = str:sub(pos, pos)
+			pos = pos + 1
+			return value == "1"
+		elseif typ == "t" then
+			local tbl = {}
+			while pos <= #str and str:sub(pos, pos) ~= "e" do
+				local key = decode()
+				local value = decode()
+				tbl[key] = value
+			end
+			pos = pos + 1 -- Skip the 'e'
+			return tbl
+		end
+	end
+
+	return decode()
 end
