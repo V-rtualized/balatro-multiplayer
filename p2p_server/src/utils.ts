@@ -31,9 +31,14 @@ export const parseMessage = (message: string): ParsedMessage => {
 	return data
 }
 
-export const sendTraceMessage = (sendType: sendType | undefined, from: string = "SERVER", to: string = "SERVER", message: string) => {
+export const sendTraceMessage = (
+	sendType: sendType | undefined,
+	from: string = 'SERVER',
+	to: string = 'SERVER',
+	message: string,
+) => {
 	const safeSendType = sendType ?? 'Sending'
-	const paddedSendType = safeSendType.padEnd(10)
+	const paddedSendType = safeSendType.padEnd(12)
 	console.log(
 		`${
 			new Date().toISOString()

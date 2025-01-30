@@ -1,4 +1,17 @@
-MP = SMODS.current_mod
+MP = {
+	id = SMODS.current_mod["id"],
+	name = SMODS.current_mod["name"],
+	display_name = SMODS.current_mod["display_name"],
+	author = SMODS.current_mod["author"],
+	description = SMODS.current_mod["description"],
+	prefix = SMODS.current_mod["prefix"],
+	priority = SMODS.current_mod["priority"],
+	badge_colour = SMODS.current_mod["badge_colour"],
+	badge_text_colour = SMODS.current_mod["badge_text_colour"],
+	version = SMODS.current_mod["version"],
+	dependencies = SMODS.current_mod["dependencies"],
+	conflicts = SMODS.current_mod["conflicts"],
+} -- I do this instead of `MP = SMODS.current_mod` for IDE autofill
 
 MP.network_state = {
 	connected = false,
@@ -23,6 +36,10 @@ MP.temp_vals = {
 	code = "",
 }
 
+MP.cards = {}
+
+MP.blinds = {}
+
 MP.networking = {}
 
 MP.networking.NETWORKING_THREAD = nil
@@ -45,25 +62,48 @@ function load_mp_file(file)
 	return nil
 end
 
+SMODS.Atlas({
+	key = "modicon",
+	path = "modicon.png",
+	px = 34,
+	py = 34,
+})
+
 load_mp_file("src/utils.lua")
+load_mp_file("src/mod_hash.lua")
 load_mp_file("src/networking/actions_in.lua")
 load_mp_file("src/networking/actions_out.lua")
 load_mp_file("src/misc.lua")
 load_mp_file("src/ui/utils.lua")
 load_mp_file("src/ui/lobby_buttons.lua")
+load_mp_file("src/ui/cards.lua")
+load_mp_file("src/editions.lua")
+load_mp_file("src/stickers.lua")
+load_mp_file("src/consumables/asteroid.lua")
 load_mp_file("src/jokers/player.lua")
+load_mp_file("src/jokers/defensive_joker.lua")
+load_mp_file("src/jokers/hanging_bad.lua")
+load_mp_file("src/jokers/lets_go_gambling.lua")
+load_mp_file("src/jokers/skip_off.lua")
+load_mp_file("src/jokers/speedrun.lua")
 load_mp_file("src/ui/galdur_lobby_page.lua")
+load_mp_file("src/blinds/horde.lua")
+load_mp_file("src/blinds/nemesis.lua")
 
-local game_update_ref = Game.update
-function Game:update(dt)
-	game_update_ref(self, dt)
-
-	repeat
-		local msg = MP.networking.network_to_ui_channel:pop()
-		if msg then
-			MP.networking.handle_network_message(msg)
-		end
-	until not msg
-end
+G.E_MANAGER:add_event(Event({
+	trigger = "immediate",
+	blockable = false,
+	blocking = false,
+	no_delete = true,
+	func = function()
+		repeat
+			local msg = MP.networking.network_to_ui_channel:pop()
+			if msg then
+				MP.networking.handle_network_message(msg)
+			end
+		until not msg
+		return false
+	end,
+}))
 
 MP.networking.initialize()

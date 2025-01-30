@@ -1,7 +1,7 @@
 import { Client, ConnectedClient } from './client.ts'
 import { Lobby } from './lobby.ts'
 import {
-ActionMessage,
+	ActionMessage,
 	ConnectMessage,
 	JoinLobbyMessage,
 	sendType,
@@ -143,9 +143,14 @@ const ActionHandler = {
 		targetLobby.addClient(connectedClient)
 
 		await targetLobby.broadcast(
-			`action:player_joined,code:${connectedClient.getCode()},username:${connectedClient.getUsername()}`)
+			`action:player_joined,code:${connectedClient.getCode()},username:${connectedClient.getUsername()}`,
+		)
 
-		await client.send(`action:join_lobby_ack,code:${lobby}`, sendType.Ack, 'SERVER')
+		await client.send(
+			`action:join_lobby_ack,code:${lobby}`,
+			sendType.Ack,
+			'SERVER',
+		)
 	},
 
 	leaveLobby: async (client: Client) => {
@@ -171,7 +176,8 @@ const ActionHandler = {
 		}
 
 		await currentLobby.broadcast(
-			`action:player_left,code:${connectedClient.getCode()}`)
+			`action:player_left,code:${connectedClient.getCode()}`,
+		)
 
 		connectedClient.leaveLobby()
 		await client.send('action:leave_lobby_ack', sendType.Ack, 'SERVER')
@@ -201,7 +207,7 @@ const ActionHandler = {
 
 		await currentLobby.sendTo(to, message)
 	},
-	
+
 	broadcast: async (client: Client, message: ActionMessage) => {
 		if (!client.isConnected()) {
 			await client.send(
@@ -225,7 +231,7 @@ const ActionHandler = {
 		}
 
 		await currentLobby.broadcast(message, client)
-	}
+	},
 }
 
 export default ActionHandler

@@ -106,9 +106,11 @@ export class Lobby {
 	}
 
 	broadcast(message: string | ActionMessage, sender?: Client) {
-		const promises = Array.from(this.clients).map((client) =>
-			client.send(message, sendType.Broadcasting, sender?.getCode())
-		)
+		const promises = Array.from(this.clients).map((client) => {
+			if (!sender || sender !== client) {
+				client.send(message, sendType.Broadcasting, sender?.getCode())
+			}
+		})
 		return Promise.all(promises)
 	}
 

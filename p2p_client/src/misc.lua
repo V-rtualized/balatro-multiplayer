@@ -20,3 +20,10 @@ function MP.can_continue(e)
 	return can_continue_ref(e)
 end
 G.FUNCS.can_continue = MP.can_continue
+
+local key_hold_update_ref = Controller.key_hold_update
+function Controller:key_hold_update(key, dt)
+	if not MP.is_in_lobby() then
+		key_hold_update_ref(self, key, dt)
+	end
+end
