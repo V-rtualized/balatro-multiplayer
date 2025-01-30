@@ -30,6 +30,8 @@ MP.game_state = {
 	seed = nil,
 	current_hand = nil,
 	round = 1,
+	blinds_by_ante = {},
+	end_pvp = false,
 }
 
 MP.temp_vals = {
@@ -75,6 +77,7 @@ load_mp_file("src/mod_hash.lua")
 load_mp_file("src/networking/actions_in.lua")
 load_mp_file("src/networking/actions_out.lua")
 load_mp_file("src/misc.lua")
+load_mp_file("src/game.lua")
 load_mp_file("src/ui/utils.lua")
 load_mp_file("src/ui/lobby_buttons.lua")
 load_mp_file("src/ui/cards.lua")

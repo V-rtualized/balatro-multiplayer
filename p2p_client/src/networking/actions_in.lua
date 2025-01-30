@@ -152,3 +152,47 @@ function MP.networking.funcs.start_run(args)
 	local parsed_choices = MP.networking_message_to_table(args.choices)
 	G.FUNCS.start_run(nil, parsed_choices)
 end
+
+function MP.networking.funcs.request_ante_info(args)
+	if not args or not args.ante or not args.from then
+		MP.send_warn_message("Got request_ante_info with invalid args")
+		return
+	end
+
+	local ante_num = tonumber(args.ante)
+
+	if ante_num == nil then
+		MP.send_warn_message("Got request_ante_info with non-number ante")
+		return
+	end
+
+	if not MP.game_state.blinds_by_ante[ante_num] then
+		MP.generate_blinds_by_ante(ante_num)
+	end
+
+	MP.send.raw({
+		action = "request_ante_info_ack",
+		from = MP.network_state.code,
+		to = args.from,
+		data = MP.table_to_networking_message(MP.game_state.blinds_by_ante[ante_num]),
+		ante = args.ante,
+	})
+end
+
+function MP.networking.funcs.request_ante_info_ack(args)
+	if not args or not args.data or not args.ante then
+		MP.send_warn_message("Got request_ante_info_ack with invalid args")
+		return
+	end
+
+	local ante_num = tonumber(args.ante)
+
+	if ante_num == nil then
+		MP.send_warn_message("Got request_ante_info_ack with non-number ante")
+		return
+	end
+
+	local parsed_data = MP.networking_message_to_table(args.data)
+
+	MP.game_state.blinds_by_ante[ante_num] = parsed_data
+end

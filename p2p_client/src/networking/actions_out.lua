@@ -79,3 +79,12 @@ function MP.send.start_run(choices)
 		choices = MP.table_to_networking_message(choices),
 	})
 end
+
+function MP.send.request_ante_info()
+	MP.send.raw({
+		action = "request_ante_info",
+		from = MP.network_state.code,
+		to = MP.network_state.lobby,
+		ante = G.GAME.round_resets.ante,
+	})
+end
