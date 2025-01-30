@@ -124,7 +124,6 @@ function MP.networking.funcs.request_lobby_sync(args)
 
 	local data = MP.deep_copy(MP.lobby_state)
 	data.is_host = false
-	MP.send_debug_message(serialize(data))
 
 	MP.send.raw({
 		action = "request_lobby_sync_ack",
@@ -141,6 +140,5 @@ function MP.networking.funcs.request_lobby_sync_ack(args)
 	end
 
 	local parsed_data = MP.networking_message_to_table(args.data)
-	MP.send_debug_message(serialize(parsed_data))
 	MP.lobby_state = parsed_data
 end

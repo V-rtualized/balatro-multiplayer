@@ -51,7 +51,7 @@ load_mp_file("src/networking/actions_out.lua")
 load_mp_file("src/misc.lua")
 load_mp_file("src/ui.lua")
 load_mp_file("src/jokers.lua")
-load_mp_file("src/galdur.lua")
+load_mp_file("src/lobby_page.lua")
 
 local game_update_ref = Game.update
 function Game:update(dt)

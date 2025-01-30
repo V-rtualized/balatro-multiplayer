@@ -91,7 +91,7 @@ function MP.UI.create_lobby_page_cycle()
 	return { n = G.UIT.R, config = { align = "cm" }, nodes = { cycle } }
 end
 
-function update_player_card(card, index)
+function MP.UI.update_player_card(card, index)
 	local e_player = MP.lobby_state.players[index]
 	if e_player then
 		card.ability.extra.player_index = index
@@ -111,9 +111,32 @@ function update_player_card(card, index)
 	end
 end
 
+local poses = {
+	G.P_CENTERS["j_baron"].pos,
+	G.P_CENTERS["j_card_sharp"].pos,
+	G.P_CENTERS["j_vampire"].pos,
+	G.P_CENTERS["j_mime"].pos,
+	G.P_CENTERS["j_sixth_sense"].pos,
+	G.P_CENTERS["j_chaos"].pos,
+	G.P_CENTERS["j_scholar"].pos,
+	G.P_CENTERS["j_space"].pos,
+	G.P_CENTERS["j_burglar"].pos,
+	G.P_CENTERS["j_runner"].pos,
+	G.P_CENTERS["j_hiker"].pos,
+	G.P_CENTERS["j_luchador"].pos,
+	G.P_CENTERS["j_fortune_teller"].pos,
+	G.P_CENTERS["j_swashbuckler"].pos,
+	G.P_CENTERS["j_stuntman"].pos,
+	G.P_CENTERS["j_ring_master"].pos,
+	G.P_CENTERS["j_merry_andy"].pos,
+	G.P_CENTERS["j_golden"].pos,
+	G.P_CENTERS["j_marble"].pos,
+	G.P_CENTERS["j_even_steven"].pos,
+	G.P_CENTERS["j_odd_todd"].pos,
+}
+
 function MP.UI.populate_player_card_areas(page)
 	local count = 1 + (page - 1) * 12
-	local joker_offset = 5
 	for i = 1, 12 do
 		local card = nil
 		local player = MP.lobby_state.players[count]
@@ -123,7 +146,7 @@ function MP.UI.populate_player_card_areas(page)
 			key = "j_mp_player",
 			no_edition = true,
 		})
-		card.children.center:set_sprite_pos(G.P_CENTER_POOLS.Joker[count + joker_offset].pos)
+		card.children.center:set_sprite_pos(poses[count])
 
 		if not player then
 			card.sprite_facing = "back"
@@ -147,7 +170,7 @@ function MP.UI.populate_player_card_areas(page)
 		end
 		Galdur.run_setup.player_select_areas[i]:emplace(card, "front", true)
 
-		update_player_card(card, count)
+		MP.UI.update_player_card(card, count)
 
 		local event
 		event = Event({
@@ -158,7 +181,7 @@ function MP.UI.populate_player_card_areas(page)
 			pause_force = true,
 			no_delete = true,
 			func = function(t)
-				update_player_card(card, event.player_index)
+				MP.UI.update_player_card(card, event.player_index)
 				event.start_timer = false
 				return not MP.UI.should_watch_player_cards
 			end,
@@ -188,6 +211,14 @@ G.FUNCS.change_lobby_page = function(args)
 	MP.UI.populate_player_card_areas(args.cycle_config.current_option)
 end
 
+local function is_host()
+	return MP.network_state.lobby == nil or MP.lobby_state.is_host
+end
+
+for i, _ in ipairs(Galdur.pages_to_add) do
+	Galdur.pages_to_add[i].condition = is_host
+end
+
 Galdur.add_new_page({
 	name = "page_title_lobby",
 	definition = MP.UI.lobby_page,
@@ -198,4 +229,42 @@ Galdur.add_new_page({
 		return tostring(#MP.lobby_state.players) .. " Players"
 	end,
 	page = 1,
+	condition = MP.is_in_lobby,
 })
+
+G.FUNCS.galdur_next_page_btn = function(e)
+	if Galdur.run_setup.current_page == #Galdur.run_setup.pages and MP.is_in_lobby() then
+		e.config.hover = MP.lobby_state.is_host
+		e.config.shadow = MP.lobby_state.is_host
+		e.config.colour = MP.lobby_state.is_host and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].config.shadow = MP.lobby_state.is_host
+		e.config.button = MP.lobby_state.is_host and "deck_select_next" or nil
+	else
+		e.config.hover = true
+		e.config.shadow = true
+		e.config.colour = G.C.BLUE
+		e.children[1].children[1].config.colour = G.C.WHITE
+		e.children[1].children[1].config.shadow = true
+		e.config.button = "deck_select_next"
+	end
+end
+
+G.FUNCS.galdur_last_run_btn = function(e)
+	if MP.is_in_lobby() then
+		e.config.hover = MP.lobby_state.is_host
+		e.config.shadow = MP.lobby_state.is_host
+		e.config.colour = MP.lobby_state.is_host and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE
+			or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].children[1].config.shadow = MP.lobby_state.is_host
+		e.config.button = MP.lobby_state.is_host and "quick_start" or nil
+	else
+		e.config.hover = true
+		e.config.shadow = true
+		e.config.colour = G.C.ORANGE
+		e.children[1].children[1].children[1].config.colour = G.C.WHITE
+		e.children[1].children[1].children[1].config.shadow = true
+		e.config.button = "quick_start"
+	end
+end
