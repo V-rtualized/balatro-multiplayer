@@ -50,6 +50,15 @@ times = 1
 
 [[patches]]
 [patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.GAME.round_resets.blind_choices.Boss = get_new_boss()'''
+position = 'at'
+payload = '''G.GAME.round_resets.blind_choices.Boss = MP.is_in_lobby() and G.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
+match_indent = true
+times = 2
+
+[[patches]]
+[patches.pattern]
 target = 'functions/UI_definitions.lua'
 pattern = '''local main_menu = nil'''
 position = 'after'

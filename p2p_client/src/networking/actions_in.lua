@@ -196,3 +196,24 @@ function MP.networking.funcs.request_ante_info_ack(args)
 
 	MP.game_state.blinds_by_ante[ante_num] = parsed_data
 end
+
+function MP.networking.funcs.ready_blind(args)
+	MP.game_state.players_ready = MP.game_state.players_ready + 1
+	if MP.network_state.code == MP.network_state.lobby and MP.game_state.players_ready >= #MP.lobby_state.players then
+		MP.send.raw({
+			action = "start_blind",
+		})
+		MP.networking.funcs.start_blind()
+		MP.game_state.players_ready = 0
+	end
+end
+
+function MP.networking.funcs.unready_blind(args)
+	MP.game_state.players_ready = MP.game_state.players_ready - 1
+end
+
+function MP.networking.funcs.start_blind(args)
+	if MP.game_state.ready_blind_context then
+		G.FUNCS.select_blind(MP.game_state.ready_blind_context)
+	end
+end

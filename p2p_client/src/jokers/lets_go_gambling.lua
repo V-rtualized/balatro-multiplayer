@@ -98,4 +98,4 @@ SMODS.Joker({
 	},
 })
 
-table.insert(MP.cards, key)
+table.insert(MP.cards, "j_mp_" .. key)

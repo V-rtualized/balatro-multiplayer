@@ -22,4 +22,4 @@ SMODS.Blind({
 	end,
 })
 
-table.insert(MP.blinds, key)
+table.insert(MP.blinds, "bl_mp_" .. key)

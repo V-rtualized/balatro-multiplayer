@@ -20,10 +20,10 @@ SMODS.Consumable({
 		return { vars = { 1 } }
 	end,
 	in_pool = function(self)
-		return G.LOBBY.code
+		return false --MP.is_in_lobby()
 	end,
 	can_use = function(self, card)
-		return false --MP.is_in_lobby
+		return true
 	end,
 	use = function(self, card, area, copier)
 		--G.MULTIPLAYER.asteroid()

@@ -22,7 +22,7 @@ SMODS.Joker({
 		MP.add_nemesis_info(info_queue, card.ability.extra.current_nemesis)
 		return { vars = {} }
 	end,
-	in_pool = function(self)
+	in_pool = function(self) -- TODO: Convert to 1.0
 		return false -- MP.is_in_lobby()
 	end,
 	mp_credits = {
@@ -32,4 +32,4 @@ SMODS.Joker({
 	},
 })
 
-table.insert(MP.cards, key)
+table.insert(MP.cards, "j_mp_" .. key)

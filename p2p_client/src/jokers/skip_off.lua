@@ -18,7 +18,7 @@ SMODS.Joker({
 	eternal_compat = true,
 	perishable_compat = true,
 	config = { h_size = 0, d_size = 0, extra = { extra_hands = 1, extra_discards = 1, current_nemesis = nil } },
-	loc_vars = function(self, info_queue, card)
+	loc_vars = function(self, info_queue, card) -- TODO: Convert to 1.0
 		MP.add_nemesis_info(info_queue, card.ability.extra.current_nemesis)
 		return {
 			vars = {
@@ -39,7 +39,7 @@ SMODS.Joker({
 	in_pool = function(self)
 		return false -- MP.is_in_lobby()
 	end,
-	update = function(self, card, dt)
+	update = function(self, card, dt) -- TODO: Convert to 1.0
 		--[[if G.STAGE == G.STAGES.RUN and G.GAME.skips ~= nil and G.MULTIPLAYER_GAME.enemy.skips ~= nil then
 			local skip_diff = 0 --(math.max(G.GAME.skips - G.MULTIPLAYER_GAME.enemy.skips, 0))
 			card.ability.h_size = skip_diff * card.ability.extra.extra_hands
@@ -64,4 +64,4 @@ SMODS.Joker({
 	},
 })
 
-table.insert(MP.cards, key)
+table.insert(MP.cards, "j_mp_" .. key)

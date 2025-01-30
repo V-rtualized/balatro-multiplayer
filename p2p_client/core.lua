@@ -25,14 +25,36 @@ MP.lobby_state = {
 	players = {},
 }
 
-MP.game_state = {
-	initialized = false,
-	seed = nil,
-	current_hand = nil,
-	round = 1,
-	blinds_by_ante = {},
-	end_pvp = false,
-}
+MP.game_state = {}
+
+function MP.reset_game_state()
+	MP.game_state = {
+		initialized = false,
+		seed = nil,
+		current_hand = nil,
+		round = 1,
+		blinds_by_ante = {},
+		end_pvp = false,
+		ready_blind = false,
+		ready_blind_text = localize("unready"),
+		ready_blind_context = nil,
+		players_ready = 0,
+		lives = 4,
+	}
+end
+
+G.E_MANAGER:add_event(Event({
+	trigger = "immediate",
+	blockable = false,
+	blocking = false,
+	func = function()
+		if SMODS.booted then
+			MP.reset_game_state()
+			return true
+		end
+		return false
+	end,
+}))
 
 MP.temp_vals = {
 	code = "",
@@ -80,6 +102,8 @@ load_mp_file("src/misc.lua")
 load_mp_file("src/game.lua")
 load_mp_file("src/ui/utils.lua")
 load_mp_file("src/ui/lobby_buttons.lua")
+load_mp_file("src/ui/blind_select.lua")
+load_mp_file("src/ui/game_hud.lua")
 load_mp_file("src/ui/cards.lua")
 load_mp_file("src/editions.lua")
 load_mp_file("src/stickers.lua")

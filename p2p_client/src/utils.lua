@@ -192,6 +192,20 @@ function MP.is_pvp_boss()
 	return false
 end
 
+function MP.value_is_pvp_boss(value)
+	MP.send_debug_message("Looking for " .. value)
+	if not G.GAME or not G.GAME.blind then
+		return false
+	end
+	for _, v in ipairs(MP.blinds) do
+		MP.send_debug_message("Found " .. v)
+		if value == v then
+			return true
+		end
+	end
+	return false
+end
+
 -- Credit to Steamo (https://github.com/Steamopollys/Steamodded/blob/main/core/core.lua)
 function MP.wrapText(text, maxChars)
 	local wrappedText = ""

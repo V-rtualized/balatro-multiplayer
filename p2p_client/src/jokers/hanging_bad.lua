@@ -22,7 +22,7 @@ SMODS.Joker({
 		MP.add_nemesis_info(info_queue, card.ability.extra.current_nemesis)
 		return { vars = {} }
 	end,
-	add_to_deck = function(self, card, from_debuff)
+	add_to_deck = function(self, card, from_debuff) -- TODO: Convert to 1.0
 		if card.edition and card.edition.type ~= "e_mp_phantom" then
 			return
 		end
@@ -38,7 +38,7 @@ SMODS.Joker({
 			end
 		end
 	end,
-	remove_from_deck = function(self, card, from_debuff)
+	remove_from_deck = function(self, card, from_debuff) -- TODO: Convert to 1.0
 		if card.edition and card.edition.type ~= "e_mp_phantom" then
 			return
 		end
@@ -54,4 +54,4 @@ SMODS.Joker({
 	},
 })
 
-table.insert(MP.cards, key)
+table.insert(MP.cards, "j_mp_" .. key)

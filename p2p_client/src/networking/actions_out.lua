@@ -88,3 +88,18 @@ function MP.send.request_ante_info()
 		ante = G.GAME.round_resets.ante,
 	})
 end
+
+function MP.send.ready_blind(e)
+	MP.game_state.ready_blind_context = e
+	MP.game_state.players_ready = MP.game_state.players_ready + 1
+	MP.send.raw({
+		action = "ready_blind",
+	})
+end
+
+function MP.send.unready_blind()
+	MP.game_state.players_ready = MP.game_state.players_ready - 1
+	MP.send.raw({
+		action = "unready_blind",
+	})
+end

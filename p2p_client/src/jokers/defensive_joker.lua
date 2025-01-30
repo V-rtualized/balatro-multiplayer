@@ -24,7 +24,7 @@ SMODS.Joker({
 	in_pool = function(self)
 		return false -- MP.is_in_lobby()
 	end,
-	update = function(self, card, dt)
+	update = function(self, card, dt) -- TODO: Convert to 1.0
 		if MP.is_in_lobby() then
 			if G.STAGE == G.STAGES.RUN then
 				--card.ability.t_chips = (G.LOBBY.config.starting_lives - G.MULTIPLAYER_GAME.lives) * card.ability.extra.extra
@@ -52,4 +52,4 @@ SMODS.Joker({
 	},
 })
 
-table.insert(MP.cards, key)
+table.insert(MP.cards, "j_mp_" .. key)
