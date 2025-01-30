@@ -1,6 +1,7 @@
 import { Client, ConnectedClient } from './client.ts'
 import { Lobby } from './lobby.ts'
 import {
+ActionMessage,
 	ConnectMessage,
 	JoinLobbyMessage,
 	sendType,
@@ -200,6 +201,31 @@ const ActionHandler = {
 
 		await currentLobby.sendTo(to, message)
 	},
+	
+	broadcast: async (client: Client, message: ActionMessage) => {
+		if (!client.isConnected()) {
+			await client.send(
+				'action:error,message:Not connected',
+				sendType.Error,
+				'SERVER',
+			)
+			return
+		}
+
+		const connectedClient = client as ConnectedClient
+		const currentLobby = connectedClient.getCurrentLobby()
+
+		if (!currentLobby) {
+			await client.send(
+				'action:error,message:Not in a lobby',
+				sendType.Error,
+				'SERVER',
+			)
+			return
+		}
+
+		await currentLobby.broadcast(message, client)
+	}
 }
 
 export default ActionHandler

@@ -72,3 +72,10 @@ function MP.send.request_lobby_sync()
 		to = MP.network_state.lobby,
 	})
 end
+
+function MP.send.start_run(choices)
+	MP.send.raw({
+		action = "start_run",
+		choices = MP.table_to_networking_message(choices),
+	})
+end

@@ -1,5 +1,5 @@
 import { Client, ConnectedClient } from './client.ts'
-import { ErrorMessage, sendType, ToMessage } from './types.ts'
+import { ActionMessage, ErrorMessage, sendType, ToMessage } from './types.ts'
 
 const LOBBY_MAX_SIZE = 8
 
@@ -105,7 +105,7 @@ export class Lobby {
 		lobbies.delete(this.code)
 	}
 
-	broadcast(message: string, sender?: Client) {
+	broadcast(message: string | ActionMessage, sender?: Client) {
 		const promises = Array.from(this.clients).map((client) =>
 			client.send(message, sendType.Broadcasting, sender?.getCode())
 		)

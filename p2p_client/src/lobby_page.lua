@@ -228,6 +228,9 @@ Galdur.add_new_page({
 	quick_start_text = function()
 		return tostring(#MP.lobby_state.players) .. " Players"
 	end,
+	post_start = function(choices)
+		MP.send.start_run(choices)
+	end,
 	page = 1,
 	condition = MP.is_in_lobby,
 })

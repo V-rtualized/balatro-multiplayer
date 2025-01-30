@@ -142,3 +142,13 @@ function MP.networking.funcs.request_lobby_sync_ack(args)
 	local parsed_data = MP.networking_message_to_table(args.data)
 	MP.lobby_state = parsed_data
 end
+
+function MP.networking.funcs.start_run(args)
+	if not args or not args.choices then
+		MP.send_warn_message("Got start_run with invalid args")
+		return
+	end
+
+	local parsed_choices = MP.networking_message_to_table(args.choices)
+	G.FUNCS.start_run(nil, parsed_choices)
+end

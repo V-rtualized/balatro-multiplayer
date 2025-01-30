@@ -81,6 +81,10 @@ const handleClientMessage = async (client: Client, data: string) => {
 					ActionHandler.leaveLobby(client)
 				}
 				break
+			default:
+				if (assertClientConnected(client)) {
+					ActionHandler.broadcast(client, actionMessage)
+				}
 		}
 	}
 }
