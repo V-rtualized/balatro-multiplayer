@@ -1,14 +1,17 @@
 import type Client from "./Client.js";
 import GameModes from "./GameMode.js";
-import Lobby from "./Lobby.js";
+import Lobby, { getEnemy } from "./Lobby.js";
 import type {
 	ActionCreateLobby,
 	ActionHandlerArgs,
 	ActionHandlers,
 	ActionJoinLobby,
 	ActionPlayHand,
+	ActionRemovePhantom,
+	ActionSendPhantom,
 	ActionSetAnte,
 	ActionSetLocation,
+	ActionSkip,
 	ActionUsername,
 	ActionVersion,
 } from "./actions.js";
@@ -104,39 +107,33 @@ const unreadyBlindAction = (client: Client) => {
 };
 
 const playHandAction = (
-	{ handsLeft, score }: ActionHandlerArgs<ActionPlayHand>,
+	{ handsLeft, score, hasSpeedrun }: ActionHandlerArgs<ActionPlayHand>,
 	client: Client,
 ) => {
-	if (!client.lobby) {
-		return;
+	const [lobby, enemy] = getEnemy(client)
+
+	if (lobby === null || enemy === null || lobby.host === null || lobby.guest === null) {
+		stopGameAction(client);
+		return
 	}
 
-	client.score = BigInt(String(score));
+	if (hasSpeedrun && handsLeft === 0 && enemy.handsLeft > 0) {
+		client.score = BigInt(String(score)) * BigInt(3);
+		client.sendAction({ action: "speedrun" })
+	} else {
+		client.score = BigInt(String(score));
+	}
+
 	client.handsLeft =
 		typeof handsLeft === "number" ? handsLeft : Number(handsLeft);
 
-	const lobby = client.lobby;
-	// Update the other party about the
-	// enemy's score and hands left
-	// TODO: Refactor for more than two players
-	if (lobby.host?.id === client.id) {
-		lobby.guest?.sendAction({
-			action: "enemyInfo",
-			handsLeft,
-			score,
-		});
-	} else if (lobby.guest?.id === client.id) {
-		lobby.host?.sendAction({
-			action: "enemyInfo",
-			handsLeft,
-			score,
-		});
-	}
+	enemy.sendAction({
+		action: "enemyInfo",
+		handsLeft,
+		score: client.score,
+		skips: client.skips,
+	});
 
-	if (!lobby.host || !lobby.guest) {
-		stopGameAction(client);
-		return;
-	}
 	// This info is only sent on a boss blind, so it shouldn't
 	// affect other blinds
 	if (
@@ -166,7 +163,7 @@ const playHandAction = (
 		}
 
 		roundWinner.sendAction({ action: "endPvP", lost: false });
-		roundLoser.sendAction({ action: "endPvP", lost: true });
+		roundLoser.sendAction({ action: "endPvP", lost: lobby.host.score !== lobby.guest.score });
 	}
 };
 
@@ -248,12 +245,50 @@ const versionAction = (
 	}
 };
 
-const setLocation = ({ location }: ActionHandlerArgs<ActionSetLocation>, client: Client) => {
+const setLocationAction = ({ location }: ActionHandlerArgs<ActionSetLocation>, client: Client) => {
 	client.setLocation(location);
 }
 
-const newRound = (client: Client) => {
+const newRoundAction = (client: Client) => {
 	client.resetBlocker()
+}
+
+const skipAction = ({ skips }: ActionHandlerArgs<ActionSkip>, client: Client) => {
+	const [lobby, enemy] = getEnemy(client)
+	client.setSkips(skips)
+	if (!lobby || !enemy) return;
+	enemy.sendAction({
+		action: "enemyInfo",
+		handsLeft: client.handsLeft,
+		score: client.score,
+		skips: client.skips,
+	});
+}
+
+const sendPhantomAction = ({ key }: ActionHandlerArgs<ActionSendPhantom>, client: Client) => {
+	const [lobby, enemy] = getEnemy(client)
+	if (!lobby || !enemy) return;
+	enemy.sendAction({
+		action: "sendPhantom",
+		key
+	});
+} 
+
+const removePhantomAction = ({ key }: ActionHandlerArgs<ActionRemovePhantom>, client: Client) => {
+	const [lobby, enemy] = getEnemy(client)
+	if (!lobby || !enemy) return;
+	enemy.sendAction({
+		action: "removePhantom",
+		key
+	});
+}
+
+const asteroidAction = (client: Client) => {
+	const [lobby, enemy] = getEnemy(client)
+	if (!lobby || !enemy) return;
+	enemy.sendAction({
+		action: "asteroid"
+	});
 }
 
 // Declared partial for now untill all action handlers are defined
@@ -274,6 +309,10 @@ export const actionHandlers = {
 	failRound: failRoundAction,
 	setAnte: setAnteAction,
 	version: versionAction,
-	setLocation: setLocation,
-	newRound: newRound,
+	setLocation: setLocationAction,
+	newRound: newRoundAction,
+	skip: skipAction,
+	sendPhantom: sendPhantomAction,
+	removePhantom: removePhantomAction,
+	asteroid: asteroidAction,
 } satisfies Partial<ActionHandlers>;

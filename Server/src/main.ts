@@ -9,9 +9,12 @@ import type {
 	ActionJoinLobby,
 	ActionLobbyOptions,
 	ActionPlayHand,
+	ActionRemovePhantom,
+	ActionSendPhantom,
 	ActionServerToClient,
 	ActionSetAnte,
 	ActionSetLocation,
+	ActionSkip,
 	ActionUsername,
 	ActionUtility,
 	ActionVersion,
@@ -45,9 +48,13 @@ const scientificNotationToBigInt = (value: string): bigint => {
 
 // biome-ignore lint/suspicious/noExplicitAny: Object is parsed from string
 const stringToJson = (str: string): any => {
-	const obj: Record<string, string | number | bigint> = {}
+	const obj: Record<string, string | number | bigint | boolean> = {}
 	for (const part of str.split(',')) {
 		const [key, value] = part.split(':')
+		if (value === 'true' || value === 'false') {
+			obj[key] = value === 'true'
+			continue
+		}
 		const numericValue = Number(value)
 		let score = null
 		if (key === 'score') {
@@ -228,6 +235,27 @@ const server = createServer((socket) => {
 							actionArgs as ActionHandlerArgs<ActionSetAnte>,
 							client,
 						)
+						break
+					case 'skip':
+						actionHandlers.skip(
+							actionArgs as ActionHandlerArgs<ActionSkip>,
+							client,
+						)
+						break
+					case 'sendPhantom':
+						actionHandlers.sendPhantom(
+							actionArgs as ActionHandlerArgs<ActionSendPhantom>,
+							client,
+						)
+						break
+					case 'removePhantom':
+						actionHandlers.removePhantom(
+							actionArgs as ActionHandlerArgs<ActionRemovePhantom>,
+							client,
+						)
+						break
+					case 'asteroid':
+						actionHandlers.asteroid(client)
 						break
 				}
 			} catch (error) {

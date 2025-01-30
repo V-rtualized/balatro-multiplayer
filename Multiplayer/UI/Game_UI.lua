@@ -952,7 +952,8 @@ function Game:update_hand_played(dt)
 		G.E_MANAGER:add_event(Event({
 			trigger = "immediate",
 			func = function()
-				G.MULTIPLAYER.play_hand(G.GAME.chips, G.GAME.current_round.hands_left)
+				local card = G.MULTIPLAYER.UTILS.get_joker("j_mp_speedrun")
+				G.MULTIPLAYER.play_hand(G.GAME.chips, G.GAME.current_round.hands_left, card ~= nil)
 				-- Set blind chips to enemy score
 				G.GAME.blind.chips = G.MULTIPLAYER_GAME.enemy.score
 				-- For now, never advance to next round
@@ -2033,9 +2034,10 @@ function reset_blinds()
 		if G.LOBBY.config.gamemode == "attrition" then
 			G.GAME.round_resets.blind_choices.Boss = "bl_pvp"
 		end
-		sendDebugMessage(G.GAME.round_resets.ante, "MULTIPLAYER")
-		sendDebugMessage(G.LOBBY.config.draft_starting_antes, "MULTIPLAYER")
-		if G.LOBBY.config.gamemode == "draft" and G.GAME.round_resets.ante >= G.LOBBY.config.draft_starting_antes then
+		if
+			G.LOBBY.config.gamemode == "showdown"
+			and G.GAME.round_resets.ante >= G.LOBBY.config.showdown_starting_antes
+		then
 			G.GAME.round_resets.blind_choices.Small = "bl_pvp"
 			G.GAME.round_resets.blind_choices.Big = "bl_pvp"
 			G.GAME.round_resets.blind_choices.Boss = "bl_pvp"
@@ -2076,13 +2078,19 @@ end
 
 local update_selecting_hand_ref = Game.update_selecting_hand
 function Game:update_selecting_hand(dt)
-	if #G.hand.cards < 1 and #G.deck.cards < 1 and #G.play.cards < 1 and G.LOBBY.code then
+	if
+		G.GAME.current_round.hands_left < G.GAME.round_resets.hands
+		and #G.hand.cards < 1
+		and #G.deck.cards < 1
+		and #G.play.cards < 1
+		and G.LOBBY.code
+	then
 		G.GAME.current_round.hands_left = 0
 		if not is_pvp_boss() then
 			G.STATE_COMPLETE = false
 			G.STATE = G.STATES.NEW_ROUND
 		else
-			G.MULTIPLAYER.play_hand(G.GAME.chips, 0)
+			G.MULTIPLAYER.play_hand(G.GAME.chips, 0, false)
 			G.STATE_COMPLETE = false
 			G.STATE = G.STATES.HAND_PLAYED
 		end
@@ -2304,9 +2312,21 @@ function G.FUNCS.select_blind(e)
 	select_blind_ref(e)
 	if G.LOBBY.code then
 		G.MULTIPLAYER_GAME.ante_key = tostring(math.random())
-		G.MULTIPLAYER.play_hand(0, G.GAME.round_resets.hands)
+		G.MULTIPLAYER.play_hand(0, G.GAME.round_resets.hands, false)
 		G.MULTIPLAYER.new_round()
 		G.MULTIPLAYER.set_location("loc_playing-" .. (e.config.ref_table.key or e.config.ref_table.name))
 		hide_enemy_location()
+	end
+end
+
+function G.UIDEF.multiplayer_deck()
+	return G.UIDEF.challenge_description(get_challenge_int_from_id("c_multiplayer_1"), nil, false)
+end
+
+local skip_blind_ref = G.FUNCS.skip_blind
+G.FUNCS.skip_blind = function(e)
+	skip_blind_ref(e)
+	if G.LOBBY.code then
+		G.MULTIPLAYER.skip(G.GAME.skips)
 	end
 end

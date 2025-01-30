@@ -31,11 +31,16 @@ export type ActionEnemyInfo = {
 	action: 'enemyInfo'
 	score: BigInt
 	handsLeft: number
+	skips: number
 }
 export type ActionEndPvP = { action: 'endPvP'; lost: boolean }
 export type ActionLobbyOptions = { action: 'lobbyOptions', gamemode: string }
 export type ActionRequestVersion = { action: 'version' }
 export type ActionEnemyLocation = { action: 'enemyLocation'; location: string }
+export type ActionSendPhantom = { action: 'sendPhantom', key: string }
+export type ActionRemovePhantom = { action: 'removePhantom', key: string }
+export type ActionSpeedrun = { action: 'speedrun' }
+export type ActionAsteroid = { action: 'asteroid' }
 
 export type ActionServerToClient =
 	| ActionConnected
@@ -55,6 +60,10 @@ export type ActionServerToClient =
 	| ActionRequestVersion
 	| ActionUtility
 	| ActionEnemyLocation
+	| ActionSendPhantom
+	| ActionRemovePhantom
+	| ActionSpeedrun
+	| ActionAsteroid
 
 // Client to Server
 export type ActionUsername = { action: 'username'; username: string; modHash: string }
@@ -70,6 +79,7 @@ export type ActionPlayHand = {
 	action: 'playHand'
 	score: BigInt
 	handsLeft: number
+	hasSpeedrun: boolean
 }
 export type ActionGameInfoRequest = { action: 'gameInfo' }
 export type ActionPlayerInfoRequest = { action: 'playerInfo' }
@@ -82,6 +92,7 @@ export type ActionSetAnte = {
 export type ActionVersion = { action: 'version'; version: string }
 export type ActionSetLocation = { action: 'setLocation'; location: string }
 export type ActionNewRound = { action: 'newRound' }
+export type ActionSkip = { action: 'skip', skips: number }
 
 export type ActionClientToServer =
 	| ActionUsername
@@ -103,6 +114,10 @@ export type ActionClientToServer =
 	| ActionVersion
 	| ActionSetLocation
 	| ActionNewRound
+	| ActionSkip
+	| ActionSendPhantom
+	| ActionRemovePhantom
+	| ActionAsteroid
 
 // Utility actions
 export type ActionKeepAlive = { action: 'keepAlive' }
@@ -131,4 +146,4 @@ export type ActionHandlers = {
 export type ActionHandlerArgs<T extends HandledActions> = Omit<T, 'action'>
 
 // Other types
-export type GameMode = 'attrition' | 'draft'
+export type GameMode = 'attrition' | 'showdown'
