@@ -222,4 +222,8 @@ function MP.networking.funcs.host_migration(args)
 	end
 
 	MP.network_state.lobby = args.code
+
+	if MP.is_host() then
+		MP.UI.show_mp_overlay_message(localize("new_host"))
+	end
 end

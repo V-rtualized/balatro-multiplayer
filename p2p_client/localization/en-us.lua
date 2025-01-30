@@ -211,6 +211,7 @@ return {
 			k_planetesimal = "Planetesimal",
 			consider_supporting = "This Mod is developed by one person, if you want to support it's development consider",
 			kofi_name = "Buying me a Coffee",
+			new_host = "The lobby host has left, you are now the lobby host. The lobby code has changed.",
 		},
 		v_dictionary = {
 			mp_art = { "Art: #1#" },
