@@ -209,6 +209,8 @@ return {
 			b_leave_lobby = "Leave Lobby",
 			k_enter_code = "Enter Code",
 			k_planetesimal = "Planetesimal",
+			consider_supporting = "This Mod is developed by one person, if you want to support it's development consider",
+			kofi_name = "Buying me a Coffee",
 		},
 		v_dictionary = {
 			mp_art = { "Art: #1#" },

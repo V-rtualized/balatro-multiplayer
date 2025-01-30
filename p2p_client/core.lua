@@ -69,6 +69,7 @@ SMODS.Atlas({
 	py = 34,
 })
 
+load_mp_file("src/ui/smods.lua")
 load_mp_file("src/utils.lua")
 load_mp_file("src/mod_hash.lua")
 load_mp_file("src/networking/actions_in.lua")
