@@ -64,9 +64,6 @@ function MP.get_player_by_code(code)
 	if MP.network_state.lobby == nil then
 		return { username = "ERROR", code = code }
 	end
-	if code == MP.network_state.lobby then
-		return MP.lobby_state.players[1]
-	end
 	for i, v in ipairs(MP.lobby_state.players) do
 		if v.code == code then
 			return i
@@ -247,4 +244,8 @@ function MP.get_non_phantom_jokers()
 		end
 	end
 	return jokers
+end
+
+function MP.is_host()
+	return MP.network_state.code == MP.network_state.lobby
 end

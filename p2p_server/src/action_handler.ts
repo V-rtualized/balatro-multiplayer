@@ -175,10 +175,6 @@ const ActionHandler = {
 			return
 		}
 
-		await currentLobby.broadcast(
-			`action:player_left,code:${connectedClient.getCode()}`,
-		)
-
 		connectedClient.leaveLobby()
 		await client.send('action:leave_lobby_ack', sendType.Ack, 'SERVER')
 	},

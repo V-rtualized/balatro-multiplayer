@@ -56,7 +56,6 @@ end
 
 function MP.networking.funcs.open_lobby_ack(args)
 	MP.network_state.lobby = MP.network_state.code
-	MP.lobby_state.is_host = true
 
 	MP.lobby_state.players[1] = {
 		username = MP.network_state.username,
@@ -68,7 +67,6 @@ end
 
 function MP.networking.funcs.leave_lobby_ack(args)
 	MP.network_state.lobby = nil
-	MP.lobby_state.is_host = false
 
 	MP.draw_lobby_ui()
 end
@@ -123,7 +121,6 @@ function MP.networking.funcs.request_lobby_sync(args)
 	end
 
 	local data = MP.deep_copy(MP.lobby_state)
-	data.is_host = false
 
 	MP.send.raw({
 		action = "request_lobby_sync_ack",
@@ -216,4 +213,13 @@ function MP.networking.funcs.start_blind(args)
 	if MP.game_state.ready_blind_context then
 		G.FUNCS.select_blind(MP.game_state.ready_blind_context)
 	end
+end
+
+function MP.networking.funcs.host_migration(args)
+	if not args or not args.code then
+		MP.send_warn_message("Got host_migration with invalid args")
+		return
+	end
+
+	MP.network_state.lobby = args.code
 end

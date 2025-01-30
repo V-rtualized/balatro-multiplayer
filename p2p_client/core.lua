@@ -21,7 +21,6 @@ MP.network_state = {
 }
 
 MP.lobby_state = {
-	is_host = false,
 	players = {},
 }
 

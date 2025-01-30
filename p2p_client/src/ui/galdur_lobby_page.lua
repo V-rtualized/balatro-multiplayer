@@ -9,12 +9,12 @@ G.FUNCS.mp_change_lobby_page = MP.UI.BTN.change_lobby_page
 
 function MP.UI.BTN.galdur_next_page_btn(e)
 	if Galdur.run_setup.current_page == #Galdur.run_setup.pages and MP.is_in_lobby() then
-		e.config.hover = MP.lobby_state.is_host
-		e.config.shadow = MP.lobby_state.is_host
-		e.config.colour = MP.lobby_state.is_host and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].config.shadow = MP.lobby_state.is_host
-		e.config.button = MP.lobby_state.is_host and "deck_select_next" or nil
+		e.config.hover = MP.is_host()
+		e.config.shadow = MP.is_host()
+		e.config.colour = MP.is_host() and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].config.colour = MP.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].config.shadow = MP.is_host()
+		e.config.button = MP.is_host() and "deck_select_next" or nil
 	else
 		e.config.hover = true
 		e.config.shadow = true
@@ -28,13 +28,12 @@ G.FUNCS.mp_galdur_next_page_btn = MP.UI.BTN.galdur_next_page_btn
 
 function MP.UI.BTN.galdur_last_run_btn(e)
 	if MP.is_in_lobby() then
-		e.config.hover = MP.lobby_state.is_host
-		e.config.shadow = MP.lobby_state.is_host
-		e.config.colour = MP.lobby_state.is_host and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE
-			or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].children[1].config.shadow = MP.lobby_state.is_host
-		e.config.button = MP.lobby_state.is_host and "quick_start" or nil
+		e.config.hover = MP.is_host()
+		e.config.shadow = MP.is_host()
+		e.config.colour = MP.is_host() and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].children[1].config.colour = MP.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].children[1].config.shadow = MP.is_host()
+		e.config.button = MP.is_host() and "quick_start" or nil
 	else
 		e.config.hover = true
 		e.config.shadow = true
@@ -252,12 +251,10 @@ function MP.UI.clean_lobby_areas()
 end
 Galdur.clean_up_functions.mp_clean_lobby_areas = MP.UI.clean_lobby_areas
 
-local function is_host()
-	return MP.network_state.lobby == nil or MP.lobby_state.is_host
-end
-
 for i, _ in ipairs(Galdur.pages_to_add) do
-	Galdur.pages_to_add[i].condition = is_host
+	Galdur.pages_to_add[i].condition = function()
+		return MP.network_state.lobby == nil or MP.is_host()
+	end
 end
 
 Galdur.add_new_page({

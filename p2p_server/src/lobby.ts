@@ -86,10 +86,20 @@ export class Lobby {
 		if (this.clients.has(client as ConnectedClient)) {
 			this.clients.delete(client as ConnectedClient)
 
+			this.broadcast(
+				`action:player_left,code:${client.getCode()}`,
+			).then()
+
 			if (client === this.host) {
 				const remainingClients = Array.from(this.clients)
 				if (remainingClients.length > 0) {
+					lobbies.delete(this.code)
 					this.host = remainingClients[0]
+					this.code = this.host.getCode()
+					lobbies.set(this.code, this)
+					this.broadcast(
+						`action:host_migration,code:${this.code}`,
+					).then()
 				} else {
 					this.close()
 				}

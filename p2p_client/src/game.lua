@@ -4,7 +4,7 @@ G.STATES.WAITING_ON_PVP_END = 21
 function MP.update_waiting_on_ante_info(dt)
 	if not G.STATE_COMPLETE then
 		if not MP.game_state.blinds_by_ante[G.GAME.round_resets.ante] then
-			if MP.lobby_state.is_host then
+			if MP.is_host() then
 				MP.generate_blinds_by_ante(G.GAME.round_resets.ante)
 			else
 				MP.send.request_ante_info()
