@@ -40,11 +40,11 @@ SMODS.Joker({
 		return false -- MP.is_in_lobby()
 	end,
 	update = function(self, card, dt)
-		if G.STAGE == G.STAGES.RUN and G.GAME.skips ~= nil and G.MULTIPLAYER_GAME.enemy.skips ~= nil then
+		--[[if G.STAGE == G.STAGES.RUN and G.GAME.skips ~= nil and G.MULTIPLAYER_GAME.enemy.skips ~= nil then
 			local skip_diff = 0 --(math.max(G.GAME.skips - G.MULTIPLAYER_GAME.enemy.skips, 0))
 			card.ability.h_size = skip_diff * card.ability.extra.extra_hands
 			card.ability.d_size = skip_diff * card.ability.extra.extra_discards
-		end
+		end]]
 	end,
 	calculate = function(self, card, context)
 		if context.cardarea == G.jokers and context.setting_blind and not context.blueprint then

@@ -23,7 +23,7 @@ function MP.UI.BTN.reconnect(e)
 end
 G.FUNCS.mp_reconnect = MP.UI.BTN.reconnect
 
-function MP.UI.BTN.mp_copy_code(e)
+function MP.UI.BTN.copy_code(e)
 	e.config.colour = G.C.GREEN
 	G.E_MANAGER:add_event(Event({
 		trigger = "after",
@@ -38,10 +38,14 @@ function MP.UI.BTN.mp_copy_code(e)
 	}))
 	MP.copy_to_clipboard(MP.network_state.lobby)
 end
-G.FUNCS.mp_copy_code = MP.UI.BTN.mp_copy_code
+G.FUNCS.mp_copy_code = MP.UI.BTN.copy_code
 
 function MP.UI.BTN.leave_lobby(e)
 	MP.send.leave_lobby()
+
+	if G.STAGE == G.STAGES.RUN then
+		G.FUNCS.go_to_menu()
+	end
 end
 G.FUNCS.mp_leave_lobby = MP.UI.BTN.leave_lobby
 

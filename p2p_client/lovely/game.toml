@@ -41,9 +41,39 @@ times = 1
 
 [[patches]]
 [patches.pattern]
-target = 'function/common_events.lua'
+target = 'functions/common_events.lua'
 pattern = '''G.GAME.round_resets.blind_choices.Boss = get_new_boss()'''
 position = 'at'
 payload = '''G.GAME.round_resets.blind_choices.Boss = MP.is_in_lobby() and G.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local main_menu = nil'''
+position = 'after'
+payload = '''local leave_lobby = nil'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''main_menu = UIBox_button{ label = {localize('b_main_menu')}, button = "go_to_menu", minw = 5}'''
+position = 'after'
+payload = '''leave_lobby = UIBox_button{ label = {localize('b_leave_lobby')}, button = "mp_leave_lobby", minw = 5}'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''restart,
+      main_menu,'''
+position = 'at'
+payload = '''not MP.is_in_lobby() and restart or nil,
+      not MP.is_in_lobby() and main_menu or nil,
+      MP.is_in_lobby() and leave_lobby or nil,'''
 match_indent = true
 times = 1
