@@ -1,4 +1,50 @@
-MP.UI.should_watch_player_cards = false
+MP.UI.VARS.should_watch_player_cards = false
+
+function MP.UI.BTN.change_lobby_page(args)
+	MP.UI.should_watch_player_cards = false
+	Galdur.clean_up_functions.clean_deck_areas()
+	MP.UI.populate_player_card_areas(args.cycle_config.current_option)
+end
+G.FUNCS.mp_change_lobby_page = MP.UI.BTN.change_lobby_page
+
+function MP.UI.BTN.galdur_next_page_btn(e)
+	if Galdur.run_setup.current_page == #Galdur.run_setup.pages and MP.is_in_lobby() then
+		e.config.hover = MP.lobby_state.is_host
+		e.config.shadow = MP.lobby_state.is_host
+		e.config.colour = MP.lobby_state.is_host and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].config.shadow = MP.lobby_state.is_host
+		e.config.button = MP.lobby_state.is_host and "deck_select_next" or nil
+	else
+		e.config.hover = true
+		e.config.shadow = true
+		e.config.colour = G.C.BLUE
+		e.children[1].children[1].config.colour = G.C.WHITE
+		e.children[1].children[1].config.shadow = true
+		e.config.button = "deck_select_next"
+	end
+end
+G.FUNCS.mp_galdur_next_page_btn = MP.UI.BTN.galdur_next_page_btn
+
+function MP.UI.BTN.galdur_last_run_btn(e)
+	if MP.is_in_lobby() then
+		e.config.hover = MP.lobby_state.is_host
+		e.config.shadow = MP.lobby_state.is_host
+		e.config.colour = MP.lobby_state.is_host and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE
+			or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].children[1].config.shadow = MP.lobby_state.is_host
+		e.config.button = MP.lobby_state.is_host and "quick_start" or nil
+	else
+		e.config.hover = true
+		e.config.shadow = true
+		e.config.colour = G.C.ORANGE
+		e.children[1].children[1].children[1].config.colour = G.C.WHITE
+		e.children[1].children[1].children[1].config.shadow = true
+		e.config.button = "quick_start"
+	end
+end
+G.FUNCS.mp_galdur_last_run_btn = MP.UI.BTN.galdur_last_run_btn
 
 function MP.UI.lobby_page()
 	MP.UI.should_watch_player_cards = true
@@ -82,7 +128,7 @@ function MP.UI.create_lobby_page_cycle()
 	cycle = create_option_cycle({
 		options = options,
 		w = 4.5,
-		opt_callback = "change_lobby_page",
+		opt_callback = "mp_change_lobby_page",
 		focus_args = { snap_to = true, nav = "wide" },
 		current_option = 1,
 		colour = G.C.RED,
@@ -193,7 +239,7 @@ function MP.UI.populate_player_card_areas(page)
 	end
 end
 
-function Galdur.clean_up_functions.clean_lobby_areas()
+function MP.UI.clean_lobby_areas()
 	if not Galdur.run_setup.player_select_areas then
 		return
 	end
@@ -204,12 +250,7 @@ function Galdur.clean_up_functions.clean_lobby_areas()
 		end
 	end
 end
-
-G.FUNCS.change_lobby_page = function(args)
-	MP.UI.should_watch_player_cards = false
-	Galdur.clean_up_functions.clean_deck_areas()
-	MP.UI.populate_player_card_areas(args.cycle_config.current_option)
-end
+Galdur.clean_up_functions.mp_clean_lobby_areas = MP.UI.clean_lobby_areas
 
 local function is_host()
 	return MP.network_state.lobby == nil or MP.lobby_state.is_host
@@ -234,40 +275,3 @@ Galdur.add_new_page({
 	page = 1,
 	condition = MP.is_in_lobby,
 })
-
-G.FUNCS.galdur_next_page_btn = function(e)
-	if Galdur.run_setup.current_page == #Galdur.run_setup.pages and MP.is_in_lobby() then
-		e.config.hover = MP.lobby_state.is_host
-		e.config.shadow = MP.lobby_state.is_host
-		e.config.colour = MP.lobby_state.is_host and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].config.shadow = MP.lobby_state.is_host
-		e.config.button = MP.lobby_state.is_host and "deck_select_next" or nil
-	else
-		e.config.hover = true
-		e.config.shadow = true
-		e.config.colour = G.C.BLUE
-		e.children[1].children[1].config.colour = G.C.WHITE
-		e.children[1].children[1].config.shadow = true
-		e.config.button = "deck_select_next"
-	end
-end
-
-G.FUNCS.galdur_last_run_btn = function(e)
-	if MP.is_in_lobby() then
-		e.config.hover = MP.lobby_state.is_host
-		e.config.shadow = MP.lobby_state.is_host
-		e.config.colour = MP.lobby_state.is_host and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].children[1].config.colour = MP.lobby_state.is_host and G.C.WHITE
-			or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].children[1].config.shadow = MP.lobby_state.is_host
-		e.config.button = MP.lobby_state.is_host and "quick_start" or nil
-	else
-		e.config.hover = true
-		e.config.shadow = true
-		e.config.colour = G.C.ORANGE
-		e.children[1].children[1].children[1].config.colour = G.C.WHITE
-		e.children[1].children[1].children[1].config.shadow = true
-		e.config.button = "quick_start"
-	end
-end

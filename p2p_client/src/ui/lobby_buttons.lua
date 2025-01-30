@@ -1,100 +1,9 @@
-MP.UI = {}
-
-local exit_overlay_menu_ref = G.FUNCS.exit_overlay_menu
-function G.FUNCS:exit_overlay_menu()
-	if MP.UI.should_watch_player_cards then
-		MP.UI.should_watch_player_cards = false
-	end
-	exit_overlay_menu_ref(self)
-end
-
-function MP.UI.show_mp_overlay_message(msg)
-	G.FUNCS.overlay_menu({
-		definition = create_UIBox_generic_options({
-			padding = 0.2,
-			contents = {
-				{
-					n = G.UIT.R,
-					config = { align = "cm", padding = 0.2, minw = 4 },
-					nodes = {
-						{
-							n = G.UIT.R,
-							config = { align = "tm" },
-							nodes = {
-								{
-									n = G.UIT.T,
-									config = {
-										text = "Multiplayer",
-										shadow = true,
-										scale = 0.8,
-										colour = G.C.UI.TEXT_LIGHT,
-									},
-								},
-							},
-						},
-					},
-				},
-				{
-					n = G.UIT.R,
-					config = { align = "cm", padding = 0.2, minw = 4 },
-					nodes = {
-						{
-							n = G.UIT.R,
-							config = { align = "tm" },
-							nodes = {
-								{
-									n = G.UIT.T,
-									config = {
-										text = msg or "",
-										shadow = true,
-										scale = 0.5,
-										colour = G.C.UI.TEXT_LIGHT,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}),
-	})
-end
-
-function G.FUNCS.mp_open_lobby(e)
+function MP.UI.BTN.open_lobby(e)
 	MP.send.open_lobby()
 end
+G.FUNCS.mp_open_lobby = MP.UI.BTN.open_lobby
 
-function MP.UI.join_lobby_overlay()
-	G.FUNCS.overlay_menu({
-		definition = create_UIBox_generic_options({
-			padding = 0,
-			contents = {
-				{
-					n = G.UIT.R,
-					config = { align = "cm", padding = 0, draw_layer = 1, minw = 4 },
-					nodes = {
-						create_tabs({
-							tabs = {
-								{
-									label = "Join Via Code",
-									chosen = true,
-									tab_definition_function = G.UIDEF.join_lobby_overlay,
-								},
-								{
-									label = "Quick Play",
-									tab_definition_function = G.UIDEF.quick_play_overlay,
-								},
-							},
-							snap_to_nav = true,
-						}),
-					},
-				},
-			},
-		}),
-	})
-end
-
-function G.FUNCS.mp_join_lobby(e)
+function MP.UI.BTN.join_lobby(e)
 	local clip = MP.get_from_clipboard()
 
 	if type(clip) == "string" and clip ~= "" then
@@ -105,14 +14,16 @@ function G.FUNCS.mp_join_lobby(e)
 		end
 	end
 
-	MP.UI.join_lobby_overlay()
+	MP.UI.create_join_lobby_overlay()
 end
+G.FUNCS.mp_join_lobby = MP.UI.BTN.join_lobby
 
-function G.FUNCS.mp_reconnect(e)
+function MP.UI.BTN.reconnect(e)
 	MP.send.connect()
 end
+G.FUNCS.mp_reconnect = MP.UI.BTN.reconnect
 
-function G.FUNCS.mp_copy_code(e)
+function MP.UI.BTN.mp_copy_code(e)
 	e.config.colour = G.C.GREEN
 	G.E_MANAGER:add_event(Event({
 		trigger = "after",
@@ -127,17 +38,20 @@ function G.FUNCS.mp_copy_code(e)
 	}))
 	MP.copy_to_clipboard(MP.network_state.lobby)
 end
+G.FUNCS.mp_copy_code = MP.UI.BTN.mp_copy_code
 
-function G.FUNCS.mp_leave_lobby(e)
+function MP.UI.BTN.leave_lobby(e)
 	MP.send.leave_lobby()
 end
+G.FUNCS.mp_leave_lobby = MP.UI.BTN.leave_lobby
 
 local set_main_menu_UI_ref = set_main_menu_UI
-function set_main_menu_UI()
+function MP.UI.set_main_menu_UI()
 	set_main_menu_UI_ref()
 
 	MP.draw_lobby_ui()
 end
+set_main_menu_UI = MP.UI.set_main_menu_UI
 
 function MP.draw_lobby_ui()
 	if MP.LOBBY_UI then
@@ -152,6 +66,36 @@ function MP.draw_lobby_ui()
 		MP.LOBBY_UI.alignment.offset.y = MP.network_state.connected and 3 or 2.2
 		MP.LOBBY_UI:align_to_major()
 	end
+end
+
+function MP.UI.create_join_lobby_overlay()
+	G.FUNCS.overlay_menu({
+		definition = create_UIBox_generic_options({
+			padding = 0,
+			contents = {
+				{
+					n = G.UIT.R,
+					config = { align = "cm", padding = 0, draw_layer = 1, minw = 4 },
+					nodes = {
+						create_tabs({
+							tabs = {
+								{
+									label = "Join Via Code",
+									chosen = true,
+									tab_definition_function = MP.UI.DEF.join_lobby_overlay,
+								},
+								{
+									label = "Quick Play",
+									tab_definition_function = MP.UI.DEF.quick_play_overlay,
+								},
+							},
+							snap_to_nav = true,
+						}),
+					},
+				},
+			},
+		}),
+	})
 end
 
 function MP.create_UIBox_lobby()
@@ -286,7 +230,7 @@ function MP.create_UIBox_lobby()
 	return t
 end
 
-function G.UIDEF.join_lobby_overlay()
+function MP.UI.DEF.join_lobby_overlay()
 	local t = {
 		n = G.UIT.ROOT,
 		config = { align = "cm", colour = G.C.CLEAR },
@@ -334,7 +278,7 @@ function G.UIDEF.join_lobby_overlay()
 	return t
 end
 
-function G.UIDEF.quick_play_overlay()
+function MP.UI.DEF.quick_play_overlay()
 	local t = {
 		n = G.UIT.ROOT,
 		config = { align = "cm", colour = G.C.CLEAR },

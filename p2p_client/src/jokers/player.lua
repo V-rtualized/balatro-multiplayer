@@ -9,7 +9,7 @@ SMODS.Joker({
 	},
 	config = {
 		extra = {
-			username = "Player",
+			username = "Unknown",
 			text1 = "",
 			text2 = "",
 		},

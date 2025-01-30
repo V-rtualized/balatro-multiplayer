@@ -80,7 +80,7 @@ function MP.networking.funcs.join_lobby_ack(args)
 	end
 
 	if not args.code then
-		MP.UI.join_lobby_overlay()
+		MP.UI.create_join_lobby_overlay()
 		return
 	end
 

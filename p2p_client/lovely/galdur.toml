@@ -17,8 +17,8 @@ payload = '''function G.UIDEF.run_setup_option_new_model(t)
     $5
     G.SETTINGS.current_setup = t$7
     Galdur.run_setup.pages.next_button = Galdur.run_setup.current_page == #Galdur.run_setup.pages and localize('gald_play') or localize(Galdur.run_setup.pages[Galdur.run_setup.current_page+1].name) .. ' >'$9
-                        button = 'deck_select_next', colour = G.C.BLUE, func = 'galdur_next_page_btn',$11
-                        button = 'quick_start', colour = G.C.ORANGE, func = 'galdur_last_run_btn', $13
+                        button = 'deck_select_next', colour = G.C.BLUE, func = 'mp_galdur_next_page_btn',$11
+                        button = 'quick_start', colour = G.C.ORANGE, func = 'mp_galdur_last_run_btn', $13
     return t'''
 match_indent = true
 times = 1
