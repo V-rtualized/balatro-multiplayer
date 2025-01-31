@@ -1,8 +1,8 @@
-local key = "nemesis"
+local key = "truce"
 
 SMODS.Atlas({
 	key = key,
-	path = "nemesis_blind_row.png",
+	path = "truce_blind_row.png",
 	atlas_table = "ANIMATION_ATLAS",
 	frames = 21,
 	px = 34,
@@ -15,13 +15,16 @@ SMODS.Blind({
 	dollars = 5,
 	mult = 1, -- Jen's Almanac crashes the game if the mult is 0
 	boss = { min = 1, max = 10 },
-	boss_colour = HEX("ac3232"),
+	boss_colour = HEX("6dc0be"),
 	discovered = true,
 	in_pool = function(self)
 		return false
 	end,
+	loc_vars = function(self)
+		return { vars = { "The Horde" } }
+	end,
 	mp_credits = {
-		art = { "KilledByLava" },
+		art = { "Aura!" },
 		code = { "Virtualized" },
 	},
 })

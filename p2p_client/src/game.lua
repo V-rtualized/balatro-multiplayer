@@ -27,6 +27,10 @@ function MP.update_waiting_on_pvp_end(dt)
 		G.STATE_COMPLETE = true
 	end
 	if MP.game_state.end_pvp then
+		MP.game_state.end_pvp = false
+		G.hand:unhighlight_all()
+		G.FUNCS.draw_from_hand_to_deck()
+		G.FUNCS.draw_from_discard_to_deck()
 		G.STATE = G.STATES.END_ROUND
 		G.STATE_COMPLETE = false
 	end

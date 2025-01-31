@@ -107,11 +107,21 @@ function MP.networking.funcs.player_left(args)
 		return
 	end
 
-	local player_index = MP.get_player_by_code(args.code)
+	local player_index = MP.get_lobby_player_by_code(args.code)
 
-	if player_index ~= nil then
-		table.remove(MP.lobby_state.players, player_index)
+	if player_index == 0 then
+		return
 	end
+
+	table.remove(MP.lobby_state.players, player_index)
+
+	local game_player_index = MP.get_game_player_by_code(args.code)
+
+	if game_player_index == 0 or MP.game_state.players[game_player_index] == nil then
+		return
+	end
+
+	MP.game_state.players[game_player_index].lives = 0
 end
 
 function MP.networking.funcs.request_lobby_sync(args)
@@ -141,12 +151,14 @@ function MP.networking.funcs.request_lobby_sync_ack(args)
 end
 
 function MP.networking.funcs.start_run(args)
-	if not args or not args.choices then
+	if not args or not args.choices or not args.game_players then
 		MP.send_warn_message("Got start_run with invalid args")
 		return
 	end
 
 	local parsed_choices = MP.networking_message_to_table(args.choices)
+	local parsed_players = MP.networking_message_to_table(args.game_players)
+	MP.game_state.players = parsed_players
 	G.FUNCS.start_run(nil, parsed_choices)
 end
 
@@ -194,14 +206,30 @@ function MP.networking.funcs.request_ante_info_ack(args)
 	MP.game_state.blinds_by_ante[ante_num] = parsed_data
 end
 
+MP.ready_blind_event_started = false
+MP.ready_blind_event = Event({
+	trigger = "immediate",
+	blockable = false,
+	blocking = false,
+	func = function()
+		if MP.game_state.players_ready >= #MP.get_alive_players() then
+			MP.send.raw({
+				action = "start_blind",
+			})
+			MP.networking.funcs.start_blind()
+			MP.game_state.players_ready = 0
+			MP.ready_blind_event_started = false
+			return true
+		end
+		return false
+	end,
+})
+
 function MP.networking.funcs.ready_blind(args)
 	MP.game_state.players_ready = MP.game_state.players_ready + 1
-	if MP.network_state.code == MP.network_state.lobby and MP.game_state.players_ready >= #MP.lobby_state.players then
-		MP.send.raw({
-			action = "start_blind",
-		})
-		MP.networking.funcs.start_blind()
-		MP.game_state.players_ready = 0
+	if MP.is_host() and not MP.ready_blind_event_started then
+		MP.ready_blind_event_started = true
+		G.E_MANAGER:add_event(MP.ready_blind_event)
 	end
 end
 
@@ -225,5 +253,82 @@ function MP.networking.funcs.host_migration(args)
 
 	if MP.is_host() then
 		MP.UI.show_mp_overlay_message(localize("new_host"))
+	end
+end
+
+function MP.networking.funcs.play_hand(args)
+	if not args or not args.from or not args.score or not args.hands_left then
+		MP.send_warn_message("Got play_hand with invalid args")
+		return
+	end
+
+	local score = MP.networking_message_to_table(args.score)
+	local player_index = MP.get_game_player_by_code(args.from)
+
+	if player_index == 0 or MP.game_state.players[player_index] == nil then
+		return
+	end
+
+	if type(score) == "table" and score.array then
+		MP.game_state.players[player_index].score = Big:new(score.array)
+	elseif type(score) == "table" and score.m then
+		MP.game_state.players[player_index].score = Big:new(score.m, score.e)
+	else
+		MP.game_state.players[player_index].score = score
+	end
+
+	MP.game_state.players[player_index].hands_left = tonumber(args.hands_left)
+end
+
+function MP.networking.funcs.set_location(args)
+	if not args or not args.from or not args.location then
+		MP.send_warn_message("Got set_location with invalid args")
+		return
+	end
+
+	local player_index = MP.get_game_player_by_code(args.from)
+
+	if player_index == 0 or MP.game_state.players[player_index] == nil then
+		return
+	end
+
+	MP.game_state.players[player_index].location = args.location
+end
+
+function MP.networking.funcs.set_skips(args)
+	if not args or not args.from or not args.skips then
+		MP.send_warn_message("Got set_skips with invalid args")
+		return
+	end
+
+	local player_index = MP.get_game_player_by_code(args.from)
+
+	if player_index == 0 or MP.game_state.players[player_index] == nil then
+		return
+	end
+
+	MP.game_state.players[player_index].skips = tonumber(args.skips)
+end
+
+function MP.networking.funcs.end_pvp(args)
+	MP.game_state.end_pvp = true
+end
+
+function MP.networking.funcs.lose_life(args)
+	if not args or not args.player then
+		MP.send_warn_message("Got lose_life with invalid args")
+		return
+	end
+
+	local player_index = MP.get_game_player_by_code(args.player)
+
+	if player_index == 0 or MP.game_state.players[player_index] == nil then
+		return
+	end
+
+	MP.game_state.players[player_index].lives = MP.game_state.players[player_index].lives - 1
+
+	if MP.get_self_game_player() == player_index then
+		ease_lives(-1)
 	end
 end

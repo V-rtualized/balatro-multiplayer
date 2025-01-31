@@ -74,9 +74,19 @@ function MP.send.request_lobby_sync()
 end
 
 function MP.send.start_run(choices)
+	MP.game_state.players = MP.lobby_state.players
+	for i, _ in ipairs(MP.game_state.players) do
+		MP.game_state.players[i].lives = MP.lobby_state.config.starting_lives
+		MP.game_state.players[i].location = "loc_selecting"
+		MP.game_state.players[i].skips = 0
+		MP.game_state.players[i].score = 0
+		MP.game_state.players[i].score_text = "0"
+		MP.game_state.players[i].hands_left = 4
+	end
 	MP.send.raw({
 		action = "start_run",
 		choices = MP.table_to_networking_message(choices),
+		game_players = MP.table_to_networking_message(MP.game_state.players),
 	})
 end
 
@@ -91,15 +101,70 @@ end
 
 function MP.send.ready_blind(e)
 	MP.game_state.ready_blind_context = e
-	MP.game_state.players_ready = MP.game_state.players_ready + 1
-	MP.send.raw({
+	local args = {
 		action = "ready_blind",
-	})
+		from = MP.network_state.code,
+	}
+	MP.send.raw(args)
+	MP.networking.funcs.ready_blind(args)
 end
 
 function MP.send.unready_blind()
-	MP.game_state.players_ready = MP.game_state.players_ready - 1
-	MP.send.raw({
+	local args = {
 		action = "unready_blind",
+		from = MP.network_state.code,
+	}
+	MP.send.raw(args)
+	MP.networking.funcs.unready_blind(args)
+end
+
+function MP.send.play_hand(score, hands_left)
+	to_big(score, nil, true)
+	local args = {
+		action = "play_hand",
+		score = MP.table_to_networking_message(score),
+		hands_left = tostring(hands_left),
+		from = MP.network_state.code,
+	}
+	MP.send.raw(args)
+	MP.networking.funcs.play_hand(args)
+end
+
+function MP.send.set_location(loc)
+	local args = {
+		action = "set_location",
+		location = loc,
+		from = MP.network_state.code,
+	}
+	MP.send.raw(args)
+	MP.networking.funcs.set_location(args)
+end
+
+function MP.send.set_skips(skips)
+	local args = {
+		action = "set_skips",
+		skips = tostring(skips),
+		from = MP.network_state.code,
+	}
+	MP.send.raw(args)
+	MP.networking.funcs.set_skips(args)
+end
+
+function MP.send.fail_round()
+	MP.send.lose_life(MP.network_state.code)
+end
+
+function MP.send.end_pvp()
+	MP.send.raw({
+		action = "end_pvp",
 	})
+end
+
+function MP.send.lose_life(to)
+	local args = {
+		action = "lose_life",
+		player = to,
+	}
+	MP.send.raw(args)
+	MP.networking.funcs.lose_life(args)
 end

@@ -22,6 +22,18 @@ MP.network_state = {
 
 MP.lobby_state = {
 	players = {},
+	config = {
+		gold_on_life_loss = true,
+		no_gold_on_round_loss = false,
+		death_on_round_loss = true,
+		different_seeds = false,
+		starting_lives = 2,
+		showdown_starting_antes = 3,
+		gamemode = "horde",
+		custom_seed = "random",
+		different_decks = false,
+		horde_players_losing = 2,
+	},
 }
 
 MP.game_state = {}
@@ -39,8 +51,17 @@ function MP.reset_game_state()
 		ready_blind_context = nil,
 		players_ready = 0,
 		lives = 4,
+		ante_key = tostring(math.random()),
+		antes_keyed = {},
+		players = {},
+		nemesis = 1,
+		prevent_eval = false,
+		comeback_bonus_given = true,
+		comeback_bonus = 0,
 	}
 end
+
+MP.reset_game_state()
 
 G.E_MANAGER:add_event(Event({
 	trigger = "immediate",
@@ -103,6 +124,7 @@ load_mp_file("src/ui/utils.lua")
 load_mp_file("src/ui/lobby_buttons.lua")
 load_mp_file("src/ui/blind_select.lua")
 load_mp_file("src/ui/game_hud.lua")
+load_mp_file("src/ui/end_game_overlay.lua")
 load_mp_file("src/ui/cards.lua")
 load_mp_file("src/editions.lua")
 load_mp_file("src/stickers.lua")
@@ -116,6 +138,7 @@ load_mp_file("src/jokers/speedrun.lua")
 load_mp_file("src/ui/galdur_lobby_page.lua")
 load_mp_file("src/blinds/horde.lua")
 load_mp_file("src/blinds/nemesis.lua")
+load_mp_file("src/blinds/truce.lua")
 
 G.E_MANAGER:add_event(Event({
 	trigger = "immediate",

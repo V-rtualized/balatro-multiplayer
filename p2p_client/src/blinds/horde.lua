@@ -15,11 +15,15 @@ SMODS.Blind({
 	dollars = 5,
 	mult = 1, -- Jen's Almanac crashes the game if the mult is 0
 	boss = { min = 1, max = 10 },
-	boss_colour = HEX("67f9f2"),
+	boss_colour = HEX("dfca81"),
 	discovered = true,
 	in_pool = function(self)
 		return false
 	end,
+	mp_credits = {
+		art = { "Carter", "Aura!" },
+		code = { "Virtualized" },
+	},
 })
 
 table.insert(MP.blinds, "bl_mp_" .. key)

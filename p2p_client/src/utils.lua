@@ -1,25 +1,35 @@
 MP.SHOW_DEBUG_MESSAGES = true
 
+local function message_to_string(message)
+	if type(message) == "table" or type(message) == "function" then
+		message = serialize(message)
+	end
+	if type(message) == "number" or type(message) == "boolean" then
+		message = tostring(message)
+	end
+	return message
+end
+
 function MP.send_debug_message(message)
 	if MP.SHOW_DEBUG_MESSAGES then
-		sendDebugMessage(message, "MULTIPLAYER")
+		sendDebugMessage(message_to_string(message), "MULTIPLAYER")
 	end
 end
 
 function MP.send_warn_message(message)
 	if MP.SHOW_DEBUG_MESSAGES then
-		sendWarnMessage(message, "MULTIPLAYER")
+		sendWarnMessage(message_to_string(message), "MULTIPLAYER")
 	end
 end
 
 function MP.send_trace_message(message)
 	if MP.SHOW_DEBUG_MESSAGES then
-		sendTraceMessage(message, "MULTIPLAYER")
+		sendTraceMessage(message_to_string(message), "MULTIPLAYER")
 	end
 end
 
 function MP.send_info_message(message)
-	sendInfoMessage(message, "MULTIPLAYER")
+	sendInfoMessage(message_to_string(message), "MULTIPLAYER")
 end
 
 function MP.parse_networking_message(str)
@@ -60,15 +70,34 @@ function MP.serialize_networking_message(obj)
 	return table.concat(parts, ",")
 end
 
-function MP.get_player_by_code(code)
+function MP.get_lobby_player_by_code(code)
 	if MP.network_state.lobby == nil then
-		return { username = "ERROR", code = code }
+		return 0
 	end
 	for i, v in ipairs(MP.lobby_state.players) do
 		if v.code == code then
 			return i
 		end
 	end
+end
+
+function MP.get_game_player_by_code(code)
+	if MP.network_state.lobby == nil then
+		return 0
+	end
+	for i, v in ipairs(MP.game_state.players) do
+		if v.code == code then
+			return i
+		end
+	end
+end
+
+function MP.get_self_lobby_player()
+	MP.get_lobby_player_by_code(MP.network_state.code)
+end
+
+function MP.get_self_game_player()
+	MP.get_game_player_by_code(MP.network_state.code)
 end
 
 function MP.is_in_lobby()
@@ -190,12 +219,10 @@ function MP.is_pvp_boss()
 end
 
 function MP.value_is_pvp_boss(value)
-	MP.send_debug_message("Looking for " .. value)
 	if not G.GAME or not G.GAME.blind then
 		return false
 	end
 	for _, v in ipairs(MP.blinds) do
-		MP.send_debug_message("Found " .. v)
 		if value == v then
 			return true
 		end
@@ -248,4 +275,72 @@ end
 
 function MP.is_host()
 	return MP.network_state.code == MP.network_state.lobby
+end
+
+local ease_ante_ref = ease_ante
+function ease_ante(mod)
+	if not MP.is_in_lobby() then
+		return ease_ante_ref(mod)
+	end
+	-- Prevents easing multiple times at once
+	if MP.game_state.antes_keyed[MP.game_state.ante_key] then
+		return
+	end
+	MP.game_state.antes_keyed[MP.game_state.ante_key] = true
+	G.E_MANAGER:add_event(Event({
+		trigger = "immediate",
+		func = function()
+			G.GAME.round_resets.ante = G.GAME.round_resets.ante + mod
+			check_and_set_high_score("furthest_ante", G.GAME.round_resets.ante)
+			return true
+		end,
+	}))
+end
+
+function MP.get_nemesis()
+	return MP.game_state.players[MP.game_state.nemesis]
+end
+
+function MP.get_alive_players()
+	local alive_players = {}
+	for _, player in ipairs(MP.game_state.players) do
+		if player.lives > 0 then
+			table.insert(alive_players, player)
+		end
+	end
+	return alive_players
+end
+
+function MP.get_horde_required_losers(alive_player_count)
+	if alive_player_count > 4 then
+		return 2
+	elseif alive_player_count > 1 then
+		return 1
+	else
+		return 0
+	end
+end
+
+function MP.get_horde_losers()
+	local alive_players = MP.get_alive_players()
+
+	table.sort(alive_players, function(a, b)
+		return to_big(a.score) < to_big(b.score)
+	end)
+
+	local losing_players = {}
+	local required_losers = MP.get_horde_required_losers(#alive_players)
+
+	for i = 1, #alive_players do
+		if alive_players[i].hands_left < 1 then
+			table.insert(losing_players, alive_players[i])
+			if #losing_players >= required_losers then
+				return losing_players
+			end
+		else
+			return nil
+		end
+	end
+
+	return nil
 end
