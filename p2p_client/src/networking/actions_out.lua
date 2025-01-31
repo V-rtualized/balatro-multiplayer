@@ -119,7 +119,6 @@ function MP.send.unready_blind()
 end
 
 function MP.send.play_hand(score, hands_left)
-	to_big(score, nil, true)
 	local args = {
 		action = "play_hand",
 		score = MP.table_to_networking_message(score),

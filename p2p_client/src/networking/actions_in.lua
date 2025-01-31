@@ -269,14 +269,7 @@ function MP.networking.funcs.play_hand(args)
 		return
 	end
 
-	if type(score) == "table" and score.array then
-		MP.game_state.players[player_index].score = Big:new(score.array)
-	elseif type(score) == "table" and score.m then
-		MP.game_state.players[player_index].score = Big:new(score.m, score.e)
-	else
-		MP.game_state.players[player_index].score = score
-	end
-
+	MP.game_state.players[player_index].score = MP.readd_talisman_metavalues(score)
 	MP.game_state.players[player_index].hands_left = tonumber(args.hands_left)
 end
 

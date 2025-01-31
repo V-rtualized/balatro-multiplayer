@@ -344,3 +344,15 @@ function MP.get_horde_losers()
 
 	return nil
 end
+
+function MP.readd_talisman_metavalues(t)
+	if type(t) ~= "table" then
+		return t
+	end
+	if t.array then
+		return Big:new(t.array)
+	elseif t.m then
+		return Big:new(t.m, t.e)
+	end
+	return t
+end
