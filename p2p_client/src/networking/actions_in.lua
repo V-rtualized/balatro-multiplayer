@@ -304,6 +304,8 @@ function MP.networking.funcs.set_skips(args)
 end
 
 function MP.networking.funcs.end_pvp(args)
+	G.STATE_COMPLETE = false
+	G.STATE = G.STATES.WAITING_ON_PVP_END
 	MP.game_state.end_pvp = true
 end
 
@@ -321,7 +323,11 @@ function MP.networking.funcs.lose_life(args)
 
 	MP.game_state.players[player_index].lives = MP.game_state.players[player_index].lives - 1
 
-	if MP.get_self_game_player() == player_index then
+	if MP.network_state.code == args.player then
+		MP.game_state.comeback_bonus_given = false
+		MP.game_state.comeback_bonus = MP.game_state.comeback_bonus + 1
+		MP.game_state.lives = MP.game_state.players[player_index].lives
 		ease_lives(-1)
+		MP.game_state.failed = true
 	end
 end

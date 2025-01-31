@@ -50,7 +50,7 @@ function MP.reset_game_state()
 		ready_blind_text = localize("unready"),
 		ready_blind_context = nil,
 		players_ready = 0,
-		lives = 4,
+		lives = 2,
 		ante_key = tostring(math.random()),
 		antes_keyed = {},
 		players = {},
@@ -58,6 +58,7 @@ function MP.reset_game_state()
 		prevent_eval = false,
 		comeback_bonus_given = true,
 		comeback_bonus = 0,
+		failed = false,
 	}
 end
 

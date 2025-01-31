@@ -157,6 +157,7 @@ function MP.send.end_pvp()
 	MP.send.raw({
 		action = "end_pvp",
 	})
+	MP.networking.funcs.end_pvp()
 end
 
 function MP.send.lose_life(to)

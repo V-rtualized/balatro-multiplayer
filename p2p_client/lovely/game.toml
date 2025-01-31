@@ -115,3 +115,103 @@ payload = '''
 	end'''
 match_indent = false
 times = 1
+
+[[patches]]
+[patches.regex]
+target = "functions/state_events.lua"
+pattern = '''function end_round\(\)(?<pre>[\s\S]+?)func = function\(\)'''
+position = 'at'
+payload = "function end_round()$pre func = MP.is_in_lobby() and MP.end_round or function()"
+match_indent = false
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''function Game:update_round_eval\(dt\)(?<pre>[\s\S]+?)if not G.STATE_COMPLETE then'''
+position = 'at'
+payload = '''function Game:update_round_eval(dt)$pre if not G.STATE_COMPLETE and not MP.game_state.prevent_eval then
+        MP.game_state.prevent_eval = true'''
+match_indent = true
+times = 1
+
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''config.saved and'''
+position = 'before'
+payload = '''MP.is_in_lobby() and (MP.is_pvp_boss() or MP.game_state.failed) and {
+  n = G.UIT.C,
+  config = { padding = 0.05, align = "cm" },
+  nodes = {
+    {
+      n = G.UIT.R,
+      config = { align = "cm" },
+      nodes = {
+        {
+          n = G.UIT.O,
+          config = {
+            object = DynaText({
+              string = {
+                (
+                  MP.game_state.failed
+                  and (
+                    (
+                      (
+                        MP.is_pvp_boss()
+                        or MP.lobby_state.config.death_on_round_loss
+                      )
+                      and localize("lost_life")
+                    ) or localize("failed")
+                  )
+                ) or localize("defeat_enemy"),
+              },
+              colours = { G.C.FILTER },
+              shadow = true,
+              pop_in = 0,
+              scale = 0.5 * scale,
+              silent = true,
+            }),
+          },
+        },
+      },
+    },
+  },
+} or'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''elseif config.name == 'hands' then'''
+position = 'before'
+payload = '''elseif config.name == "comeback" then
+  table.insert(left_text, {
+    n = G.UIT.T,
+    config = {
+      text = MP.lobby_state.config.comeback_bonus,
+      scale = 0.8 * scale,
+      colour = G.C.PURPLE,
+      shadow = true,
+      juice = true,
+    },
+  })
+  table.insert(left_text, {
+    n = G.UIT.O,
+    config = {
+      object = DynaText({
+        string = {
+          localize("total_lives_lost"),
+        },
+        colours = { G.C.UI.TEXT_LIGHT },
+        shadow = true,
+        pop_in = 0,
+        scale = 0.4 * scale,
+        silent = true,
+      }),
+    },
+  })'''
+match_indent = true
+times = 1
