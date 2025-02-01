@@ -271,6 +271,8 @@ function MP.networking.funcs.play_hand(args)
 
 	MP.game_state.players[player_index].score = MP.readd_talisman_metavalues(score)
 	MP.game_state.players[player_index].hands_left = tonumber(args.hands_left)
+
+	MP.UI.update_blind_HUD(false)
 end
 
 function MP.networking.funcs.set_location(args)
@@ -329,10 +331,9 @@ function MP.networking.funcs.lose_life(args)
 		MP.game_state.lives = MP.game_state.players[player_index].lives
 		ease_lives(-1)
 		MP.game_state.failed = true
-	end
-
-	if MP.game_state.lives == 0 then
-		MP.game_over()
+		if MP.game_state.lives == 0 then
+			MP.game_over()
+		end
 	end
 
 	if MP.is_host() then

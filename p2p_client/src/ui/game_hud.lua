@@ -27,15 +27,18 @@ function Game:start_run(args)
 	self.HUD:recalculate()
 end
 
-local function update_blind_HUD()
-	if MP.is_in_lobby() then
-		G.HUD_blind.alignment.offset.y = -10
+function MP.UI.update_blind_HUD(aniamte)
+	if MP.is_in_lobby() and MP.is_pvp_boss() then
+		if aniamte then
+			G.HUD_blind.alignment.offset.y = -10
+		end
 		G.E_MANAGER:add_event(Event({
 			trigger = "after",
 			delay = 0.3,
 			blockable = false,
 			func = function()
-				G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = MP.get_nemesis()
+				local nemesis = MP.get_nemesis()
+				G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = nemesis
 				G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = "score_text"
 				G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.func = "multiplayer_blind_chip_UI_scale"
 				G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text =
@@ -43,9 +46,11 @@ local function update_blind_HUD()
 				G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text =
 					localize("enemy_hands")
 				G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string =
-					{ { ref_table = MP.get_nemesis(), ref_value = "hands_left" } }
+					{ { ref_table = nemesis, ref_value = "hands_left" } }
 				G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
-				G.HUD_blind.alignment.offset.y = 0
+				if aniamte then
+					G.HUD_blind.alignment.offset.y = 0
+				end
 				return true
 			end,
 		}))
@@ -85,20 +90,22 @@ function Game:update_draw_to_hand(dt)
 					blockable = false,
 					func = function()
 						G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:pop_out(0)
-						update_blind_HUD()
+						MP.UI.update_blind_HUD(true)
 						G.E_MANAGER:add_event(Event({
 							trigger = "after",
 							delay = 0.45,
 							blockable = false,
 							func = function()
-								G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {
-									{
-										ref_table = MP.get_nemesis(),
-										ref_value = "username",
-									},
-								}
-								G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
-								G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:pop_in(0)
+								if MP.lobby_state.config.gamemode == "nemesis" then
+									G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {
+										{
+											ref_table = MP.get_nemesis(),
+											ref_value = "username",
+										},
+									}
+									G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
+									G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:pop_in(0)
+								end
 								return true
 							end,
 						}))
@@ -590,10 +597,11 @@ G.FUNCS.can_open = function(e)
 end
 
 G.FUNCS.multiplayer_blind_chip_UI_scale = function(e)
-	local new_score_text = number_format(MP.get_nemesis().score)
-	if G.GAME.blind and MP.get_nemesis().score ~= nil and MP.get_nemesis().score_text ~= new_score_text then
-		e.config.scale = scale_number(MP.get_nemesis().score, 0.7, 100000)
-		MP.get_nemesis().score_text = new_score_text
+	local nemesis = MP.get_nemesis()
+	local new_score_text = number_format(nemesis.score)
+	if G.GAME.blind and nemesis.score ~= nil and nemesis.score_text ~= new_score_text then
+		e.config.scale = scale_number(nemesis.score, 0.7, 100000)
+		nemesis.score_text = new_score_text
 	end
 end
 

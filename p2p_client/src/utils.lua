@@ -298,7 +298,22 @@ function ease_ante(mod)
 end
 
 function MP.get_nemesis()
-	return MP.game_state.players[MP.game_state.nemesis]
+	local sorted_players_indexes = MP.get_players_by_score(true)
+	local nemesis_threshold_index = MP.get_horde_required_losers(#MP.game_state.players, #sorted_players_indexes)
+
+	local current_player_position = nil
+	for i, player_index in ipairs(sorted_players_indexes) do
+		if MP.game_state.players[player_index].code == MP.network_state.code then
+			current_player_position = i
+			break
+		end
+	end
+
+	if current_player_position and current_player_position <= nemesis_threshold_index then
+		return MP.game_state.players[sorted_players_indexes[nemesis_threshold_index + 1]]
+	end
+
+	return MP.game_state.players[sorted_players_indexes[nemesis_threshold_index]]
 end
 
 function MP.get_alive_players()
@@ -311,29 +326,50 @@ function MP.get_alive_players()
 	return alive_players
 end
 
-function MP.get_horde_required_losers(alive_player_count)
-	if alive_player_count > 4 then
-		return 2
-	elseif alive_player_count > 1 then
+function MP.get_horde_required_losers(game_player_count, alive_players)
+	if alive_players == 2 then
 		return 1
+	end
+	if game_player_count > 4 then
+		return 2
 	else
-		return 0
+		return 1
 	end
 end
 
-function MP.get_horde_losers()
+function MP.get_players_by_score(get_indexes)
 	local alive_players = MP.get_alive_players()
+
+	if get_indexes then
+		local indexes = {}
+
+		for i = 1, #alive_players do
+			indexes[i] = i
+		end
+
+		table.sort(indexes, function(a, b)
+			return to_big(alive_players[a].score) < to_big(alive_players[b].score)
+		end)
+
+		return indexes
+	end
 
 	table.sort(alive_players, function(a, b)
 		return to_big(a.score) < to_big(b.score)
 	end)
 
-	local losing_players = {}
-	local required_losers = MP.get_horde_required_losers(#alive_players)
+	return alive_players
+end
 
-	for i = 1, #alive_players do
-		if alive_players[i].hands_left < 1 then
-			table.insert(losing_players, alive_players[i])
+function MP.get_horde_losers()
+	local sorted_players = MP.get_players_by_score()
+
+	local losing_players = {}
+	local required_losers = MP.get_horde_required_losers(#sorted_players)
+
+	for i = 1, #sorted_players do
+		if sorted_players[i].hands_left < 1 then
+			table.insert(losing_players, sorted_players[i])
 			if #losing_players >= required_losers then
 				return losing_players
 			end
