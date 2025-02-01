@@ -1,5 +1,8 @@
 MP.send = {}
 
+MP.pending_messages = {}
+MP.MAX_RETRIES = 5
+
 local cached_username = nil
 
 function MP.networking.initialize()
@@ -15,12 +18,64 @@ function MP.networking.initialize()
 	end
 end
 
+MP.retry_event = Event({
+	trigger = "after",
+	blockable = false,
+	blocking = false,
+	delay = 3,
+	pause_force = true,
+	no_delete = true,
+	timer = "REAL",
+	func = function(t)
+		local messages_to_remove = {}
+
+		for msg_id, pending in pairs(MP.pending_messages) do
+			pending.retries = pending.retries + 1
+
+			if pending.retries >= MP.MAX_RETRIES then
+				MP.send_warn_message("Message " .. pending.action .. " failed after " .. MP.MAX_RETRIES .. " retries")
+				messages_to_remove[#messages_to_remove + 1] = msg_id
+
+				if MP.network_state.lobby then
+					MP.send.leave_lobby()
+				end
+			else
+				MP.send_trace_message(
+					"Retrying message " .. pending.action .. " (attempt " .. pending.retries + 1 .. ")"
+				)
+				MP.networking.ui_to_network_channel:push(pending.raw_message)
+			end
+		end
+
+		for _, msg_id in ipairs(messages_to_remove) do
+			MP.pending_messages[msg_id] = nil
+		end
+
+		MP.retry_event.start_timer = false
+	end,
+})
+
+G.E_MANAGER:add_event(MP.retry_event)
+
 function MP.send.raw(msg)
+	local raw_msg
 	if type(msg) == "table" then
-		msg = MP.serialize_networking_message(msg)
+		if MP.EXPECTED_RESPONSES[msg.action] then
+			local msg_id = os.time() .. "_" .. msg.action
+			MP.pending_messages[msg_id] = {
+				action = msg.action,
+				retries = 0,
+				expected_response = MP.EXPECTED_RESPONSES[msg.action],
+				raw_message = MP.serialize_networking_message(msg),
+			}
+		end
+		raw_msg = MP.serialize_networking_message(msg)
+	else
+		raw_msg = msg
 	end
-	MP.send_trace_message("Sending message: " .. msg)
-	MP.networking.ui_to_network_channel:push(msg)
+
+	MP.send_trace_message("Sending message: " .. raw_msg)
+	MP.networking.ui_to_network_channel:push(raw_msg)
 end
 
 function MP.send.connect()

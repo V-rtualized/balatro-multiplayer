@@ -1,11 +1,29 @@
 MP.networking.funcs = {}
 
+MP.EXPECTED_RESPONSES = {
+	connect = "connect_ack",
+	set_username = "set_username_ack",
+	open_lobby = "open_lobby_ack",
+	join_lobby = "join_lobby_ack",
+	request_lobby_sync = "request_lobby_sync_ack",
+	request_ante_info = "request_ante_info_ack",
+}
+
 function MP.networking.handle_network_message(message)
 	if message == "action:keep_alive_ack" then
 		return
 	end
+
 	MP.send_trace_message("Received message: " .. message)
-	msg_obj = MP.parse_networking_message(message)
+	local msg_obj = MP.parse_networking_message(message)
+
+	for msg_id, pending in pairs(MP.pending_messages) do
+		if msg_obj.action == pending.expected_response then
+			MP.pending_messages[msg_id] = nil
+			break
+		end
+	end
+
 	if msg_obj.action and MP.networking.funcs[msg_obj.action] then
 		MP.networking.funcs[msg_obj.action](msg_obj)
 	else
