@@ -219,6 +219,27 @@ local function action_version()
 	G.MULTIPLAYER.version()
 end
 
+local function action_fix_bug()
+	if G.round_eval then
+		G.round_eval.alignment.offset.y = G.ROOM.T.y + 15
+		G.round_eval.alignment.offset.x = 0
+		G.E_MANAGER:add_event(Event({
+			trigger = "immediate",
+			func = function()
+				G.round_eval:remove()
+				G.round_eval = nil
+				return true
+			end,
+		}))
+	end
+	ease_chips(0)
+	G.GAME.round = G.GAME.round - 1
+	G.MULTIPLAYER_GAME.comeback_bonus = G.MULTIPLAYER_GAME.comeback_bonus - 2
+	G.GAME.round_resets.blind_states["Small"] = "Select"
+	G.STATE = G.STATES.BLIND_SELECT
+	G.STATE_COMPLETE = false
+end
+
 -- #region Client to Server
 function G.MULTIPLAYER.create_lobby(gamemode)
 	G.LOBBY.config.gamemode = gamemode
@@ -373,6 +394,8 @@ function Game:update(dt)
 				action_lobby_options(parsedAction)
 			elseif parsedAction.action == "enemyLocation" then
 				enemyLocation(parsedAction)
+			elseif parsedAction.action == "fixBug" then
+				action_fix_bug()
 			elseif parsedAction.action == "error" then
 				action_error(parsedAction.message)
 			elseif parsedAction.action == "keepAlive" then

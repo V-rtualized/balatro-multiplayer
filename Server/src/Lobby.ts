@@ -159,6 +159,28 @@ class Lobby {
 	}
 }
 
+export const fixBug = (lobbyCode: string, host: boolean) => {
+	const lobby = Lobbies.get(lobbyCode)
+	if (!lobby) {
+		return
+	}
+
+	if (host) {
+		if (!lobby.host) {
+			return
+		}
+		lobby.host.lives += 1
+		lobby.host.sendAction({ action: "playerInfo", lives: lobby.host.lives });
+		lobby.host.sendAction({ action: "fixBug" });
+	} else {
+		if (!lobby.guest) {
+			return
+		}
+		lobby.guest.lives += 1
+		lobby.guest.sendAction({ action: "playerInfo", lives: lobby.guest.lives });
+		lobby.guest.sendAction({ action: "fixBug" });
+	}
+}
 
 export const addLives = (lobbyCode: string, host: boolean, lives: number) => {
 	const lobby = Lobbies.get(lobbyCode)

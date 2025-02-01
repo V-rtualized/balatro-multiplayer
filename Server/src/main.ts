@@ -16,7 +16,7 @@ import type {
 	ActionUtility,
 	ActionVersion,
 } from './actions.js'
-import { startGame, addLives, getLobbyInfo } from './Lobby.js'
+import { startGame, addLives, getLobbyInfo, fixBug } from './Lobby.js'
 import readline from 'node:readline'
 
 const PORT = 8789
@@ -313,7 +313,19 @@ const handleCommand = (line: string) => {
 			const [lobbyCode_getlobbyinfo] = args;
 			getLobbyInfo(lobbyCode_getlobbyinfo);
 			break
+
+		case 'fixbug':
+			if (args.length < 2) {
+				console.log('Usage: fixbug <lobbyCode> <host(true/false)>');
+				break;
+			}
+			const [fb_targetLobby, fb_hostStr] = args;
+			const fb_host = fb_hostStr.toLowerCase() === 'true';
       
+			fixBug(fb_targetLobby, fb_host);
+      console.log(`Added 1 live to ${fb_host ? 'host' : 'players'} in lobby ${fb_targetLobby}`);
+      break;
+
     case 'exit':
       console.log('Shutting down server...');
       process.exit(0);
