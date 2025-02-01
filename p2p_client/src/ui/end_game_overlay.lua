@@ -1,6 +1,6 @@
 local create_UIBox_game_over_ref = create_UIBox_game_over
 function create_UIBox_game_over()
-	if G.LOBBY.code then
+	if MP.is_in_lobby() then
 		local eased_red = copy_table(G.GAME.round_resets.ante <= G.GAME.win_ante and G.C.RED or G.C.BLUE)
 		eased_red[4] = 0
 		ease_value(eased_red, 4, 0.8, nil, nil, true)
@@ -201,7 +201,7 @@ end
 
 local create_UIBox_win_ref = create_UIBox_win
 function create_UIBox_win()
-	if G.LOBBY.code then
+	if MP.is_in_lobby() then
 		local eased_green = copy_table(G.C.GREEN)
 		eased_green[4] = 0
 		ease_value(eased_green, 4, 0.5, nil, nil, true)

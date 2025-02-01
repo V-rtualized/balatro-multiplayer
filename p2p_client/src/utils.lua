@@ -47,7 +47,7 @@ function MP.parse_networking_message(str)
 				value = false
 
 			-- Parse number
-			elseif tonumber(value) and key ~= "code" then -- Prevent code like 92E011 from being turned into 9200000000000
+			elseif tonumber(value) and key ~= "code" and key ~= "from" and key ~= "to" and key ~= "player" then -- Prevent code like 92E011 from being turned into 9200000000000
 				value = tonumber(value)
 			end
 

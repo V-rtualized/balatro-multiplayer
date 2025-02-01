@@ -310,12 +310,12 @@ function MP.networking.funcs.end_pvp(args)
 end
 
 function MP.networking.funcs.lose_life(args)
-	if not args or not args.player then
+	if not args or not args.to then
 		MP.send_warn_message("Got lose_life with invalid args")
 		return
 	end
 
-	local player_index = MP.get_game_player_by_code(args.player)
+	local player_index = MP.get_game_player_by_code(args.to)
 
 	if player_index == 0 or MP.game_state.players[player_index] == nil then
 		return
@@ -323,11 +323,34 @@ function MP.networking.funcs.lose_life(args)
 
 	MP.game_state.players[player_index].lives = MP.game_state.players[player_index].lives - 1
 
-	if MP.network_state.code == args.player then
+	if MP.network_state.code == args.to then
 		MP.game_state.comeback_bonus_given = false
 		MP.game_state.comeback_bonus = MP.game_state.comeback_bonus + 1
 		MP.game_state.lives = MP.game_state.players[player_index].lives
 		ease_lives(-1)
 		MP.game_state.failed = true
+	end
+
+	if MP.game_state.lives == 0 then
+		MP.game_over()
+	end
+
+	if MP.is_host() then
+		local alive_players = MP.get_alive_players()
+		if #alive_players == 1 then
+			MP.send.win(alive_players[1].code)
+		end
+	end
+end
+
+function MP.networking.funcs.win(args)
+	if not args or not args.to then
+		MP.send_warn_message("Got win with invalid args")
+		return
+	end
+
+	if MP.network_state.code == args.to then
+		win_game()
+		G.GAME.won = true
 	end
 end

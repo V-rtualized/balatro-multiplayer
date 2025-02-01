@@ -163,8 +163,17 @@ end
 function MP.send.lose_life(to)
 	local args = {
 		action = "lose_life",
-		player = to,
+		to = to,
 	}
 	MP.send.raw(args)
 	MP.networking.funcs.lose_life(args)
+end
+
+function MP.send.win(to)
+	local args = {
+		action = "win",
+		to = to,
+	}
+	MP.send.raw(args)
+	MP.networking.funcs.win(args)
 end

@@ -44,3 +44,8 @@ function MP.generate_blinds_by_ante(ante)
 		"bl_mp_horde",
 	}
 end
+
+function MP.game_over()
+	G.STATE_COMPLETE = false
+	Game:update_game_over()
+end

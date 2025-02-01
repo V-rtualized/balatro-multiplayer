@@ -109,9 +109,9 @@ payload = '''
 			bonus = true,
 			name = "comeback",
 			pitch = pitch,
-			dollars = 4 * MP.lobby_state.config.comeback_bonus,
+			dollars = 4 * MP.game_state.comeback_bonus,
 		})
-		dollars = dollars + 4 * MP.lobby_state.config.comeback_bonus
+		dollars = dollars + 4 * MP.game_state.comeback_bonus
 	end'''
 match_indent = false
 times = 1
@@ -191,7 +191,7 @@ payload = '''elseif config.name == "comeback" then
   table.insert(left_text, {
     n = G.UIT.T,
     config = {
-      text = MP.lobby_state.config.comeback_bonus,
+      text = MP.game_state.comeback_bonus,
       scale = 0.8 * scale,
       colour = G.C.PURPLE,
       shadow = true,
