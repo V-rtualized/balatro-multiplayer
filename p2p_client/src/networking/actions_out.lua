@@ -106,7 +106,22 @@ function MP.send.leave_lobby()
 	MP.send.raw({
 		action = "leave_lobby",
 	})
+	if G.STAGE == G.STAGES.RUN then
+		G.FUNCS.go_to_menu()
+	end
 end
+G.FUNCS.mp_leave_lobby = MP.send.leave_lobby
+
+function MP.send.return_to_lobby()
+	MP.send.raw({
+		action = "return_to_lobby",
+		from = MP.network_state.code,
+	})
+	if G.STAGE == G.STAGES.RUN then
+		G.FUNCS.go_to_menu()
+	end
+end
+G.FUNCS.mp_return_to_lobby = MP.send.return_to_lobby
 
 function MP.send.set_username()
 	local new_username = G.PROFILES[G.SETTINGS.profile].name or "Guest"
@@ -138,10 +153,12 @@ function MP.send.start_run(choices)
 		MP.game_state.players[i].score_text = "0"
 		MP.game_state.players[i].hands_left = 4
 	end
+	MP.game_state.lives = MP.lobby_state.config.starting_lives
 	MP.send.raw({
 		action = "start_run",
 		choices = MP.table_to_networking_message(choices),
 		game_players = MP.table_to_networking_message(MP.game_state.players),
+		lobby_config = MP.table_to_networking_message(MP.lobby_state.config),
 	})
 end
 

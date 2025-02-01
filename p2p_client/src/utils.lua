@@ -365,7 +365,7 @@ function MP.get_horde_losers()
 	local sorted_players = MP.get_players_by_score()
 
 	local losing_players = {}
-	local required_losers = MP.get_horde_required_losers(#sorted_players)
+	local required_losers = MP.get_horde_required_losers(#MP.lobby_state.players, #sorted_players)
 
 	for i = 1, #sorted_players do
 		if sorted_players[i].hands_left < 1 then
@@ -391,4 +391,13 @@ function MP.readd_talisman_metavalues(t)
 		return Big:new(t.m, t.e)
 	end
 	return t
+end
+
+function MP.get_horde_starting_lives(player_count)
+	if player_count > 6 then
+		return 2
+	elseif player_count > 3 then
+		return 3
+	end
+	return 4
 end

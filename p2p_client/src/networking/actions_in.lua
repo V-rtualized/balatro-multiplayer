@@ -142,6 +142,21 @@ function MP.networking.funcs.player_left(args)
 	MP.game_state.players[game_player_index].lives = 0
 end
 
+function MP.networking.funcs.return_to_lobby(args)
+	if not args or not args.from then
+		MP.send_warn_message("Got return_to_lobby with invalid args")
+		return
+	end
+
+	local game_player_index = MP.get_game_player_by_code(args.code)
+
+	if game_player_index == 0 or MP.game_state.players[game_player_index] == nil then
+		return
+	end
+
+	MP.game_state.players[game_player_index].lives = 0
+end
+
 function MP.networking.funcs.request_lobby_sync(args)
 	if not args or not args.from then
 		MP.send_warn_message("Got request_lobby_sync with invalid args")
@@ -169,14 +184,17 @@ function MP.networking.funcs.request_lobby_sync_ack(args)
 end
 
 function MP.networking.funcs.start_run(args)
-	if not args or not args.choices or not args.game_players then
+	if not args or not args.choices or not args.game_players or not args.lobby_config then
 		MP.send_warn_message("Got start_run with invalid args")
 		return
 	end
 
 	local parsed_choices = MP.networking_message_to_table(args.choices)
 	local parsed_players = MP.networking_message_to_table(args.game_players)
+	local parsed_lobby_config = MP.networking_message_to_table(args.lobby_config)
 	MP.game_state.players = parsed_players
+	MP.lobby_state.config = parsed_lobby_config
+	MP.game_state.lives = MP.lobby_state.config.starting_lives
 	G.FUNCS.start_run(nil, parsed_choices)
 end
 
@@ -324,9 +342,20 @@ function MP.networking.funcs.set_skips(args)
 end
 
 function MP.networking.funcs.end_pvp(args)
-	G.STATE_COMPLETE = false
-	G.STATE = G.STATES.WAITING_ON_PVP_END
-	MP.game_state.end_pvp = true
+	G.E_MANAGER:add_event(Event({
+		trigger = "immediate",
+		blockable = false,
+		blocking = false,
+		func = function()
+			if G.STATE_COMPLETE then
+				G.STATE_COMPLETE = false
+				G.STATE = G.STATES.WAITING_ON_PVP_END
+				MP.game_state.end_pvp = true
+				return true
+			end
+			return false
+		end,
+	}))
 end
 
 function MP.networking.funcs.lose_life(args)

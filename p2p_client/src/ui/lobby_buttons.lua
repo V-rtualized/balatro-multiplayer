@@ -40,15 +40,6 @@ function MP.UI.BTN.copy_code(e)
 end
 G.FUNCS.mp_copy_code = MP.UI.BTN.copy_code
 
-function MP.UI.BTN.leave_lobby(e)
-	MP.send.leave_lobby()
-
-	if G.STAGE == G.STAGES.RUN then
-		G.FUNCS.go_to_menu()
-	end
-end
-G.FUNCS.mp_leave_lobby = MP.UI.BTN.leave_lobby
-
 local set_main_menu_UI_ref = set_main_menu_UI
 function MP.UI.set_main_menu_UI()
 	set_main_menu_UI_ref()

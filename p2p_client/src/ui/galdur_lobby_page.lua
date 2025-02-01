@@ -266,6 +266,13 @@ Galdur.add_new_page({
 	quick_start_text = function()
 		return tostring(#MP.lobby_state.players) .. " Players"
 	end,
+	pre_start = function(choices)
+		MP.lobby_state.config.starting_lives = MP.get_horde_starting_lives(#MP.lobby_state.players)
+		if choices.seed == nil then
+			choices.seed_select = true
+			choices.seed = generate_starting_seed()
+		end
+	end,
 	post_start = function(choices)
 		MP.send.start_run(choices)
 	end,
