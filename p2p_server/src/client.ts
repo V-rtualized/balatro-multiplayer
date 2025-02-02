@@ -22,20 +22,30 @@ const sendMessage =
 			if (message !== 'action:keep_alive_ack\n') {
 				sendTraceMessage(type, from, code, message)
 			}
-			socket.write(message, (err) => {
-				if (err) {
-					sendTraceMessage(
-						sendType.Error,
-						undefined,
-						code,
-						'Error sending message: ' + err,
-					)
-					reject(err)
-				} else {
-					socket.uncork()
-					resolve()
-				}
-			})
+			try {
+				socket.write(message, (err) => {
+					if (err) {
+						sendTraceMessage(
+							sendType.Error,
+							undefined,
+							code,
+							'Error sending message: ' + err,
+						)
+						reject(err)
+					} else {
+						socket.uncork()
+						resolve()
+					}
+				})
+			} catch (err) {
+				sendTraceMessage(
+					sendType.Error,
+					undefined,
+					code,
+					'Error sending message: ' + err.message,
+				)
+				reject(err)
+			}
 		})
 	}
 

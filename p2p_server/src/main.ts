@@ -90,36 +90,69 @@ const handleClientMessage = async (client: Client, data: string) => {
 }
 
 const server = net.createServer((socket) => {
-	socket.setKeepAlive(true, 1000)
-	socket.setNoDelay(true)
+	try {
+			socket.setKeepAlive(true, 1000)
+			socket.setNoDelay(true)
 
-	const client = new Client(socket)
+			const client = new Client(socket)
+			let buffer = ''
 
-	let buffer = ''
+			socket.on('data', (data) => {
+					try {
+							buffer += data.toString()
 
-	socket.on('data', (data) => {
-		buffer += data.toString()
+							const messages = buffer.split('\n')
+							buffer = messages.pop() ?? ''
 
-		const messages = buffer.split('\n')
-		buffer = messages.pop() ?? ''
+							if (messages.length > 0) {
+									handleClientMessage(client, messages.join('\n'))
+							}
+					} catch (err) {
+							const clientCode = client?.getCode() || 'Unknown'
+							sendTraceMessage(sendType.Error, clientCode, undefined, `Data handling error: ${err.message}`)
+							
+							try {
+									client?.delete()
+							} catch (cleanupErr) {
+									sendTraceMessage(sendType.Error, clientCode, undefined, `Cleanup error: ${cleanupErr.message}`)
+							}
+					}
+			})
 
-		if (messages.length > 0) {
-			handleClientMessage(client, messages.join('\n'))
-		}
-	})
+			socket.on('end', () => {
+					try {
+							client.delete()
+					} catch (err) {
+							sendTraceMessage(sendType.Error, client?.getCode() || 'Unknown', undefined, `End event error: ${err.message}`)
+					}
+			})
 
-	socket.on('end', () => {
-		client.delete()
-	})
+			socket.on('error', (err) => {
+					try {
+							if (!client) {
+									sendTraceMessage(sendType.Error, 'Unknown', undefined, `Socket error: ${err.message}`)
+									return
+							}
+							sendTraceMessage(sendType.Error, client.getCode(), undefined, `Socket error: ${err.message}`)
+							client.delete()
+					} catch (handlingErr) {
+							sendTraceMessage(sendType.Error, 'Unknown', undefined, `Error handling error: ${handlingErr.message}`)
+					}
+			})
+	} catch (err) {
+			sendTraceMessage(sendType.Error, 'Unknown', undefined, `Server initialization error: ${err.message}`)
+			
+			try {
+					socket.destroy()
+			} catch (destroyErr) {
+					sendTraceMessage(sendType.Error, 'Unknown', undefined, `Socket destroy error: ${destroyErr.message}`)
+			}
+	}
+})
 
-	socket.on('error', (err) => {
-		if (!client) {
-			sendTraceMessage(sendType.Error, 'Unknwn', undefined, err.message)
-			return
-		}
-		sendTraceMessage(sendType.Error, client.getCode(), undefined, err.message)
-		client.delete()
-	})
+// Add error handling for the server itself
+server.on('error', (err) => {
+	sendTraceMessage(sendType.Error, 'Server', undefined, `Server error: ${err.message}`)
 })
 
 if (import.meta.main) {
