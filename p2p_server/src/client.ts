@@ -1,4 +1,4 @@
-import { Socket } from './types.ts'
+import { sendType, Socket } from './types.ts'
 import {
 	generateUniqueCode,
 	sendTraceMessage,
@@ -6,7 +6,6 @@ import {
 } from './utils.ts'
 import { Lobby } from './lobby.ts'
 import { ClientSend } from './types.ts'
-import { sendType } from './types.ts'
 
 const clients = new Map<string, Client>()
 
@@ -22,30 +21,14 @@ const sendMessage =
 			if (message !== 'action:keep_alive_ack\n') {
 				sendTraceMessage(type, from, code, message)
 			}
-			try {
-				socket.write(message, (err) => {
-					if (err) {
-						sendTraceMessage(
-							sendType.Error,
-							undefined,
-							code,
-							'Error sending message: ' + err,
-						)
-						reject(err)
-					} else {
-						socket.uncork()
-						resolve()
-					}
-				})
-			} catch (err) {
-				sendTraceMessage(
-					sendType.Error,
-					undefined,
-					code,
-					'Error sending message: ' + err.message,
-				)
-				reject(err)
-			}
+			socket.write(message, (err) => {
+				if (err) {
+					reject(err)
+				} else {
+					socket.uncork()
+					resolve()
+				}
+			})
 		})
 	}
 
@@ -63,10 +46,23 @@ export class Client {
 
 	constructor(socket: Socket) {
 		this.code = generateUniqueCode()
-		this.send = sendMessage(socket, this.code)
+		this.send = this.safeSend(sendMessage(socket, this.code))
 		this.state = 'connecting'
 		this.currentLobby = null
 		clients.set(this.code, this)
+	}
+
+	safeSend = (send: ClientSend): ClientSend => async (message, type, from) => {
+		try {
+			await send(message, type, from)
+		} catch (err) {
+			sendTraceMessage(
+				sendType.Error,
+				undefined,
+				this.code,
+				'Error sending message: ' + err,
+			)
+		}
 	}
 
 	getCode() {
