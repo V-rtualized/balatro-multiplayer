@@ -1,298 +1,162 @@
-import { Socket, createServer} from 'node:net'
-import Client from './Client.js'
-import { actionHandlers } from './actionHandlers.js'
-import type {
-	Action,
-	ActionClientToServer,
-	ActionCreateLobby,
-	ActionHandlerArgs,
-	ActionJoinLobby,
-	ActionLobbyOptions,
-	ActionPlayHand,
-	ActionRemovePhantom,
-	ActionSendPhantom,
-	ActionServerToClient,
-	ActionSetAnte,
-	ActionSetLocation,
-	ActionSkip,
-	ActionUsername,
-	ActionUtility,
-	ActionVersion,
-} from './actions.js'
+import net from 'node:net'
+import { ActionMessage, sendType, ToMessage } from './types.ts'
+import { Client, ConnectedClient } from './client.ts'
+import ActionHandler from './action_handler.ts'
+import { parseMessage, sendTraceMessage } from './utils.ts'
 
-const PORT = 8788
+const PORT = 6858
 
-/** The amount of milliseconds we wait before sending the initial keepalive packet  */
-const KEEP_ALIVE_INITIAL_TIMEOUT = 5000
-/** The amount of milliseconds we wait after sending a new retry packet  */
-const KEEP_ALIVE_RETRY_TIMEOUT = 2500
-/** The amount of retries we do before we declare the socket dead */
-const KEEP_ALIVE_RETRY_COUNT = 3
-
-interface BigIntWithToJSON {
-	prototype: {
-		toJSON: () => string
+const assertClientConnected = (client: Client): client is ConnectedClient => {
+	if (!client.isConnected()) {
+		client.send(
+			'action:error,message:Not finished connecting to the server',
+			sendType.Error,
+			'SERVER',
+		)
+		return false
 	}
+	return true
 }
 
-(BigInt as unknown as BigIntWithToJSON).prototype.toJSON = function () {
-  return this.toString();
-};
+const handleClientMessage = async (client: Client, data: string) => {
+	const messages = data.toString().split('\n').filter((msg) => msg.length > 0)
 
-const scientificNotationToBigInt = (value: string): bigint => {
-	const [coefficient, exponent] = value.split('e')
-	const coefficientNum = BigInt(coefficient.replace('.', ''))
-	const exponentNum = BigInt(exponent) - BigInt(coefficient.split('.')[1]?.length || 0)
-	return coefficientNum * 10n ** exponentNum
-}
-
-// biome-ignore lint/suspicious/noExplicitAny: Object is parsed from string
-const stringToJson = (str: string): any => {
-	const obj: Record<string, string | number | bigint | boolean> = {}
-	for (const part of str.split(',')) {
-		const [key, value] = part.split(':')
-		if (value === 'true' || value === 'false') {
-			obj[key] = value === 'true'
+	for (const message of messages) {
+		if (!client) {
+			sendTraceMessage(
+				sendType.Error,
+				undefined,
+				undefined,
+				'Warning: Message received from unknown client',
+			)
 			continue
 		}
-		const numericValue = Number(value)
-		let score = null
-		if (key === 'score') {
-			if (value.includes('e')) {
-				score = scientificNotationToBigInt(value)
-			} else {
-				score = BigInt(value)
-			}
-		}
-		obj[key] = score === null ? (Number.isNaN(numericValue) ? value : numericValue) : score
-	}
-	return obj
-}
 
-/** Serializes an action for transmission to the client */
-export const serializeAction = (action: Action): string => {
-	const entries = Object.entries(action)
-	const parts = entries
-		.filter(([_key, value]) => value !== undefined && value !== null)
-		.map(([key, value]) => `${key}:${value}`)
-	console.log(parts)
-	return parts.join(',')
-}
-
-const sendActionToSocket =
-	(socket: Socket) => (action: ActionServerToClient) => {
-		if (!socket) {
-			return
+		if (message !== 'action:keep_alive') {
+			sendTraceMessage(sendType.Received, client.getCode(), undefined, message)
 		}
 
-		const data = serializeAction(action)
+		const parsedMessage = parseMessage(message)
 
-		const { action: actionName, ...actionArgs } = action
-
-		if (actionName !== 'keepAlive' && actionName !== 'keepAliveAck') {
-			console.log(
-				`${new Date().toISOString()}: Sent action ${actionName} to client: ${JSON.stringify(actionArgs)}`,
+		if (typeof parsedMessage.action !== 'string') {
+			await client.send(
+				'action:error,message:Message missing action',
+				sendType.Error,
+				'SERVER',
 			)
+			continue
 		}
 
-		socket.write(`${data}\n`)
-	}
-
-const server = createServer((socket) => {
-	socket.allowHalfOpen = false
-	// Do not wait for packets to buffer, helps
-	// improve latency between responses
-	socket.setNoDelay()
-
-	const client = new Client(socket.address(), sendActionToSocket(socket), socket.end)
-	client.sendAction({ action: 'connected' })
-	client.sendAction({ action: 'version' })
-
-	let isRetry = false
-	let retryCount = 0
-
-	const retryTimer: ReturnType<typeof setTimeout> = setTimeout(() => {
-		// Ignore if not retry
-		if (!isRetry) {
+		if (
+			typeof (parsedMessage.to) === 'string' &&
+			typeof (parsedMessage.from) === 'string'
+		) {
+			const toMessage = parsedMessage as ToMessage
+			ActionHandler.sendTo(client, toMessage, toMessage.to)
 			return
 		}
 
-		client.sendAction({ action: 'keepAlive' })
-		retryCount++
+		const actionMessage = parsedMessage as ActionMessage
 
-		if (retryCount >= KEEP_ALIVE_RETRY_COUNT) {
-			socket.end()
-		} else {
-			retryTimer.refresh()
+		switch (actionMessage.action) {
+			case 'keep_alive':
+				await client.send('action:keep_alive_ack', sendType.Ack, 'SERVER')
+				break
+			case 'connect':
+				ActionHandler.connect(client, actionMessage)
+				break
+			case 'set_username':
+				ActionHandler.setUsername(client, actionMessage)
+				break
+			case 'open_lobby':
+				if (assertClientConnected(client)) ActionHandler.openLobby(client)
+				break
+			case 'join_lobby':
+				if (assertClientConnected(client)) {
+					ActionHandler.joinLobby(client, actionMessage)
+				}
+				break
+			case 'leave_lobby':
+				if (assertClientConnected(client)) {
+					ActionHandler.leaveLobby(client)
+				}
+				break
+			default:
+				if (assertClientConnected(client)) {
+					ActionHandler.broadcast(client, actionMessage)
+				}
 		}
-	}, KEEP_ALIVE_RETRY_TIMEOUT)
+	}
+}
 
-	// Once the client connects, we start a timer
-	const keepAlive: ReturnType<typeof setTimeout> = setTimeout(() => {
-		client.sendAction({ action: 'keepAlive' })
-		isRetry = true
-		retryTimer.refresh()
-	}, KEEP_ALIVE_INITIAL_TIMEOUT)
+const server = net.createServer((socket) => {
+	try {
+			socket.setKeepAlive(true, 1000)
+			socket.setNoDelay(true)
 
-	socket.on('data', (data) => {
-		// Data received, reset keepAlive
-		isRetry = false
-		retryCount = 0
-		keepAlive.refresh()
+			const client = new Client(socket)
+			let buffer = ''
 
-		const messages = data.toString().split('\n')
+			socket.on('data', (data) => {
+					try {
+							buffer += data.toString()
 
-		for (const msg of messages) {
-			if (!msg) return
+							const messages = buffer.split('\n')
+							buffer = messages.pop() ?? ''
+
+							if (messages.length > 0) {
+									handleClientMessage(client, messages.join('\n'))
+							}
+					} catch (err) {
+							const clientCode = client?.getCode() || 'Unknown'
+							sendTraceMessage(sendType.Error, clientCode, undefined, `Data handling error: ${err.message}`)
+							
+							try {
+									client?.delete()
+							} catch (cleanupErr) {
+									sendTraceMessage(sendType.Error, clientCode, undefined, `Cleanup error: ${cleanupErr.message}`)
+							}
+					}
+			})
+
+			socket.on('end', () => {
+					try {
+							client.delete()
+					} catch (err) {
+							sendTraceMessage(sendType.Error, client?.getCode() || 'Unknown', undefined, `End event error: ${err.message}`)
+					}
+			})
+
+			socket.on('error', (err) => {
+					try {
+							if (!client) {
+									sendTraceMessage(sendType.Error, 'Unknown', undefined, `Socket error: ${err.message}`)
+									return
+							}
+							sendTraceMessage(sendType.Error, client.getCode(), undefined, `Socket error: ${err.message}`)
+							client.delete()
+					} catch (handlingErr) {
+							sendTraceMessage(sendType.Error, 'Unknown', undefined, `Error handling error: ${handlingErr.message}`)
+					}
+			})
+	} catch (err) {
+			sendTraceMessage(sendType.Error, 'Unknown', undefined, `Server initialization error: ${err.message}`)
+			
 			try {
-				const message: ActionClientToServer | ActionUtility = stringToJson(msg)
-				const { action, ...actionArgs } = message
-				
-				if (action !== 'keepAlive' && action !== 'keepAliveAck') {
-					console.log(
-						`${new Date().toISOString()}: Received action ${action} from ${client.id}: ${JSON.stringify(
-						actionArgs,
-					)}`,
-					)
-				}
-
-				switch (action) {
-					case 'setLocation':
-						actionHandlers.setLocation(
-							actionArgs as ActionHandlerArgs<ActionSetLocation>,
-							client,
-						)
-						break
-					case 'version':
-						actionHandlers.version(
-							actionArgs as ActionHandlerArgs<ActionVersion>,
-							client,
-						)
-						break
-					case 'username':
-						actionHandlers.username(
-							actionArgs as ActionHandlerArgs<ActionUsername>,
-							client,
-						)
-						break
-					case 'createLobby':
-						actionHandlers.createLobby(
-							actionArgs as ActionHandlerArgs<ActionCreateLobby>,
-							client,
-						)
-						break
-					case 'joinLobby':
-						actionHandlers.joinLobby(
-							actionArgs as ActionHandlerArgs<ActionJoinLobby>,
-							client,
-						)
-						break
-					case 'lobbyInfo':
-						actionHandlers.lobbyInfo(client)
-						break
-					case 'leaveLobby':
-						actionHandlers.leaveLobby(client)
-						break
-					case 'startGame':
-						actionHandlers.startGame(client)
-						break
-					case 'readyBlind':
-						actionHandlers.readyBlind(client)
-						break
-					case 'unreadyBlind':
-						actionHandlers.unreadyBlind(client)
-						break
-					case 'keepAlive':
-						actionHandlers.keepAlive(client)
-						break
-					case 'playHand':
-						actionHandlers.playHand(
-							actionArgs as ActionHandlerArgs<ActionPlayHand>,
-							client,
-						)
-						break
-					case 'stopGame':
-						actionHandlers.stopGame(client)
-						break
-					// Deprecated
-					case 'gameInfo':
-						actionHandlers.gameInfo(client)
-						break
-					case 'lobbyOptions':
-						actionHandlers.lobbyOptions(
-							actionArgs as ActionHandlerArgs<ActionLobbyOptions>,
-							client,
-						)
-						break
-					case 'newRound':
-						actionHandlers.newRound(client)
-						break
-					case 'failRound':
-						actionHandlers.failRound(client)
-						break
-					case 'setAnte':
-						actionHandlers.setAnte(
-							actionArgs as ActionHandlerArgs<ActionSetAnte>,
-							client,
-						)
-						break
-					case 'skip':
-						actionHandlers.skip(
-							actionArgs as ActionHandlerArgs<ActionSkip>,
-							client,
-						)
-						break
-					case 'sendPhantom':
-						actionHandlers.sendPhantom(
-							actionArgs as ActionHandlerArgs<ActionSendPhantom>,
-							client,
-						)
-						break
-					case 'removePhantom':
-						actionHandlers.removePhantom(
-							actionArgs as ActionHandlerArgs<ActionRemovePhantom>,
-							client,
-						)
-						break
-					case 'asteroid':
-						actionHandlers.asteroid(client)
-						break
-				}
-			} catch (error) {
-				const failedToParseError = 'Failed to parse message'
-				console.error(failedToParseError, error)
-				client.sendAction({
-					action: 'error',
-					message: failedToParseError,
-				})
+					socket.destroy()
+			} catch (destroyErr) {
+					sendTraceMessage(sendType.Error, 'Unknown', undefined, `Socket destroy error: ${destroyErr.message}`)
 			}
-		}
-	})
-
-	socket.on('end', () => {
-		console.log(`Client disconnected ${client.id}`)
-		actionHandlers.leaveLobby?.(client)
-	})
-
-	socket.on(
-		'error',
-		(
-			err: Error & {
-				errno: number
-				code: string
-				syscall: string
-			},
-		) => {
-			if (err.code === 'ECONNRESET') {
-				console.warn('TCP connection reset by peer (client).')
-			} else {
-				console.error('An unexpected error occurred:', err)
-			}
-			actionHandlers.leaveLobby?.(client)
-		},
-	)
+	}
 })
 
-server.listen(PORT, '0.0.0.0', () => {
-	console.log(`Server listening on port ${PORT}`)
+// Add error handling for the server itself
+server.on('error', (err) => {
+	sendTraceMessage(sendType.Error, 'Server', undefined, `Server error: ${err.message}`)
 })
+
+if (import.meta.main) {
+	server.listen(PORT, () => {
+		console.log(`Server listening on port ${PORT}`)
+	})
+}

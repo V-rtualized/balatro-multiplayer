@@ -1,12 +1,9 @@
 version: '3.8'
+
 services:
-  socket:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  server:
+    build: .
     ports:
-      - "8788:8788"
-      - "49484:8788"
+      - '6858:6858'
     environment:
-      NODE_ENV: development
-    restart: unless-stopped
+      - PORT=6858

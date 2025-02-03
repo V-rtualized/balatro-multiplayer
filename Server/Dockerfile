@@ -1,15 +1,11 @@
-FROM node:21
+FROM denoland/deno:latest
 
 WORKDIR /app
 
-COPY package*.json ./
-
-RUN npm install
-
 COPY . .
 
-RUN npm run build
+RUN deno cache src/main.ts
 
-EXPOSE 8788
+EXPOSE 6858
 
-CMD [ "node", "dist/src/main.js" ]
+CMD ["deno", "run", "--allow-net", "--allow-read", "src/main.ts"]
