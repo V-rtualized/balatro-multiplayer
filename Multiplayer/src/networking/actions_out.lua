@@ -5,19 +5,6 @@ MP.MAX_RETRIES = 5
 
 local cached_username = nil
 
-function MP.networking.initialize()
-	if not MP.networking.NETWORKING_THREAD then
-		local SOCKET = load_mp_file("src/networking/server.lua")
-		MP.networking.NETWORKING_THREAD = love.thread.newThread(SOCKET)
-		MP.networking.NETWORKING_THREAD:start(
-			SMODS.Mods["Multiplayer"].config.server_url,
-			SMODS.Mods["Multiplayer"].config.server_port
-		)
-
-		MP.send.connect()
-	end
-end
-
 MP.retry_event = Event({
 	trigger = "after",
 	blockable = false,
@@ -43,7 +30,7 @@ MP.retry_event = Event({
 				MP.send_trace_message(
 					"Retrying message " .. pending.action .. " (attempt " .. pending.retries + 1 .. ")"
 				)
-				MP.networking.ui_to_network_channel:push(pending.raw_message)
+				MPAPI.ui_to_network_channel:push(pending.raw_message)
 			end
 		end
 
@@ -57,45 +44,14 @@ MP.retry_event = Event({
 
 G.E_MANAGER:add_event(MP.retry_event)
 
-function MP.send.raw(msg)
-	local raw_msg
-	if type(msg) == "table" then
-		if MP.EXPECTED_RESPONSES[msg.action] then
-			local msg_id = os.time() .. "_" .. msg.action
-			MP.pending_messages[msg_id] = {
-				action = msg.action,
-				retries = 0,
-				expected_response = MP.EXPECTED_RESPONSES[msg.action],
-				raw_message = MP.serialize_networking_message(msg),
-			}
-		end
-		raw_msg = MP.serialize_networking_message(msg)
-	else
-		raw_msg = msg
-	end
-
-	MP.send_trace_message("Sending message: " .. raw_msg)
-	MP.networking.ui_to_network_channel:push(raw_msg)
-end
-
-function MP.send.connect()
-	MP.send.raw("connect")
-
-	cached_username = G.PROFILES[G.SETTINGS.profile].name or "Guest"
-	MP.send.raw({
-		action = "connect",
-		username = cached_username,
-	})
-end
-
 function MP.send.open_lobby()
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "open_lobby",
 	})
 end
 
 function MP.send.join_lobby(code, checking)
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "join_lobby",
 		code = code:gsub("[oO]", "0"), -- Replaces the letter O with the number 0 because Balatro has a vendetta against zeros
 		checking = checking or false,
@@ -103,7 +59,7 @@ function MP.send.join_lobby(code, checking)
 end
 
 function MP.send.leave_lobby()
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "leave_lobby",
 	})
 	if G.STAGE == G.STAGES.RUN then
@@ -113,7 +69,7 @@ end
 G.FUNCS.mp_leave_lobby = MP.send.leave_lobby
 
 function MP.send.return_to_lobby()
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "return_to_lobby",
 		from = MP.network_state.code,
 	})
@@ -129,14 +85,14 @@ function MP.send.set_username()
 		return
 	end
 	cached_username = new_username
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "set_username",
 		username = new_username,
 	})
 end
 
 function MP.send.request_lobby_sync()
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "request_lobby_sync",
 		from = MP.network_state.code,
 		to = MP.network_state.lobby,
@@ -154,7 +110,7 @@ function MP.send.start_run(choices)
 		MP.game_state.players[i].hands_left = 4
 	end
 	MP.game_state.lives = MP.lobby_state.config.starting_lives
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "start_run",
 		choices = MP.table_to_networking_message(choices),
 		game_players = MP.table_to_networking_message(MP.game_state.players),
@@ -163,7 +119,7 @@ function MP.send.start_run(choices)
 end
 
 function MP.send.request_ante_info()
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "request_ante_info",
 		from = MP.network_state.code,
 		to = MP.network_state.lobby,
@@ -177,7 +133,7 @@ function MP.send.ready_blind(e)
 		action = "ready_blind",
 		from = MP.network_state.code,
 	}
-	MP.send.raw(args)
+	MPAPI.send_raw(args)
 	MP.networking.funcs.ready_blind(args)
 end
 
@@ -186,7 +142,7 @@ function MP.send.unready_blind()
 		action = "unready_blind",
 		from = MP.network_state.code,
 	}
-	MP.send.raw(args)
+	MPAPI.send_raw(args)
 	MP.networking.funcs.unready_blind(args)
 end
 
@@ -197,7 +153,7 @@ function MP.send.play_hand(score, hands_left)
 		hands_left = tostring(hands_left),
 		from = MP.network_state.code,
 	}
-	MP.send.raw(args)
+	MPAPI.send_raw(args)
 	MP.networking.funcs.play_hand(args)
 end
 
@@ -207,7 +163,7 @@ function MP.send.set_location(loc)
 		location = loc,
 		from = MP.network_state.code,
 	}
-	MP.send.raw(args)
+	MPAPI.send_raw(args)
 	MP.networking.funcs.set_location(args)
 end
 
@@ -217,7 +173,7 @@ function MP.send.set_skips(skips)
 		skips = tostring(skips),
 		from = MP.network_state.code,
 	}
-	MP.send.raw(args)
+	MPAPI.send_raw(args)
 	MP.networking.funcs.set_skips(args)
 end
 
@@ -226,7 +182,7 @@ function MP.send.fail_round()
 end
 
 function MP.send.end_pvp()
-	MP.send.raw({
+	MPAPI.send_raw({
 		action = "end_pvp",
 	})
 	MP.networking.funcs.end_pvp()
@@ -237,7 +193,7 @@ function MP.send.lose_life(to)
 		action = "lose_life",
 		to = to,
 	}
-	MP.send.raw(args)
+	MPAPI.send_raw(args)
 	MP.networking.funcs.lose_life(args)
 end
 
@@ -246,6 +202,6 @@ function MP.send.win(to)
 		action = "win",
 		to = to,
 	}
-	MP.send.raw(args)
+	MPAPI.send_raw(args)
 	MP.networking.funcs.win(args)
 end

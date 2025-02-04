@@ -1,15 +1,5 @@
 MP.SHOW_DEBUG_MESSAGES = true
 
-local function message_to_string(message)
-	if type(message) == "table" or type(message) == "function" then
-		message = serialize(message)
-	end
-	if type(message) == "number" or type(message) == "boolean" then
-		message = tostring(message)
-	end
-	return message
-end
-
 function MP.send_debug_message(message)
 	if MP.SHOW_DEBUG_MESSAGES then
 		sendDebugMessage(message_to_string(message), "MULTIPLAYER")

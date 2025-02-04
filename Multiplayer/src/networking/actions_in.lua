@@ -9,28 +9,6 @@ MP.EXPECTED_RESPONSES = {
 	request_ante_info = "request_ante_info_ack",
 }
 
-function MP.networking.handle_network_message(message)
-	if message == "action:keep_alive_ack" then
-		return
-	end
-
-	MP.send_trace_message("Received message: " .. message)
-	local msg_obj = MP.parse_networking_message(message)
-
-	for msg_id, pending in pairs(MP.pending_messages) do
-		if msg_obj.action == pending.expected_response then
-			MP.pending_messages[msg_id] = nil
-			break
-		end
-	end
-
-	if msg_obj.action and MP.networking.funcs[msg_obj.action] then
-		MP.networking.funcs[msg_obj.action](msg_obj)
-	else
-		MP.send_warn_message("Received message with unknown action: " .. msg_obj.action)
-	end
-end
-
 function MP.networking.funcs.connect_ack(args)
 	if not args or not args.code then
 		MP.send_warn_message("Got connect_ack with invalid args")
