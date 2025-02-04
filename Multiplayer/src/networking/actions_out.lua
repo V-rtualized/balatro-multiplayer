@@ -1,53 +1,20 @@
 MP.send = {}
 
-MP.pending_messages = {}
-MP.MAX_RETRIES = 5
-
 local cached_username = nil
 
-MP.retry_event = Event({
-	trigger = "after",
-	blockable = false,
-	blocking = false,
-	delay = 3,
-	pause_force = true,
-	no_delete = true,
-	timer = "REAL",
-	func = function(t)
-		local messages_to_remove = {}
-
-		for msg_id, pending in pairs(MP.pending_messages) do
-			pending.retries = pending.retries + 1
-
-			if pending.retries >= MP.MAX_RETRIES then
-				MP.send_warn_message("Message " .. pending.action .. " failed after " .. MP.MAX_RETRIES .. " retries")
-				messages_to_remove[#messages_to_remove + 1] = msg_id
-
-				if MP.network_state.lobby then
-					MP.send.leave_lobby()
-				end
-			else
-				MP.send_trace_message(
-					"Retrying message " .. pending.action .. " (attempt " .. pending.retries + 1 .. ")"
-				)
-				MPAPI.ui_to_network_channel:push(pending.raw_message)
-			end
-		end
-
-		for _, msg_id in ipairs(messages_to_remove) do
-			MP.pending_messages[msg_id] = nil
-		end
-
-		MP.retry_event.start_timer = false
-	end,
-})
-
-G.E_MANAGER:add_event(MP.retry_event)
+function MP.send.connect()
+	cached_username = G.PROFILES[G.SETTINGS.profile].name or "Guest"
+	local action = MPAPI.NetworkAction(MPAPI.ACTIONS.CONNECT_ACTION_TYPE)
+	action:callback(MP.networking.funcs.connect_ack)
+	action:send("SERVER", {
+		username = cached_username,
+	})
+end
 
 function MP.send.open_lobby()
-	MPAPI.send_raw({
-		action = "open_lobby",
-	})
+	local action = MPAPI.NetworkAction(MPAPI.ACTIONS.OPEN_LOBBY_ACTION_TYPE)
+	action:callback(MP.networking.funcs.open_lobby_ack)
+	action:send("SERVER", {})
 end
 
 function MP.send.join_lobby(code, checking)

@@ -1,4 +1,3 @@
-sendDebugMessage("LOADED MP")
 MP = SMODS.current_mod
 
 MP.network_state = {
@@ -124,3 +123,7 @@ MP.load_file("src/ui/galdur_lobby_page.lua")
 MP.load_file("src/blinds/horde.lua")
 MP.load_file("src/blinds/nemesis.lua")
 MP.load_file("src/blinds/truce.lua")
+
+MPAPI.server_config.url = "virtualized.dev"
+MPAPI.server_config.port = 6858
+MPAPI.initialize()

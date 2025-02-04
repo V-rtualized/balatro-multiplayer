@@ -1,15 +1,6 @@
 MP.networking.funcs = {}
 
-MP.EXPECTED_RESPONSES = {
-	connect = "connect_ack",
-	set_username = "set_username_ack",
-	open_lobby = "open_lobby_ack",
-	join_lobby = "join_lobby_ack",
-	request_lobby_sync = "request_lobby_sync_ack",
-	request_ante_info = "request_ante_info_ack",
-}
-
-function MP.networking.funcs.connect_ack(args)
+function MP.networking.funcs.connect_ack(action, args)
 	if not args or not args.code then
 		MP.send_warn_message("Got connect_ack with invalid args")
 		return
@@ -22,7 +13,7 @@ function MP.networking.funcs.connect_ack(args)
 	MP.draw_lobby_ui()
 end
 
-function MP.networking.funcs.set_username_ack(args)
+function MP.networking.funcs.set_username_ack(action, args)
 	if not args or not args.username then
 		MP.send_warn_message("Got set_username_ack with invalid args")
 		return
@@ -50,7 +41,7 @@ function MP.networking.funcs.disconnected(args)
 	MP.send_warn_message("Disconnected from server")
 end
 
-function MP.networking.funcs.open_lobby_ack(args)
+function MP.networking.funcs.open_lobby_ack(action, args)
 	MP.network_state.lobby = MP.network_state.code
 
 	MP.lobby_state.players[1] = {
