@@ -118,7 +118,7 @@ function MPAPI.NetworkAction:send(recipient_code, parameters)
 		MPAPI.create_netaction_event(self, msg)
 	end
 
-	MPAPI.send_raw(msg)
+	MPAPI.send_raw(msg, self.action_type.parameters)
 
 	self.action_type:post_send(self, parameters)
 end

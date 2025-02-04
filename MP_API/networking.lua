@@ -11,6 +11,10 @@ function MPAPI.send_raw(msg, param_config)
 end
 
 function MPAPI.handle_network_message(msg_str)
+	if msg_str == "action:keep_alive_ack" then
+		return
+	end
+
 	MPAPI.send_trace_message("RECEIVED :: " .. msg_str)
 
 	local msg = MPAPI.parse_networking_message(msg_str)
@@ -109,7 +113,7 @@ MPAPI.EVENTS.handles_messages = Event({
 
 G.E_MANAGER:add_event(MPAPI.EVENTS.handles_messages)
 
-function MPAPI.initialize(load_server_constants)
+function MPAPI.initialize(ignore_server_constants)
 	if not MPAPI.NETWORKING_THREAD then
 		local SOCKET = MPAPI.load_file("server.lua")
 		MPAPI.NETWORKING_THREAD = love.thread.newThread(SOCKET)
@@ -117,8 +121,10 @@ function MPAPI.initialize(load_server_constants)
 
 		MPAPI.send_raw("connect")
 
-		if load_server_constants then
+		if not ignore_server_constants then
 			MPAPI.load_file("server_constants.lua")
 		end
+
+		MPAPI.send_raw("connect")
 	end
 end
