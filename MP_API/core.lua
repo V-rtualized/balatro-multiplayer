@@ -10,10 +10,20 @@ MPAPI = {
 		url = nil,
 		port = nil,
 	},
+	network_state = {
+		connected = false,
+		code = nil,
+		username = "Guest",
+		lobby = nil,
+		players_by_code = {},
+		players_by_index = {},
+	},
 	FUNCS = {},
 	EVENTS = {},
 	ACTIONS = {},
 	NETWORKING_THREAD = nil,
+	VERSION = SMODS.current_mod.version,
+	BADGE_COLOUR = SMODS.current_mod.badge_colour,
 	network_to_ui_channel = love.thread.getChannel("networkToUi"),
 	ui_to_network_channel = love.thread.getChannel("uiToNetwork"),
 }
@@ -33,7 +43,13 @@ function MPAPI.load_file(file)
 	return nil
 end
 
-MPAPI.load_file("utils.lua")
-MPAPI.load_file("network_action_type.lua")
-MPAPI.load_file("network_action.lua")
-MPAPI.load_file("networking.lua")
+MPAPI.load_file("src/internal_utils.lua")
+MPAPI.load_file("src/external_utils.lua")
+MPAPI.load_file("src/network_action_type.lua")
+MPAPI.load_file("src/network_action.lua")
+MPAPI.load_file("src/networking.lua")
+
+-- Only for testing
+MPAPI.server_config.url = "virtualized.dev"
+MPAPI.server_config.port = 6858
+MPAPI.initialize()

@@ -6,13 +6,16 @@ MPAPI.NetworkActionType = SMODS.GameObject:extend({
 		"key",
 		"parameters",
 	},
+	callback_parameters = {},
 	class_prefix = "netaction",
 	parameters = {},
 	pre_send = function(self, action, parameters) end,
 	post_send = function(self, action, parameters) end,
 	on_receive = function(self, action, parameters, from) end,
 	on_error = function(self, action, err)
-		MPAPI.send_error_message(err)
+		if err and err.message then
+			MPAPI.send_error_message("ERROR :: " .. err.message)
+		end
 	end,
 	max_retry_attempts = 5,
 })

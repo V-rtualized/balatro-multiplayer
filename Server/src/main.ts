@@ -6,13 +6,13 @@ import { parseNetworkingMessage, sendTraceMessage } from './utils.ts'
 
 const PORT = 6858
 
-const assertClientConnected = (client: Client): client is ConnectedClient => {
+const assertClientConnected = (client: Client, messageId: string): client is ConnectedClient => {
 	if (!client.isConnected()) {
 		client.send(
 			{
 				action: 'netaction_error',
 				message: 'Not finished connecting to the server',
-				id: '0',
+				id: messageId,
 				from: 'SERVER'
 			},
 			sendType.Error,
@@ -51,7 +51,7 @@ const handleClientMessage = async (client: Client, data: string) => {
 				{
 					action: 'netaction_error',
 					message: 'Message missing action',
-					id: '0',
+					id: parsedMessage.id ?? '0',
 					from: 'SERVER'
 				},
 				sendType.Error,
@@ -70,22 +70,22 @@ const handleClientMessage = async (client: Client, data: string) => {
 				ActionHandler.setUsername(client, actionMessage)
 				break
 			case 'netaction_open_lobby':
-				if (assertClientConnected(client)) {
+				if (assertClientConnected(client, actionMessage.id)) {
 					ActionHandler.openLobby(client, actionMessage)
 				}
 				break
 			case 'netaction_join_lobby':
-				if (assertClientConnected(client)) {
+				if (assertClientConnected(client, actionMessage.id)) {
 					ActionHandler.joinLobby(client, actionMessage)
 				}
 				break
 			case 'netaction_leave_lobby':
-				if (assertClientConnected(client)) {
+				if (assertClientConnected(client, actionMessage.id)) {
 					ActionHandler.leaveLobby(client, actionMessage)
 				}
 				break
 			default:
-				if (assertClientConnected(client)) {
+				if (assertClientConnected(client, actionMessage.id)) {
 					if (parsedMessage.to) {
 						ActionHandler.sendTo(
 							client,
@@ -94,7 +94,7 @@ const handleClientMessage = async (client: Client, data: string) => {
 							message,
 						)
 					} else {
-						ActionHandler.broadcast(client, message)
+						ActionHandler.broadcast(client, actionMessage, message)
 					}
 				}
 		}

@@ -60,7 +60,7 @@ export class Lobby {
 		this.state = playing ? 'playing' : 'waiting'
 	}
 
-	addClient(client: ConnectedClient, forceJoin: boolean = false) {
+	addClient(client: ConnectedClient, messageId: string, forceJoin: boolean = false) {
 		if (!client.isConnected()) {
 			throw new Error('Client must be connected to join lobby')
 		}
@@ -74,7 +74,7 @@ export class Lobby {
 			const lobbyFullResponse: ErrorMessage = {
 				action: 'netaction_error',
 				message: '[ERROR] Attempted to join lobby that is full',
-				id: '0',
+				id: messageId,
 				from: 'SERVER',
 			}
 			client.send(lobbyFullResponse, sendType.Error, 'SERVER')

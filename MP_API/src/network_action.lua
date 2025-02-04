@@ -34,6 +34,10 @@ function MPAPI.create_netaction_event(action, msg)
 end
 
 function MPAPI.valid_parameters(given_params, action_type_params, on_error)
+	if action_type_params == nil then
+		MPAPI.send_warn_message("Trying to validate parameters with nil action_type_params")
+		return false
+	end
 	for _, v in ipairs(action_type_params) do
 		if type(v.key) ~= "string" or type(v.type) ~= "string" then
 			on_error("Failed to send netaction: Invalid parameter configuration (" .. v.key .. ")")
@@ -67,6 +71,7 @@ function MPAPI.NetworkAction:init(network_action_type)
 	self.callback_func = nil
 	self.action_type = network_action_type
 	self.retry_event = nil
+	self.sent_params = {}
 end
 
 function MPAPI.NetworkAction:callback(callback_func)
@@ -77,6 +82,7 @@ end
 
 function MPAPI.NetworkAction:send(recipient_code, parameters)
 	parameters = parameters or {}
+	self.sent_params = parameters
 	local action_key = self.action_type.key
 
 	if self.is_sent then
@@ -124,7 +130,11 @@ function MPAPI.NetworkAction:send(recipient_code, parameters)
 end
 
 function MPAPI.NetworkAction:send_to_host(parameters)
-	MPAPI.NetworkAction:send(MPAPI.lobby_host, parameters)
+	self:send(MPAPI.lobby_host, parameters)
+end
+
+function MPAPI.NetworkAction:send_to_server(parameters)
+	self:send("SERVER", parameters)
 end
 
 function MPAPI.NetworkAction:broadcast(parameters)
