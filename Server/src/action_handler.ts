@@ -1,9 +1,10 @@
 import { Client, ConnectedClient } from './client.ts'
 import { Lobby } from './lobby.ts'
 import {
-	ActionMessage,
 	ConnectMessage,
 	JoinLobbyMessage,
+	LeaveLobbyMessage,
+	OpenLobbyMessage,
 	sendType,
 	SetUsernameMessage,
 	ToMessage,
@@ -13,7 +14,12 @@ const ActionHandler = {
 	connect: async (client: Client, message: ConnectMessage) => {
 		if (client.isConnected()) {
 			await client.send(
-				'action:error,message:Already connected',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Already connected',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -22,7 +28,12 @@ const ActionHandler = {
 
 		if (typeof message.username !== 'string') {
 			await client.send(
-				'action:error,message:Missing username',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Missing username',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -32,7 +43,12 @@ const ActionHandler = {
 		const username = message.username.trim().substring(0, 20)
 		if (username.length === 0) {
 			await client.send(
-				'action:error,message:Invalid username',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Invalid username',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -41,7 +57,13 @@ const ActionHandler = {
 
 		client.setConnected(username)
 		await client.send(
-			`action:connect_ack,code:${client.getCode()},username:${username}`,
+			{
+				action: 'netaction_connect_ack',
+				id: message.id,
+				code: client.getCode(),
+				username: username,
+				from: 'SERVER',
+			},
 			sendType.Ack,
 			'SERVER',
 		)
@@ -50,7 +72,12 @@ const ActionHandler = {
 	setUsername: async (client: Client, message: SetUsernameMessage) => {
 		if (!client.isConnected()) {
 			await client.send(
-				'action:error,message:Not connected',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not connected',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -59,7 +86,12 @@ const ActionHandler = {
 
 		if (typeof message.username !== 'string') {
 			await client.send(
-				'action:error,message:Missing username',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Missing username',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -69,7 +101,12 @@ const ActionHandler = {
 		const username = message.username.trim().substring(0, 20)
 		if (username.length === 0) {
 			await client.send(
-				'action:error,message:Invalid username',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Invalid username',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -78,16 +115,26 @@ const ActionHandler = {
 
 		client.setUsername(username)
 		await client.send(
-			`action:set_username_ack,username:${username}`,
+			{
+				action: 'netaction_set_username_ack',
+				id: message.id,
+				username: username,
+				from: 'SERVER',
+			},
 			sendType.Ack,
 			'SERVER',
 		)
 	},
 
-	openLobby: async (client: Client) => {
+	openLobby: async (client: Client, message: OpenLobbyMessage) => {
 		if (!client.isConnected()) {
 			await client.send(
-				'action:error,message:Not connected',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not connected',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -97,13 +144,26 @@ const ActionHandler = {
 		const connectedClient = client as ConnectedClient
 		Lobby.getOrCreateLobby(connectedClient)
 
-		await client.send('action:open_lobby_ack', sendType.Ack, 'SERVER')
+		await client.send(
+			{
+				action: 'netaction_open_lobby_ack',
+				id: message.id,
+				from: 'SERVER',
+			},
+			sendType.Ack,
+			'SERVER',
+		)
 	},
 
 	joinLobby: async (client: Client, message: JoinLobbyMessage) => {
 		if (!client.isConnected()) {
 			await client.send(
-				'action:error,message:Not connected',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not connected',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -114,7 +174,12 @@ const ActionHandler = {
 		const checking = message.checking
 		if (typeof lobby !== 'string') {
 			await client.send(
-				'action:error,message:Missing lobby code',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Missing lobby code',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -125,13 +190,23 @@ const ActionHandler = {
 		if (!targetLobby) {
 			if (checking === 'true') {
 				await client.send(
-					'action:join_lobby_ack',
+					{
+						action: 'netaction_join_lobby_ack',
+						code: lobby,
+						id: message.id,
+						from: 'SERVER',
+					},
 					sendType.Error,
 					'SERVER',
 				)
 			} else {
 				await client.send(
-					'action:error,message:Lobby not found',
+					{
+						action: 'netaction_error',
+						id: '0',
+						message: 'Lobby not found',
+						from: 'SERVER',
+					},
 					sendType.Error,
 					'SERVER',
 				)
@@ -143,20 +218,36 @@ const ActionHandler = {
 		targetLobby.addClient(connectedClient)
 
 		await targetLobby.broadcast(
-			`action:player_joined,code:${connectedClient.getCode()},username:${connectedClient.getUsername()}`,
+			{
+				action: 'netaction_player_joined',
+				code: connectedClient.getCode(),
+				username: connectedClient.getUsername(),
+				id: '0',
+				from: 'SERVER',
+			},
 		)
 
 		await client.send(
-			`action:join_lobby_ack,code:${lobby}`,
+			{
+				action: 'netaction_join_lobby_ack',
+				code: lobby,
+				id: message.id,
+				from: 'SERVER',
+			},
 			sendType.Ack,
 			'SERVER',
 		)
 	},
 
-	leaveLobby: async (client: Client) => {
+	leaveLobby: async (client: Client, message: LeaveLobbyMessage) => {
 		if (!client.isConnected()) {
 			await client.send(
-				'action:error,message:Not connected',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not connected',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -168,7 +259,12 @@ const ActionHandler = {
 
 		if (!currentLobby) {
 			await client.send(
-				'action:error,message:Not in a lobby',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not in a lobby',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -176,13 +272,31 @@ const ActionHandler = {
 		}
 
 		connectedClient.leaveLobby()
-		await client.send('action:leave_lobby_ack', sendType.Ack, 'SERVER')
+		await client.send(
+			{
+				action: 'netaction_leave_lobby_ack',
+				id: message.id,
+				from: 'SERVER',
+			},
+			sendType.Ack,
+			'SERVER',
+		)
 	},
 
-	sendTo: async (client: Client, message: ToMessage, to: string) => {
+	sendTo: async (
+		client: Client,
+		message: ToMessage,
+		to: string,
+		raw_message: string,
+	) => {
 		if (!client.isConnected()) {
 			await client.send(
-				'action:error,message:Not connected',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not connected',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -194,20 +308,30 @@ const ActionHandler = {
 
 		if (!currentLobby) {
 			await client.send(
-				'action:error,message:Not in a lobby',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not in a lobby',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
 			return
 		}
 
-		await currentLobby.sendTo(to, message)
+		await currentLobby.sendTo(to, message.from, raw_message)
 	},
 
-	broadcast: async (client: Client, message: ActionMessage) => {
+	broadcast: async (client: Client, raw_message: string) => {
 		if (!client.isConnected()) {
 			await client.send(
-				'action:error,message:Not connected',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not connected',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
@@ -219,14 +343,19 @@ const ActionHandler = {
 
 		if (!currentLobby) {
 			await client.send(
-				'action:error,message:Not in a lobby',
+				{
+					action: 'netaction_error',
+					id: '0',
+					message: 'Not in a lobby',
+					from: 'SERVER',
+				},
 				sendType.Error,
 				'SERVER',
 			)
 			return
 		}
 
-		await currentLobby.broadcast(message, client)
+		await currentLobby.broadcast(raw_message, client)
 	},
 }
 

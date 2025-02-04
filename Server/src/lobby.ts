@@ -1,5 +1,5 @@
 import { Client, ConnectedClient } from './client.ts'
-import { ActionMessage, ErrorMessage, sendType, ToMessage } from './types.ts'
+import { ActionMessage, ErrorMessage, sendType } from './types.ts'
 
 const LOBBY_MAX_SIZE = 8
 
@@ -72,8 +72,10 @@ export class Lobby {
 
 		if (this.clients.size >= LOBBY_MAX_SIZE && !forceJoin) {
 			const lobbyFullResponse: ErrorMessage = {
-				action: 'error',
+				action: 'netaction_error',
 				message: '[ERROR] Attempted to join lobby that is full',
+				id: '0',
+				from: 'SERVER',
 			}
 			client.send(lobbyFullResponse, sendType.Error, 'SERVER')
 		}
@@ -87,7 +89,12 @@ export class Lobby {
 			this.clients.delete(client as ConnectedClient)
 
 			this.broadcast(
-				`action:player_left,code:${client.getCode()}`,
+				{
+					action: 'netaction_player_left',
+					code: client.getCode(),
+					id: '0',
+					from: 'SERVER',
+				},
 			).then()
 
 			if (client === this.host) {
@@ -98,7 +105,12 @@ export class Lobby {
 					this.code = this.host.getCode()
 					lobbies.set(this.code, this)
 					this.broadcast(
-						`action:host_migration,code:${this.code}`,
+						{
+							action: 'netaction_host_migration',
+							code: this.code,
+							id: '0',
+							from: 'SERVER',
+						},
 					).then()
 				} else {
 					this.close()
@@ -117,14 +129,12 @@ export class Lobby {
 
 	broadcast(message: string | ActionMessage, sender?: Client) {
 		const promises = Array.from(this.clients).map((client) => {
-			if (!sender || sender !== client) {
-				client.send(message, sendType.Broadcasting, sender?.getCode())
-			}
+			client.send(message, sendType.Broadcasting, sender?.getCode())
 		})
 		return Promise.all(promises)
 	}
 
-	async sendTo(to: string, message: ToMessage) {
+	async sendTo(to: string, from: string, message: string) {
 		const toClient = Client.getClientFromCode(to)
 
 		if (!toClient || !toClient.isConnected()) {
@@ -132,7 +142,7 @@ export class Lobby {
 		}
 
 		if (this.clients.has(toClient)) {
-			await toClient.send(message, sendType.Direct, message.from)
+			await toClient.send(message, sendType.Direct, from)
 		}
 	}
 }

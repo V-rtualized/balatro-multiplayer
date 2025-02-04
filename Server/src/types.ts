@@ -12,17 +12,32 @@ export type ParsedMessage = {
 	[key: string]: string
 }
 
+export type BaseMessage = {
+	id: string
+	from: string
+	action: string
+}
+
 export const MessageType = {
 	keep_alive: [] as const,
-	connect: ['username'] as const,
-	set_username: ['username'] as const,
-	open_lobby: [] as const,
-	join_lobby: ['code', 'checking'] as const,
-	leave_lobby: [] as const,
-	error: ['message'] as const,
+	netaction_connect: ['username'] as const,
+	netaction_connect_ack: ['username', 'code'] as const,
+	netaction_set_username: ['username'] as const,
+	netaction_set_username_ack: ['username'] as const,
+	netaction_open_lobby: [] as const,
+	netaction_open_lobby_ack: [] as const,
+	netaction_join_lobby: ['code', 'checking'] as const,
+	netaction_join_lobby_ack: ['code'] as const,
+	netaction_player_joined: ['code', 'username'] as const,
+	netaction_player_left: ['code'] as const,
+	netaction_leave_lobby: [] as const,
+	netaction_leave_lobby_ack: [] as const,
+	netaction_host_migration: ['code'] as const,
+	netaction_error: ['message'] as const,
 }
 
 export type MessageWithKeys<T extends keyof typeof MessageType> =
+	& BaseMessage
 	& {
 		action: T
 	}
@@ -31,27 +46,56 @@ export type MessageWithKeys<T extends keyof typeof MessageType> =
 	}
 
 export type KeepAliveMessage = MessageWithKeys<'keep_alive'>
-export type ConnectMessage = MessageWithKeys<'connect'>
-export type SetUsernameMessage = MessageWithKeys<'set_username'>
-export type OpenLobbyMessage = MessageWithKeys<'open_lobby'>
-export type JoinLobbyMessage = MessageWithKeys<'join_lobby'>
-export type LeaveLobbyMessage = MessageWithKeys<'leave_lobby'>
-export type ErrorMessage = MessageWithKeys<'error'>
+export type ConnectMessage = MessageWithKeys<'netaction_connect'>
+export type ConnectAckMessage = MessageWithKeys<'netaction_connect_ack'>
+export type SetUsernameMessage = MessageWithKeys<'netaction_set_username'>
+export type SetUsernameAckMessage = MessageWithKeys<
+	'netaction_set_username_ack'
+>
+export type OpenLobbyMessage = MessageWithKeys<'netaction_open_lobby'>
+export type OpenLobbyAckMessage = MessageWithKeys<
+	'netaction_open_lobby_ack'
+>
+export type JoinLobbyMessage = MessageWithKeys<'netaction_join_lobby'>
+export type JoinLobbyAckMessage = MessageWithKeys<
+	'netaction_join_lobby_ack'
+>
+export type PlayerJoinedMessage = MessageWithKeys<
+	'netaction_player_joined'
+>
+export type PlayerLeftMessage = MessageWithKeys<'netaction_player_left'>
+export type LeaveLobbyMessage = MessageWithKeys<'netaction_leave_lobby'>
+export type LeaveLobbyAckMessage = MessageWithKeys<
+	'netaction_leave_lobby_ack'
+>
+export type HostMigrationMessage = MessageWithKeys<
+	'netaction_host_migration'
+>
+export type ErrorMessage = MessageWithKeys<'netaction_error'>
 
-export type ToMessage = {
-	action: string
+export type ToMessage = BaseMessage & {
 	to: string
-	from: string
 }
 
 export type ActionMessage =
-	| KeepAliveMessage
-	| ConnectMessage
-	| SetUsernameMessage
-	| OpenLobbyMessage
-	| JoinLobbyMessage
-	| LeaveLobbyMessage
-	| ErrorMessage
+	& BaseMessage
+	& (
+		| KeepAliveMessage
+		| ConnectMessage
+		| ConnectAckMessage
+		| SetUsernameMessage
+		| SetUsernameAckMessage
+		| OpenLobbyMessage
+		| OpenLobbyAckMessage
+		| JoinLobbyMessage
+		| JoinLobbyAckMessage
+		| PlayerJoinedMessage
+		| PlayerLeftMessage
+		| LeaveLobbyMessage
+		| LeaveLobbyAckMessage
+		| HostMigrationMessage
+		| ErrorMessage
+	)
 
 export enum sendType {
 	Sending = 'Sending',

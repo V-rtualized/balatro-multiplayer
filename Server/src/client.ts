@@ -2,7 +2,7 @@ import { sendType, Socket } from './types.ts'
 import {
 	generateUniqueCode,
 	sendTraceMessage,
-	serializeMessage,
+	serializeNetworkingMessage,
 } from './utils.ts'
 import { Lobby } from './lobby.ts'
 import { ClientSend } from './types.ts'
@@ -13,7 +13,7 @@ const sendMessage =
 	(socket: Socket, code: string): ClientSend => (message, type, from) => {
 		return new Promise<void>((resolve, reject) => {
 			if (typeof message !== 'string') {
-				message = serializeMessage(message)
+				message = serializeNetworkingMessage(message)
 			}
 			if (!message.endsWith('\n')) {
 				message += '\n'
