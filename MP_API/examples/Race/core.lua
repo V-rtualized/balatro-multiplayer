@@ -1,5 +1,5 @@
 -- We set the url and port for the server
-MPAPI.server_config.url = "virtualized.dev"
+MPAPI.server_config.url = "localhost"
 MPAPI.server_config.port = 6858
 -- And then initialize the connection to it
 MPAPI.initialize()

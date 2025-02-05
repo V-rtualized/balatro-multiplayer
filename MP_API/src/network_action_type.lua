@@ -11,7 +11,9 @@ MPAPI.NetworkActionType = SMODS.GameObject:extend({
 	parameters = {},
 	pre_send = function(self, action, parameters) end,
 	post_send = function(self, action, parameters) end,
-	on_receive = function(self, action, parameters, from) end,
+	on_receive = function(self, action, parameters, from)
+		return true
+	end,
 	on_error = function(self, action, err)
 		if err and err.message then
 			MPAPI.send_error_message("ERROR :: " .. err.message)

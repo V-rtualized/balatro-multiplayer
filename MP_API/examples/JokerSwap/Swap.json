@@ -1,13 +1,13 @@
 {
-	"id": "RaceExampleMod",
-	"name": "RaceExampleMod",
-	"display_name": "RaceExampleMod",
+	"id": "JokerSwapExampleMod",
+	"name": "JokerSwapExampleMod",
+	"display_name": "JokerSwapExampleMod",
 	"author": ["virtualized"],
-	"description": "First player to finish a run wins",
-	"prefix": "race",
+	"description": "All bought jokers are sent to another random player",
+	"prefix": "swap",
 	"main_file": "core.lua",
 	"priority": 0,
-	"badge_colour": "7ff849",
+	"badge_colour": "f7f871",
 	"badge_text_colour": "FFFFFF",
 	"version": "1.0.0",
 	"dependencies": [
@@ -19,6 +19,6 @@
 	"conflicts": [
 		"VirtualizedMultiplayer",
 		"Multiplayer",
-    "JokerSwapExampleMod"
+    "RaceExampleMod"
 	]
 }

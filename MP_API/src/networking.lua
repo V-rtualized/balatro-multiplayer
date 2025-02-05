@@ -80,6 +80,7 @@ function MPAPI.handle_network_message(msg_str)
 	end
 
 	local result = action_type:on_receive(received_action, parameters, msg.from)
+	MPAPI.send_debug_message(result)
 
 	if not msg.to then
 		return
@@ -90,15 +91,16 @@ function MPAPI.handle_network_message(msg_str)
 			action = msg.action .. "_ack",
 			id = msg.id,
 			to = msg.from,
-			from = MPAPI.self_code,
+			from = MPAPI.network_state.code,
 		}
-		MPAPI.send_raw(ack_msg)
+		MPAPI.send_raw(ack_msg, received_action.action_type.callback_parameters)
 	elseif type(result) == "table" then
 		local response_msg = MPAPI.deep_copy(result)
+		response_msg.action = msg.action .. "_ack"
 		response_msg.id = msg.id
 		response_msg.to = msg.from
-		response_msg.from = MPAPI.self_code
-		MPAPI.send_raw(response_msg)
+		response_msg.from = MPAPI.network_state.code
+		MPAPI.send_raw(response_msg, received_action.action_type.callback_parameters)
 	end
 end
 

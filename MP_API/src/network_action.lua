@@ -25,7 +25,7 @@ function MPAPI.create_netaction_event(action, msg)
 
 			MPAPI.send_trace_message("RETRYING :: " .. action.key .. " (Attempt " .. tostring(action.retries) .. ")")
 
-			MPAPI.send_raw(msg)
+			MPAPI.send_raw(msg, action.action_type.parameters)
 
 			event.start_timer = false
 		end,
