@@ -13,12 +13,7 @@
 	"dependencies": [
     "Steamodded (>>1.0.0~ALPHA-1304a)",
     "Lovely (>=0.7)",
-    "Balatro (>=1.*)",
-		"galdur (>=1.2)",
-		"Talisman (>=2.1.0~dev)"
+    "Balatro (>=1.*)"
   ],
-	"conflicts": [
-		"Cryptid (<=0.5.3c)",
-		"VirtualizedMultiplayer"
-	]
+	"conflicts": []
 }

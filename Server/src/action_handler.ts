@@ -189,29 +189,16 @@ const ActionHandler = {
 
 		const targetLobby = Lobby.getLobby(lobby)
 		if (!targetLobby) {
-			if (checking === 'true') {
-				await client.send(
-					{
-						action: 'netaction_join_lobby_ack',
-						code: lobby,
-						id: message.id,
-						from: 'SERVER',
-					},
-					sendType.Error,
-					'SERVER',
-				)
-			} else {
-				await client.send(
-					{
-						action: 'netaction_error',
-						id: message.id,
-						message: 'Lobby not found',
-						from: 'SERVER',
-					},
-					sendType.Error,
-					'SERVER',
-				)
-			}
+			await client.send(
+				{
+					action: 'netaction_error',
+					id: message.id,
+					message: 'Lobby not found',
+					from: 'SERVER',
+				},
+				sendType.Error,
+				'SERVER',
+			)
 			return
 		}
 
@@ -234,6 +221,7 @@ const ActionHandler = {
 				code: lobby,
 				id: message.id,
 				from: 'SERVER',
+				players: targetLobby.getClients().map(client => ({ username: client.getUsername(), code: client.getCode() }))
 			},
 			sendType.Ack,
 			'SERVER',

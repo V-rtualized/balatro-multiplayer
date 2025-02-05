@@ -27,7 +27,7 @@ export const MessageType = {
 	netaction_open_lobby: [] as const,
 	netaction_open_lobby_ack: [] as const,
 	netaction_join_lobby: ['code', 'checking'] as const,
-	netaction_join_lobby_ack: ['code'] as const,
+	netaction_join_lobby_ack: ['code', 'players'] as const,
 	netaction_player_joined: ['code', 'username'] as const,
 	netaction_player_left: ['code'] as const,
 	netaction_leave_lobby: [] as const,
@@ -42,7 +42,7 @@ export type MessageWithKeys<T extends keyof typeof MessageType> =
 		action: T
 	}
 	& {
-		[P in (typeof MessageType)[T][number]]: string
+		[P in (typeof MessageType)[T][number]]: string | object
 	}
 
 export type KeepAliveMessage = MessageWithKeys<'keep_alive'>

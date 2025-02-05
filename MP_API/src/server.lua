@@ -81,7 +81,7 @@ local networkPacketQueue = function()
 					retryCount = 0
 					isRetry = false
 					timerCoroutine = coroutine.create(timer)
-					networkToUiChannel:push("action:disconnected")
+					networkToUiChannel:push("action:snetaction_disconnected#,id:s0#,from:sSERVER#")
 				elseif error ~= "timeout" then
 					coroutine.yield()
 				else

@@ -75,3 +75,18 @@ function MPAPI.get_from_clipboard()
 		return love.system.getClipboardText()
 	end
 end
+
+function MPAPI.add_player(player)
+	MPAPI.network_state.players_by_code[player.code] = {
+		username = player.username,
+		code = player.code,
+		index = #MPAPI.network_state.players_by_index + 1,
+	}
+	MPAPI.network_state.players_by_index[MPAPI.network_state.players_by_code[player.code].index] =
+		MPAPI.network_state.players_by_code[player.code]
+end
+
+function MPAPI.remove_player(player)
+	table.remove(MPAPI.network_state.players_by_index, MPAPI.network_state.players_by_code[player.code].index)
+	MPAPI.network_state.players_by_code[player.code] = nil
+end

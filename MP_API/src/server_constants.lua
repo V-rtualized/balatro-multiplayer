@@ -112,6 +112,11 @@ MPAPI.ACTIONS.JOIN_LOBBY_ACTION_TYPE = MPAPI.NetworkActionType({
 			type = "string",
 			required = true,
 		},
+		{
+			key = "players",
+			type = "table",
+			required = true,
+		},
 	},
 	on_error = function(self, action, err)
 		if action.sent_params and action.sent_params.checking and MPAPI.UI then
@@ -125,6 +130,10 @@ MPAPI.ACTIONS.JOIN_LOBBY_ACTION_TYPE = MPAPI.NetworkActionType({
 
 MPAPI.FUNCS.JOIN_LOBBY_CALLBACK = function(self, msg)
 	MPAPI.network_state.lobby = msg.code
+
+	for _, v in pairs(msg.players) do
+		MPAPI.add_player(v)
+	end
 
 	if MPAPI.FUNCS.draw_lobby_ui then
 		MPAPI.FUNCS.draw_lobby_ui()
@@ -140,6 +149,8 @@ MPAPI.ACTIONS.LEAVE_LOBBY_ACTION_TYPE = MPAPI.NetworkActionType({
 
 MPAPI.FUNCS.LEAVE_LOBBY_CALLBACK = function(self, msg)
 	MPAPI.network_state.lobby = nil
+	MPAPI.network_state.players_by_code = {}
+	MPAPI.network_state.players_by_index = {}
 
 	if MPAPI.FUNCS.draw_lobby_ui then
 		MPAPI.FUNCS.draw_lobby_ui()
@@ -147,6 +158,14 @@ MPAPI.FUNCS.LEAVE_LOBBY_CALLBACK = function(self, msg)
 end
 
 MPAPI.FUNCS.PLAYER_JOINED_ON_RECEIVE = function(self, action, parameters, from)
+	if not MPAPI.is_in_lobby() then
+		return
+	end
+	local player = {
+		code = parameters.code,
+		username = parameters.username,
+	}
+	MPAPI.add_player(player)
 	MPAPI.send_info_message("Player joined: " .. parameters.username .. " (" .. parameters.code .. ")")
 end
 
@@ -170,7 +189,12 @@ MPAPI.ACTIONS.PLAYER_JOINED_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.PLAYER_LEFT_ON_RECEIVE = function(self, action, parameters, from)
-	MPAPI.send_info_message("Player left: " .. parameters.code)
+	local player = {
+		code = parameters.code,
+		username = parameters.username,
+	}
+	MPAPI.remove_player(player)
+	MPAPI.send_info_message("Player left: " .. parameters.username .. "(" .. parameters.code .. ")")
 end
 
 -- NOT INTENDED TO BE SENT
@@ -188,6 +212,7 @@ MPAPI.ACTIONS.PLAYER_LEFT_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.HOST_MIGRATION_ON_RECEIVE = function(self, action, parameters, from)
+	MPAPI.network_state.lobby = parameters.code
 	MPAPI.send_info_message("Host Migrated to " .. parameters.code)
 end
 
@@ -207,6 +232,11 @@ MPAPI.ACTIONS.HOST_MIGRATION_ACTION_TYPE = MPAPI.NetworkActionType({
 
 MPAPI.FUNCS.DISCONNECTED_ON_RECEIVE = function(self, action, parameters, from)
 	MPAPI.network_state.connected = false
+	MPAPI.network_state.code = nil
+	MPAPI.network_state.lobby = nil
+	MPAPI.network_state.players_by_code = {}
+	MPAPI.network_state.players_by_index = {}
+	MPAPI.network_state.username = ""
 	MPAPI.send_info_message("Disconnected")
 
 	if MPAPI.FUNCS.draw_lobby_ui then

@@ -48,8 +48,3 @@ MPAPI.load_file("src/external_utils.lua")
 MPAPI.load_file("src/network_action_type.lua")
 MPAPI.load_file("src/network_action.lua")
 MPAPI.load_file("src/networking.lua")
-
--- Only for testing
-MPAPI.server_config.url = "virtualized.dev"
-MPAPI.server_config.port = 6858
-MPAPI.initialize()

@@ -83,7 +83,7 @@ function MPAPI.FUNCS.draw_lobby_ui()
 			definition = MPAPI.UI.create_UIBox_lobby(),
 			config = { align = "tl", offset = { x = 1.5, y = -10 }, major = G.ROOM_ATTACH, bond = "Weak" },
 		})
-		MPAPI.LOBBY_UI.alignment.offset.y = MPAPI.network_state.connected and 3 or 2
+		MPAPI.LOBBY_UI.alignment.offset.y = MPAPI.network_state.connected and 4 or 3
 		MPAPI.LOBBY_UI:align_to_major()
 	end
 end
@@ -118,27 +118,67 @@ function MPAPI.UI.create_join_lobby_overlay()
 	})
 end
 
-function MPAPI.UI.create_UIBox_lobby()
-	local text_scale = 0.45
+function MPAPI.UI.create_lobby_status()
+	return {
+		n = G.UIT.R,
+		config = { align = "tm" },
+		nodes = {
+			{
+				n = G.UIT.T,
+				config = {
+					text = MPAPI.is_in_lobby() and localize("k_in_lobby")
+						or MPAPI.network_state.connected and localize("k_connected")
+						or localize("k_disconnected"),
+					shadow = true,
+					scale = 0.3,
+					colour = G.C.UI.TEXT_LIGHT,
+				},
+			},
+		},
+	}
+end
 
-	local lobby_ui_btns = {
-		{
+function MPAPI.UI.create_lobby_version(additional_versions)
+	additional_versions = additional_versions or {}
+
+	table.insert(additional_versions, 1, "MPAPI_" .. MPAPI.VERSION)
+
+	local rows = {}
+
+	for _, v in ipairs(additional_versions) do
+		table.insert(rows, {
 			n = G.UIT.R,
-			config = { align = "tm" },
+			config = { align = "tm", padding = 0.1 },
 			nodes = {
 				{
 					n = G.UIT.T,
 					config = {
-						text = MPAPI.is_in_lobby() and localize("k_in_lobby")
-							or MPAPI.network_state.connected and localize("k_connected")
-							or localize("k_disconnected"),
+						text = v,
 						shadow = true,
-						scale = text_scale * 0.65,
+						scale = 0.25,
 						colour = G.C.UI.TEXT_LIGHT,
 					},
 				},
 			},
+		})
+	end
+
+	return {
+		n = G.UIT.R,
+		config = { align = "tm" },
+		nodes = {
+			{
+				n = G.UIT.C,
+				config = { align = "tm" },
+				nodes = rows,
+			},
 		},
+	}
+end
+
+function MPAPI.UI.create_UIBox_lobby()
+	local lobby_ui_btns = {
+		MPAPI.UI.create_lobby_status(),
 		{
 			n = G.UIT.B,
 			config = { align = "tm", minw = 1, minh = 1 },
@@ -155,7 +195,7 @@ function MPAPI.UI.create_UIBox_lobby()
 				minw = 2,
 				minh = 1,
 				label = { localize("b_copy_code") },
-				scale = text_scale,
+				scale = 0.45,
 			})
 		)
 		table.insert(
@@ -167,7 +207,7 @@ function MPAPI.UI.create_UIBox_lobby()
 				minw = 2,
 				minh = 1,
 				label = { localize("b_leave_lobby") },
-				scale = text_scale,
+				scale = 0.45,
 			})
 		)
 	elseif MPAPI.network_state.connected then
@@ -180,7 +220,7 @@ function MPAPI.UI.create_UIBox_lobby()
 				minw = 2,
 				minh = 1,
 				label = { localize("b_open_lobby") },
-				scale = text_scale,
+				scale = 0.45,
 			})
 		)
 		table.insert(
@@ -192,7 +232,7 @@ function MPAPI.UI.create_UIBox_lobby()
 				minw = 2,
 				minh = 1,
 				label = { localize("b_join_lobby") },
-				scale = text_scale,
+				scale = 0.45,
 			})
 		)
 	else
@@ -205,10 +245,12 @@ function MPAPI.UI.create_UIBox_lobby()
 				minw = 2,
 				minh = 1,
 				label = { localize("b_reconnect") },
-				scale = text_scale,
+				scale = 0.45,
 			})
 		)
 	end
+
+	table.insert(lobby_ui_btns, MPAPI.UI.create_lobby_version())
 
 	local t = {
 		n = G.UIT.ROOT,
