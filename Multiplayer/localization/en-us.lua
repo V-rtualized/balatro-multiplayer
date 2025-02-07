@@ -71,14 +71,14 @@ return {
 					"most score wins",
 				},
 			},
+			-- New as of 1.0
 			bl_mp_precision = {
-				name = "Precision",
+				name = "The Marksman",
 				text = {
 					"Face another player,",
 					"closest to the target score wins",
 				},
 			},
-			-- New as of 1.0
 			bl_mp_horde = {
 				name = "The Horde",
 				text = {

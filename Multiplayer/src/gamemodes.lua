@@ -78,7 +78,7 @@ MP.GAMEMODES.BATTLE_ROYALE = MP.Gamemode({
 
 MP.GAMEMODES.PRECISION = MP.Gamemode({
 	key = "precision",
-	atlas = "horde",
+	atlas = "precision",
 	is_1v1 = false,
 	has_lives = true,
 	loc_vars = function(self, nemesis)
