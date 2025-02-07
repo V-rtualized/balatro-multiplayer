@@ -50,10 +50,18 @@ function MPAPI.valid_parameters(given_params, action_type_params, on_error)
 		end
 
 		if
-			type(given_params[v.key]) ~= v.type
+			(v.type ~= "bignum" and type(given_params[v.key]) ~= v.type)
 			or (v.type == "bignum" and type(given_params[v.key]) ~= "table" and type(given_params[v.key]) ~= "number")
 		then
-			on_error("Failed to send netaction: Given parameter has invalid type (" .. v.key .. ")")
+			on_error(
+				"Failed to send netaction: Given parameter has invalid type ("
+					.. v.key
+					.. " is "
+					.. type(given_params[v.key])
+					.. ", expected "
+					.. v.type
+					.. ")"
+			)
 			return false
 		end
 	end
@@ -111,6 +119,12 @@ function MPAPI.NetworkAction:send(recipient_code, parameters)
 			self.action_type:on_error(self, err_msg)
 		end)
 	then
+		MPAPI.send_error_message(
+			"Attempted to send "
+				.. message_to_string(action_key)
+				.. " action with a invalid parameters: "
+				.. message_to_string(parameters)
+		)
 		return
 	end
 
@@ -130,7 +144,7 @@ function MPAPI.NetworkAction:send(recipient_code, parameters)
 end
 
 function MPAPI.NetworkAction:send_to_host(parameters)
-	self:send(MPAPI.lobby_host, parameters)
+	self:send(MPAPI.network_state.lobby, parameters)
 end
 
 function MPAPI.NetworkAction:send_to_server(parameters)
@@ -150,6 +164,12 @@ function MPAPI.NetworkAction:broadcast(parameters)
 			self.action_type:on_error(self, err_msg)
 		end)
 	then
+		MPAPI.send_error_message(
+			"Attempted to send "
+				.. message_to_string(action_key)
+				.. " action with a invalid parameters: "
+				.. message_to_string(parameters)
+		)
 		return
 	end
 

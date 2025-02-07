@@ -4,7 +4,7 @@ function message_to_string(message)
 	if type(message) == "table" or type(message) == "function" then
 		message = serialize(message)
 	end
-	if type(message) == "number" or type(message) == "boolean" then
+	if type(message) == "number" or type(message) == "boolean" or type(message) == "nil" then
 		message = tostring(message)
 	end
 	return message

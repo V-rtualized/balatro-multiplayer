@@ -80,7 +80,6 @@ function MPAPI.handle_network_message(msg_str)
 	end
 
 	local result = action_type:on_receive(received_action, parameters, msg.from)
-	MPAPI.send_debug_message(result)
 
 	if not msg.to then
 		return
@@ -249,6 +248,8 @@ function MPAPI.serialize_networking_message(obj, param_config)
 
 		if param_type then
 			table.insert(parts, key .. ":" .. encode_value(value, param_type))
+		else
+			MPAPI.send_warn_message("Ignoring unknown parameter: " .. key)
 		end
 	end
 
