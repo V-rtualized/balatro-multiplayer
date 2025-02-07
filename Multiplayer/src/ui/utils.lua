@@ -4,6 +4,18 @@ MP.UI = {
 	VARS = {},
 }
 
+function MP.UI.BTN.return_to_lobby(e)
+	G.FUNCS.go_to_menu(e)
+	MP.send.return_to_lobby()
+end
+G.FUNCS.mp_return_to_lobby = MP.UI.BTN.return_to_lobby
+
+function MP.UI.BTN.leave_lobby(e)
+	G.FUNCS.go_to_menu(e)
+	MPAPI.FUNCS.leave_lobby(e)
+end
+G.FUNCS.mp_leave_lobby = MP.UI.BTN.leave_lobby
+
 function MP.UI.show_mp_overlay_message(msg)
 	G.FUNCS.overlay_menu({
 		definition = create_UIBox_generic_options({

@@ -8,13 +8,13 @@ end
 G.FUNCS.mp_change_lobby_page = MP.UI.BTN.change_lobby_page
 
 function MP.UI.BTN.galdur_next_page_btn(e)
-	if Galdur.run_setup.current_page == #Galdur.run_setup.pages and MP.is_in_lobby() then
-		e.config.hover = MP.is_host()
-		e.config.shadow = MP.is_host()
-		e.config.colour = MP.is_host() and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].config.colour = MP.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].config.shadow = MP.is_host()
-		e.config.button = MP.is_host() and "deck_select_next" or nil
+	if Galdur.run_setup.current_page == #Galdur.run_setup.pages and MPAPI.is_in_lobby() then
+		e.config.hover = MPAPI.is_host()
+		e.config.shadow = MPAPI.is_host()
+		e.config.colour = MPAPI.is_host() and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].config.colour = MPAPI.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].config.shadow = MPAPI.is_host()
+		e.config.button = MPAPI.is_host() and "deck_select_next" or nil
 	else
 		e.config.hover = true
 		e.config.shadow = true
@@ -27,13 +27,13 @@ end
 G.FUNCS.mp_galdur_next_page_btn = MP.UI.BTN.galdur_next_page_btn
 
 function MP.UI.BTN.galdur_last_run_btn(e)
-	if MP.is_in_lobby() then
-		e.config.hover = MP.is_host()
-		e.config.shadow = MP.is_host()
-		e.config.colour = MP.is_host() and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].children[1].config.colour = MP.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].children[1].config.shadow = MP.is_host()
-		e.config.button = MP.is_host() and "quick_start" or nil
+	if MPAPI.is_in_lobby() then
+		e.config.hover = MPAPI.is_host()
+		e.config.shadow = MPAPI.is_host()
+		e.config.colour = MPAPI.is_host() and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
+		e.children[1].children[1].children[1].config.colour = MPAPI.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
+		e.children[1].children[1].children[1].config.shadow = MPAPI.is_host()
+		e.config.button = MPAPI.is_host() and "quick_start" or nil
 	else
 		e.config.hover = true
 		e.config.shadow = true
@@ -117,7 +117,7 @@ function MP.UI.generate_lobby_card_areas_ui()
 end
 
 function MP.UI.create_lobby_page_cycle()
-	local player_count = #MP.lobby_state.players
+	local player_count = #MPAPI.network_state.players_by_index
 	local options = {}
 	local cycle
 	local total_pages = math.ceil(player_count / 12)
@@ -137,11 +137,11 @@ function MP.UI.create_lobby_page_cycle()
 end
 
 function MP.UI.update_player_card(card, index)
-	local e_player = MP.lobby_state.players[index]
+	local e_player = MPAPI.network_state.players_by_index[index]
 	if e_player then
 		card.ability.extra.player_index = index
 		card.ability.extra.username = e_player.username
-		card.ability.extra.text1 = e_player.code == MP.network_state.lobby and localize("lobby_host")
+		card.ability.extra.text1 = e_player.code == MPAPI.network_state.lobby and localize("lobby_host")
 			or localize("lobby_member")
 		card.ability.extra.text2 = localize("lobby_deck")
 		card.area.config.highlighted_limit = 1
@@ -184,7 +184,7 @@ function MP.UI.populate_player_card_areas(page)
 	local count = 1 + (page - 1) * 12
 	for i = 1, 12 do
 		local card = nil
-		local player = MP.lobby_state.players[count]
+		local player = MPAPI.network_state.players_by_index[count]
 		card = SMODS.create_card({
 			set = "Joker",
 			area = Galdur.run_setup.player_select_areas[i],
@@ -253,7 +253,7 @@ Galdur.clean_up_functions.mp_clean_lobby_areas = MP.UI.clean_lobby_areas
 
 for i, _ in ipairs(Galdur.pages_to_add) do
 	Galdur.pages_to_add[i].condition = function()
-		return MP.network_state.lobby == nil or MP.is_host()
+		return MPAPI.network_state.lobby == nil or MPAPI.is_host()
 	end
 end
 
@@ -264,10 +264,10 @@ Galdur.add_new_page({
 		MP.UI.should_watch_player_cards = false
 	end,
 	quick_start_text = function()
-		return tostring(#MP.lobby_state.players) .. " Players"
+		return tostring(#MPAPI.network_state.players_by_index) .. " Players"
 	end,
 	pre_start = function(choices)
-		MP.lobby_state.config.starting_lives = MP.get_horde_starting_lives(#MP.lobby_state.players)
+		MP.lobby_state.config.starting_lives = MP.get_horde_starting_lives(#MPAPI.network_state.players_by_index)
 		if choices.seed == nil then
 			choices.seed_select = true
 			choices.seed = generate_starting_seed()
@@ -277,5 +277,5 @@ Galdur.add_new_page({
 		MP.send.start_run(choices)
 	end,
 	page = 1,
-	condition = MP.is_in_lobby,
+	condition = MPAPI.is_in_lobby,
 })

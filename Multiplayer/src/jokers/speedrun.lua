@@ -23,7 +23,7 @@ SMODS.Joker({
 		return { vars = {} }
 	end,
 	in_pool = function(self) -- TODO: Convert to 1.0
-		return false -- MP.is_in_lobby()
+		return false -- MPAPI.is_in_lobby()
 	end,
 	mp_credits = {
 		idea = { "Dr. Monty", "Carter" },

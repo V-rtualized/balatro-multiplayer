@@ -45,7 +45,7 @@ SMODS.Joker({
 		--G.MULTIPLAYER.remove_phantom("j_mp_hanging_bad")
 	end,
 	in_pool = function(self)
-		return false -- MP.is_in_lobby()
+		return false -- MPAPI.is_in_lobby()
 	end,
 	mp_credits = {
 		idea = { "Dr. Monty", "Carter" },

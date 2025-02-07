@@ -20,7 +20,7 @@ SMODS.Consumable({
 		return { vars = { 1 } }
 	end,
 	in_pool = function(self)
-		return false --MP.is_in_lobby()
+		return false --MPAPI.is_in_lobby()
 	end,
 	can_use = function(self, card)
 		return true

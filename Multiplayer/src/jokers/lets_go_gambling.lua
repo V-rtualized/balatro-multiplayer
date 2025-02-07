@@ -30,7 +30,7 @@ SMODS.Joker({
 		}
 	end,
 	in_pool = function(self)
-		return MP.is_in_lobby()
+		return MPAPI.is_in_lobby()
 	end,
 	calculate = function(self, card, context)
 		if context.cardarea == G.jokers then

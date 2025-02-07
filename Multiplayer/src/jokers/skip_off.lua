@@ -37,7 +37,7 @@ SMODS.Joker({
 		}
 	end,
 	in_pool = function(self)
-		return false -- MP.is_in_lobby()
+		return false -- MPAPI.is_in_lobby()
 	end,
 	update = function(self, card, dt) -- TODO: Convert to 1.0
 		--[[if G.STAGE == G.STAGES.RUN and G.GAME.skips ~= nil and G.MULTIPLAYER_GAME.enemy.skips ~= nil then

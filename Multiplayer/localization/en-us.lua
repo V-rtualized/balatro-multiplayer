@@ -207,6 +207,7 @@ return {
 			not_connected = "Server Not Found",
 			b_reconnect = "Reconnect",
 			b_copy_code = "Copy Code",
+			b_return_to_lobby = "Return to Lobby",
 			b_leave_lobby = "Leave Lobby",
 			k_enter_code = "Enter Code",
 			k_planetesimal = "Planetesimal",

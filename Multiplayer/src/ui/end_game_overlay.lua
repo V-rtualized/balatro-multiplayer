@@ -1,6 +1,6 @@
 local create_UIBox_game_over_ref = create_UIBox_game_over
 function create_UIBox_game_over()
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		local eased_red = copy_table(G.GAME.round_resets.ante <= G.GAME.win_ante and G.C.RED or G.C.BLUE)
 		eased_red[4] = 0
 		ease_value(eased_red, 4, 0.8, nil, nil, true)
@@ -149,7 +149,7 @@ function create_UIBox_game_over()
 														{
 															n = G.UIT.T,
 															config = {
-																text = localize("leave_lobby"),
+																text = localize("b_leave_lobby"),
 																scale = 0.5,
 																colour = G.C.UI.TEXT_LIGHT,
 															},
@@ -201,7 +201,7 @@ end
 
 local create_UIBox_win_ref = create_UIBox_win
 function create_UIBox_win()
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		local eased_green = copy_table(G.C.GREEN)
 		eased_green[4] = 0
 		ease_value(eased_green, 4, 0.5, nil, nil, true)

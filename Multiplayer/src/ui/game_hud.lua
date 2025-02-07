@@ -2,7 +2,7 @@ local start_run_ref = Game.start_run
 function Game:start_run(args)
 	start_run_ref(self, args)
 
-	if not MP.is_in_lobby() then
+	if not MPAPI.is_in_lobby() then
 		return
 	end
 
@@ -12,7 +12,7 @@ function Game:start_run(args)
 
 	-- Set lives number
 	hud_ante.children[2].children[1].config.object = DynaText({
-		string = { { ref_table = MP.game_state, ref_value = "lives" } },
+		string = { { ref_table = MP.GAME_PLAYERS.BY_CODE[MPAPI.network_state.code], ref_value = "lives" } },
 		colours = { G.C.IMPORTANT },
 		shadow = true,
 		font = G.LANGUAGES["en-us"].font,
@@ -28,7 +28,7 @@ function Game:start_run(args)
 end
 
 function MP.UI.update_blind_HUD(aniamte)
-	if MP.is_in_lobby() and MP.is_pvp_boss() then
+	if MPAPI.is_in_lobby() and MP.is_pvp_boss() then
 		if aniamte then
 			G.HUD_blind.alignment.offset.y = -10
 		end
@@ -58,7 +58,7 @@ function MP.UI.update_blind_HUD(aniamte)
 end
 
 local function reset_blind_HUD()
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string =
 			{ { ref_table = G.GAME.blind, ref_value = "loc_name" } }
 		G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
@@ -76,7 +76,7 @@ end
 
 local update_draw_to_hand_ref = Game.update_draw_to_hand
 function Game:update_draw_to_hand(dt)
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		if
 			not G.STATE_COMPLETE
 			and G.GAME.current_round.hands_played == 0
@@ -229,7 +229,7 @@ local update_hand_played_ref = Game.update_hand_played
 ---@diagnostic disable-next-line: duplicate-set-field
 function Game:update_hand_played(dt)
 	-- Ignore for singleplayer or regular blinds
-	if not MP.is_in_lobby() or not MP.is_pvp_boss() then
+	if not MPAPI.is_in_lobby() or not MP.is_pvp_boss() then
 		update_hand_played_ref(self, dt)
 		return
 	end
@@ -289,7 +289,7 @@ end
 
 local update_new_round_ref = Game.update_new_round
 function Game:update_new_round(dt)
-	if MP.is_in_lobby() and not G.STATE_COMPLETE then
+	if MPAPI.is_in_lobby() and not G.STATE_COMPLETE then
 		-- Prevent player from losing
 		if to_big(G.GAME.chips) < to_big(G.GAME.blind.chips) and not MP.is_pvp_boss() then
 			G.GAME.blind.chips = -1
@@ -570,7 +570,7 @@ function Game:update_selecting_hand(dt)
 		and #G.hand.cards < 1
 		and #G.deck.cards < 1
 		and #G.play.cards < 1
-		and MP.is_in_lobby()
+		and MPAPI.is_in_lobby()
 	then
 		G.GAME.current_round.hands_left = 0
 		if not MP.is_pvp_boss() then
@@ -752,44 +752,16 @@ local function hide_enemy_location()
 	end
 end
 
-local update_shop_ref = Game.update_shop
-function Game:update_shop(dt)
-	local updated_location = false
-	if MP.is_in_lobby() and not G.STATE_COMPLETE and not updated_location and not G.GAME.USING_RUN then
-		MP.send.set_location("loc_shop")
-		--show_enemy_location()
-	end
-	if G.STATE_COMPLETE and updated_location then
-		updated_location = false
-	end
-	update_shop_ref(self, dt)
-end
-
-local update_blind_select_ref = Game.update_blind_select
-function Game:update_blind_select(dt)
-	local updated_location = false
-	if MP.is_in_lobby() and not G.STATE_COMPLETE and not updated_location then
-		MP.send.set_location("loc_selecting")
-		--show_enemy_location()
-		updated_location = true
-	end
-	if G.STATE_COMPLETE and updated_location then
-		updated_location = false
-	end
-	update_blind_select_ref(self, dt)
-end
-
 local select_blind_ref = G.FUNCS.select_blind
 function G.FUNCS.select_blind(e)
 	MP.game_state.prevent_eval = false
 	select_blind_ref(e)
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		local blind_key = (e.config.ref_table.key or e.config.ref_table.name)
 		MP.game_state.ante_key = tostring(math.random())
 		MP.send.play_hand(0, G.GAME.round_resets.hands)
-		MP.send.set_location("loc_playing-" .. blind_key)
 		--hide_enemy_location()
-		if MP.is_host() and MP.value_is_pvp_boss(blind_key) then
+		if MPAPI.is_host() and MP.value_is_pvp_boss(blind_key) then
 			G.E_MANAGER:add_event(Event({
 				trigger = "immediate",
 				blockable = false,
@@ -818,7 +790,7 @@ end
 local skip_blind_ref = G.FUNCS.skip_blind
 G.FUNCS.skip_blind = function(e)
 	skip_blind_ref(e)
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		MP.send.set_skips(G.GAME.skips)
 	end
 end

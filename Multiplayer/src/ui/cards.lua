@@ -99,7 +99,7 @@ function SMODS.create_mod_badges(obj, badges)
 end
 
 function MP.add_nemesis_info(info_queue, nemesis)
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		info_queue[#info_queue + 1] = {
 			set = "Other",
 			key = "current_nemesis",

@@ -1,14 +1,10 @@
 MP = SMODS.current_mod
 
-MP.network_state = {
-	connected = false,
-	code = nil,
-	username = "Guest",
-	lobby = nil,
-}
+MP.ACTIONS = {}
+MP.FUNCS = {}
+MP.EVENTS = {}
 
 MP.lobby_state = {
-	players = {},
 	config = {
 		gold_on_life_loss = true,
 		no_gold_on_round_loss = false,
@@ -36,11 +32,8 @@ function MP.reset_game_state()
 		ready_blind = false,
 		ready_blind_text = localize("unready"),
 		ready_blind_context = nil,
-		players_ready = 0,
-		lives = 2,
 		ante_key = tostring(math.random()),
 		antes_keyed = {},
-		players = {},
 		nemesis = 1,
 		prevent_eval = false,
 		comeback_bonus_given = true,
@@ -89,6 +82,15 @@ function MP.load_file(file)
 	return nil
 end
 
+function MP.load_dir(directory)
+	for _, filename in ipairs(NFS.getDirectoryItems(MP.path .. "/" .. directory)) do
+		local file_path = directory .. "/" .. filename
+		if file_path:match(".lua$") then
+			MP.load_file(file_path)
+		end
+	end
+end
+
 SMODS.Atlas({
 	key = "modicon",
 	path = "modicon.png",
@@ -96,15 +98,15 @@ SMODS.Atlas({
 	py = 34,
 })
 
+MP.load_file("src/networking/player_manager.lua")
 MP.load_file("src/ui/smods.lua")
 MP.load_file("src/utils.lua")
 MP.load_file("src/mod_hash.lua")
-MP.load_file("src/networking/actions_in.lua")
-MP.load_file("src/networking/actions_out.lua")
+MP.load_file("src/networking/networking.lua")
+MP.load_dir("src/networking/actions")
 MP.load_file("src/misc.lua")
 MP.load_file("src/game.lua")
 MP.load_file("src/ui/utils.lua")
-MP.load_file("src/ui/lobby_buttons.lua")
 MP.load_file("src/ui/blind_select.lua")
 MP.load_file("src/ui/game_hud.lua")
 MP.load_file("src/ui/end_game_overlay.lua")
@@ -112,18 +114,28 @@ MP.load_file("src/ui/cards.lua")
 MP.load_file("src/editions.lua")
 MP.load_file("src/stickers.lua")
 MP.load_file("src/tags.lua")
-MP.load_file("src/consumables/asteroid.lua")
-MP.load_file("src/jokers/player.lua")
-MP.load_file("src/jokers/defensive_joker.lua")
-MP.load_file("src/jokers/hanging_bad.lua")
-MP.load_file("src/jokers/lets_go_gambling.lua")
-MP.load_file("src/jokers/skip_off.lua")
-MP.load_file("src/jokers/speedrun.lua")
+MP.load_dir("src/consumables")
+MP.load_dir("src/jokers")
 MP.load_file("src/ui/galdur_lobby_page.lua")
-MP.load_file("src/blinds/horde.lua")
-MP.load_file("src/blinds/nemesis.lua")
-MP.load_file("src/blinds/truce.lua")
+MP.load_dir("src/blinds")
 
 MPAPI.server_config.url = "virtualized.dev"
 MPAPI.server_config.port = 6858
 MPAPI.initialize()
+
+local event
+event = Event({
+	trigger = "after",
+	blockable = false,
+	blocking = false,
+	delay = 3,
+	pause_force = true,
+	no_delete = true,
+	timer = "REAL",
+	func = function()
+		MP.send_debug_message(MP.GAME_PLAYERS.BY_INDEX)
+
+		event.start_timer = false
+	end,
+})
+--MP.add_event(event)

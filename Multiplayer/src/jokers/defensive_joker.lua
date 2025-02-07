@@ -22,10 +22,10 @@ SMODS.Joker({
 		return { vars = { card.ability.extra.extra, card.ability.t_chips } }
 	end,
 	in_pool = function(self)
-		return false -- MP.is_in_lobby()
+		return false -- MPAPI.is_in_lobby()
 	end,
 	update = function(self, card, dt) -- TODO: Convert to 1.0
-		if MP.is_in_lobby() then
+		if MPAPI.is_in_lobby() then
 			if G.STAGE == G.STAGES.RUN then
 				--card.ability.t_chips = (G.LOBBY.config.starting_lives - G.MULTIPLAYER_GAME.lives) * card.ability.extra.extra
 			end

@@ -26,7 +26,7 @@ times = 1
 target = 'game.lua'
 pattern = '''self.GAME.round_resets.blind_choices.Boss = get_new_boss()'''
 position = 'at'
-payload = '''self.GAME.round_resets.blind_choices.Boss = MP.is_in_lobby() and self.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
+payload = '''self.GAME.round_resets.blind_choices.Boss = MPAPI.is_in_lobby() and self.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
 match_indent = true
 times = 1
 
@@ -35,7 +35,7 @@ times = 1
 target = 'game.lua'
 pattern = '''self:prep_stage(G.STAGES.RUN, saveTable and saveTable.STATE or G.STATES.BLIND_SELECT)'''
 position = 'at'
-payload = '''self:prep_stage(G.STAGES.RUN, saveTable and saveTable.STATE or MP.is_in_lobby() and G.STATES.WAITING_ON_ANTE_INFO or G.STATES.BLIND_SELECT)'''
+payload = '''self:prep_stage(G.STAGES.RUN, saveTable and saveTable.STATE or MPAPI.is_in_lobby() and G.STATES.WAITING_ON_ANTE_INFO or G.STATES.BLIND_SELECT)'''
 match_indent = true
 times = 1
 
@@ -44,7 +44,7 @@ times = 1
 target = 'functions/common_events.lua'
 pattern = '''G.GAME.round_resets.blind_choices.Boss = get_new_boss()'''
 position = 'at'
-payload = '''G.GAME.round_resets.blind_choices.Boss = MP.is_in_lobby() and G.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
+payload = '''G.GAME.round_resets.blind_choices.Boss = MPAPI.is_in_lobby() and G.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
 match_indent = true
 times = 1
 
@@ -53,7 +53,7 @@ times = 1
 target = 'functions/button_callbacks.lua'
 pattern = '''G.GAME.round_resets.blind_choices.Boss = get_new_boss()'''
 position = 'at'
-payload = '''G.GAME.round_resets.blind_choices.Boss = MP.is_in_lobby() and G.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
+payload = '''G.GAME.round_resets.blind_choices.Boss = MPAPI.is_in_lobby() and G.GAME.round_resets.blind_choices.Boss or get_new_boss()'''
 match_indent = true
 times = 2
 
@@ -62,7 +62,8 @@ times = 2
 target = 'functions/UI_definitions.lua'
 pattern = '''local main_menu = nil'''
 position = 'after'
-payload = '''local leave_lobby = nil'''
+payload = '''local return_to_lobby = nil
+local leave_lobby = nil'''
 match_indent = true
 times = 1
 
@@ -71,7 +72,8 @@ times = 1
 target = 'functions/UI_definitions.lua'
 pattern = '''main_menu = UIBox_button{ label = {localize('b_main_menu')}, button = "go_to_menu", minw = 5}'''
 position = 'after'
-payload = '''leave_lobby = UIBox_button{ label = {localize('b_leave_lobby')}, button = "mp_leave_lobby", minw = 5}'''
+payload = '''return_to_lobby = UIBox_button{ label = {localize('b_return_to_lobby')}, button = "mp_return_to_lobby", minw = 5}
+leave_lobby = UIBox_button{ label = {localize('b_leave_lobby')}, button = "mp_leave_lobby", minw = 5}'''
 match_indent = true
 times = 1
 
@@ -81,9 +83,10 @@ target = 'functions/UI_definitions.lua'
 pattern = '''restart,
       main_menu,'''
 position = 'at'
-payload = '''not MP.is_in_lobby() and restart or nil,
-      not MP.is_in_lobby() and main_menu or nil,
-      MP.is_in_lobby() and leave_lobby or nil,'''
+payload = '''not MPAPI.is_in_lobby() and restart or nil,
+not MPAPI.is_in_lobby() and main_menu or nil,
+MPAPI.is_in_lobby() and return_to_lobby or nil,
+MPAPI.is_in_lobby() and leave_lobby or nil,'''
 match_indent = true
 times = 1
 
@@ -121,7 +124,7 @@ times = 1
 target = "functions/state_events.lua"
 pattern = '''function end_round\(\)(?<pre>[\s\S]+?)func = function\(\)'''
 position = 'at'
-payload = "function end_round()$pre func = MP.is_in_lobby() and MP.end_round or function()"
+payload = "function end_round()$pre func = MPAPI.is_in_lobby() and MP.end_round or function()"
 match_indent = false
 times = 1
 
@@ -141,7 +144,7 @@ times = 1
 target = "functions/common_events.lua"
 pattern = '''config.saved and'''
 position = 'before'
-payload = '''MP.is_in_lobby() and (MP.is_pvp_boss() or MP.game_state.failed) and {
+payload = '''MPAPI.is_in_lobby() and (MP.is_pvp_boss() or MP.game_state.failed) and {
   n = G.UIT.C,
   config = { padding = 0.05, align = "cm" },
   nodes = {

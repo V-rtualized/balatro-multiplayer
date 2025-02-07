@@ -1,7 +1,7 @@
 -- TODO: Refactor to lovely injection
 local create_UIBox_blind_choice_ref = create_UIBox_blind_choice
 function create_UIBox_blind_choice(type, run_info)
-	if MP.is_in_lobby() then
+	if MPAPI.is_in_lobby() then
 		if not G.GAME.blind_on_deck then
 			G.GAME.blind_on_deck = "Small"
 		end

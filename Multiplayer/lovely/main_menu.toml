@@ -25,7 +25,7 @@ pattern = '''G.STAGE == G.STAGES.MAIN_MENU and {
               chosen = _challenge_chosen
             } or nil,'''
 position = 'at'
-payload = '''not MP.is_in_lobby() and (G.STAGE == G.STAGES.MAIN_MENU and {
+payload = '''not MPAPI.is_in_lobby() and (G.STAGE == G.STAGES.MAIN_MENU and {
                 label = localize('b_continue'),
                 chosen = (not _challenge_chosen) and _can_continue,
                 tab_definition_function = G.UIDEF.run_setup_option,
@@ -37,7 +37,7 @@ payload = '''not MP.is_in_lobby() and (G.STAGE == G.STAGES.MAIN_MENU and {
               tab_definition_function_args = from_game_over,
               chosen = _challenge_chosen
             }) or nil,
-            not MP.is_in_lobby() and G.STAGE == G.STAGES.MAIN_MENU and {
+            not MPAPI.is_in_lobby() and G.STAGE == G.STAGES.MAIN_MENU and {
               label = localize('b_challenges'),
               tab_definition_function = G.UIDEF.challenges,
               tab_definition_function_args = from_game_over,
