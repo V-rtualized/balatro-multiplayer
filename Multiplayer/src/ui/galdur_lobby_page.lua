@@ -267,7 +267,9 @@ Galdur.add_new_page({
 		return tostring(#MPAPI.network_state.players_by_index) .. " Players"
 	end,
 	pre_start = function(choices)
-		MP.lobby_state.config.starting_lives = MP.get_horde_starting_lives(#MPAPI.network_state.players_by_index)
+		MP.lobby_state.config.starting_lives = MP.GAMEMODES[MP.lobby_state.config.gamemode].has_lives
+				and MP.GAMEMODES[MP.lobby_state.config.gamemode]:starting_lives(#MPAPI.network_state.players_by_index)
+			or 9999
 		if choices.seed == nil then
 			choices.seed_select = true
 			choices.seed = generate_starting_seed()

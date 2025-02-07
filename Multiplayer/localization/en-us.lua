@@ -94,6 +94,64 @@ return {
 				},
 			},
 		},
+		Gamemode = {
+			gamemode_mp_attrition = {
+				name = "Attrition",
+				text = {
+					"Every boss blind is a battle",
+					"between each player and their",
+					"nemesis with a life at stake.",
+				},
+				score_text = "Current Nemesis Score:",
+				secondary_text = "Nemesis Hands Left: #1#",
+				lives = "4 Lives",
+				other = {
+					"Your nemesis changes every ante.",
+				},
+			},
+			gamemode_mp_battle_royale = {
+				name = "Battle Royale",
+				text = {
+					"Every boss blind is a",
+					"battle between all players",
+					"with a life at stake.",
+				},
+				score_text = "Score to Beat:",
+				secondary_text = "Current Ranking: #1#/#2#",
+				lives = "2-4 Lives, depending on amount of players",
+				other = {
+					"At 5+ players, bottom 2 players lose a life",
+				},
+			},
+			gamemode_mp_precision = {
+				name = "Precision",
+				text = {
+					"Battle Royale, except each boos",
+					"blind has a target score,",
+					"farthest from the target score loses.",
+				},
+				lives = "2-4 Lives, depending on amount of players",
+				score_text = "Target Score",
+				secondary_text = "Current Ranking: #1#/#2#",
+				other = {
+					"At 5+ players, farthest 2 players lose a life",
+				},
+			},
+			gamemode_mp_speedrun = {
+				name = "Speedrun",
+				text = {
+					"First player to beat ante 8",
+					"wins. No lives, losing restarts",
+					"you on ante 1 with a different seed.",
+				},
+				lives = "Win or Game Over",
+				score_text = "",
+				secondary_text = "",
+				other = {
+					"On same seed, players will get the same seed order",
+				},
+			},
+		},
 		Edition = {
 			e_mp_phantom = {
 				name = "Phantom",
@@ -127,8 +185,6 @@ return {
 			reconnect = "Reconnect",
 			create_lobby = "Create Lobby",
 			start_lobby = "Start Lobby",
-			enemy_score = "Current Enemy score",
-			enemy_hands = "Enemy hands left: ",
 			coming_soon = "Coming Soon!",
 			ready = "Ready",
 			unready = "Unready",

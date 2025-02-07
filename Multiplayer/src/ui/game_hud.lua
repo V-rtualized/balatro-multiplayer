@@ -37,17 +37,34 @@ function MP.UI.update_blind_HUD(aniamte)
 			delay = 0.3,
 			blockable = false,
 			func = function()
-				local nemesis = MP.get_nemesis()
-				G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = nemesis
-				G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = "score_text"
-				G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.func = "multiplayer_blind_chip_UI_scale"
-				G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text =
-					localize("enemy_score")
-				G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text =
-					localize("enemy_hands")
-				G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string =
-					{ { ref_table = nemesis, ref_value = "hands_left" } }
-				G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
+				if MP.GAMEMODES[MP.lobby_state.config.gamemode].current_enemy then
+					local enemy = MP.GAMEMODES[MP.lobby_state.config.gamemode]:current_enemy(MP.game_state.nemesis)
+					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = enemy
+					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = "score_text"
+					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.func = "multiplayer_blind_chip_UI_scale"
+				end
+				local gamemode_score_text = localize({
+					type = "score_text",
+					set = "Gamemode",
+					key = MP.lobby_state.config.gamemode,
+					vars = MP.GAMEMODES[MP.lobby_state.config.gamemode]:loc_vars(MP.game_state.nemesis).vars,
+				})
+				if gamemode_score_text then
+					G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text =
+						gamemode_score_text
+				end
+				local gamemode_secondary_text = localize({
+					type = "secondary_text",
+					set = "Gamemode",
+					key = MP.lobby_state.config.gamemode,
+					vars = MP.GAMEMODES[MP.lobby_state.config.gamemode]:loc_vars(MP.game_state.nemesis).vars,
+				})
+				if gamemode_secondary_text then
+					G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text =
+						gamemode_secondary_text
+					G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = ""
+					G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
+				end
 				if aniamte then
 					G.HUD_blind.alignment.offset.y = 0
 				end
@@ -96,10 +113,10 @@ function Game:update_draw_to_hand(dt)
 							delay = 0.45,
 							blockable = false,
 							func = function()
-								if MP.lobby_state.config.gamemode == "nemesis" then
+								if MP.GAMEMODES[MP.lobby_state.config.gamemode].is_1v1 then
 									G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {
 										{
-											ref_table = MP.get_nemesis(),
+											ref_table = MP.GAME_PLAYERS.BY_CODE[MP.game_state.nemesis],
 											ref_value = "username",
 										},
 									}
@@ -249,8 +266,6 @@ function Game:update_hand_played(dt)
 			trigger = "immediate",
 			func = function()
 				MP.send.play_hand(G.GAME.chips, G.GAME.current_round.hands_left)
-				-- Set blind chips to enemy score
-				G.GAME.blind.chips = MP.get_nemesis().score
 				-- For now, never advance to next round
 				if G.GAME.current_round.hands_left < 1 then
 					attention_text({
@@ -597,12 +612,7 @@ G.FUNCS.can_open = function(e)
 end
 
 G.FUNCS.multiplayer_blind_chip_UI_scale = function(e)
-	local nemesis = MP.get_nemesis()
-	local new_score_text = number_format(nemesis.score)
-	if G.GAME.blind and nemesis.score ~= nil and nemesis.score_text ~= new_score_text then
-		e.config.scale = scale_number(nemesis.score, 0.7, 100000)
-		nemesis.score_text = new_score_text
-	end
+	e.config.scale = e.config.ref_table.score_scale
 end
 
 local function show_enemy_location()
@@ -768,7 +778,8 @@ function G.FUNCS.select_blind(e)
 				blocking = false,
 				no_delete = true,
 				func = function()
-					local losers = MP.get_horde_losers()
+					local losers = MP.GAMEMODES[MP.lobby_state.config.gamemode].is_1v1 and MP.get_1v1_loser()
+						or MP.get_br_losers()
 					if losers ~= nil then
 						for _, v in ipairs(losers) do
 							MP.send.lose_life(v.code)

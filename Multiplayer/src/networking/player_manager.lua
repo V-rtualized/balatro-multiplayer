@@ -24,7 +24,6 @@ function MP.GAME_PLAYERS.add_player(player)
 	MP.GAME_PLAYERS.BY_CODE[player.code] = player
 	MP.GAME_PLAYERS.BY_INDEX[next_index] = player
 	MP.GAME_PLAYERS.set_score(player.code, 0)
-	MP.GAME_PLAYERS.set_score_text(player.code, "0")
 	MP.GAME_PLAYERS.set_skips(player.code, 0)
 	MP.GAME_PLAYERS.set_lives(player.code, MP.lobby_state.config.starting_lives)
 	MP.GAME_PLAYERS.set_hands_left(player.code, 4)
@@ -43,13 +42,14 @@ function MP.GAME_PLAYERS.set_score(code, score)
 	if MP.GAME_PLAYERS.BY_CODE[code] and MP.GAME_PLAYERS.BY_INDEX[MP.GAME_PLAYERS.BY_CODE[code].index] then
 		MP.GAME_PLAYERS.BY_CODE[code].score = score
 		MP.GAME_PLAYERS.BY_INDEX[MP.GAME_PLAYERS.BY_CODE[code].index].score = score
-	end
-end
 
-function MP.GAME_PLAYERS.set_score_text(code, score_text)
-	if MP.GAME_PLAYERS.BY_CODE[code] and MP.GAME_PLAYERS.BY_INDEX[MP.GAME_PLAYERS.BY_CODE[code].index] then
+		local score_text = number_format(score)
 		MP.GAME_PLAYERS.BY_CODE[code].score_text = score_text
 		MP.GAME_PLAYERS.BY_INDEX[MP.GAME_PLAYERS.BY_CODE[code].index].score_text = score_text
+
+		local scale_number = scale_number(score, 0.7, 100000)
+		MP.GAME_PLAYERS.BY_CODE[code].score_scale = scale_number
+		MP.GAME_PLAYERS.BY_INDEX[MP.GAME_PLAYERS.BY_CODE[code].index].score_scale = scale_number
 	end
 end
 

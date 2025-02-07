@@ -138,66 +138,6 @@ function ease_ante(mod)
 	}))
 end
 
-function MP.get_nemesis()
-	local sorted_players_indexes = MP.GAME_PLAYERS.get_by_score(true)
-	local nemesis_threshold_index =
-		MP.get_horde_required_losers(#MPAPI.network_state.players_by_index, #sorted_players_indexes)
-
-	local current_player_position = nil
-	for i, player_index in ipairs(sorted_players_indexes) do
-		if MP.GAME_PLAYERS.BY_INDEX[player_index].code == MPAPI.network_state.code then
-			current_player_position = i
-			break
-		end
-	end
-
-	if current_player_position and current_player_position <= nemesis_threshold_index then
-		return MP.GAME_PLAYERS.BY_INDEX[sorted_players_indexes[nemesis_threshold_index + 1]]
-	end
-
-	return MP.GAME_PLAYERS.BY_INDEX[sorted_players_indexes[nemesis_threshold_index]]
-end
-
-function MP.get_horde_required_losers(game_player_count, alive_players)
-	if alive_players == 2 then
-		return 1
-	end
-	if game_player_count > 4 then
-		return 2
-	else
-		return 1
-	end
-end
-
-function MP.get_horde_losers()
-	local sorted_players = MP.GAME_PLAYERS.get_by_score()
-
-	local losing_players = {}
-	local required_losers = MP.get_horde_required_losers(#MPAPI.network_state.players_by_index, #sorted_players)
-
-	for i = 1, #sorted_players do
-		if sorted_players[i].hands_left < 1 then
-			table.insert(losing_players, sorted_players[i])
-			if #losing_players >= required_losers then
-				return losing_players
-			end
-		else
-			return nil
-		end
-	end
-
-	return nil
-end
-
-function MP.get_horde_starting_lives(player_count)
-	if player_count > 6 then
-		return 2
-	elseif player_count > 3 then
-		return 3
-	end
-	return 4
-end
-
 function MP.add_event(event)
 	G.E_MANAGER:add_event(event)
 end

@@ -12,10 +12,9 @@ MP.lobby_state = {
 		different_seeds = false,
 		starting_lives = 2,
 		showdown_starting_antes = 3,
-		gamemode = "horde",
+		gamemode = "gamemode_mp_battle_royale",
 		custom_seed = "random",
 		different_decks = false,
-		horde_players_losing = 2,
 	},
 }
 
@@ -118,6 +117,7 @@ MP.load_dir("src/consumables")
 MP.load_dir("src/jokers")
 MP.load_file("src/ui/galdur_lobby_page.lua")
 MP.load_dir("src/blinds")
+MP.load_file("src/gamemodes.lua")
 
 MPAPI.server_config.url = "virtualized.dev"
 MPAPI.server_config.port = 6858
