@@ -191,10 +191,9 @@ MPAPI.ACTIONS.PLAYER_JOINED_ACTION_TYPE = MPAPI.NetworkActionType({
 MPAPI.FUNCS.PLAYER_LEFT_ON_RECEIVE = function(self, action, parameters, from)
 	local player = {
 		code = parameters.code,
-		username = parameters.username,
 	}
 	MPAPI.remove_player(player)
-	MPAPI.send_info_message("Player left: " .. parameters.username .. "(" .. parameters.code .. ")")
+	MPAPI.send_info_message("Player left: " .. parameters.code)
 end
 
 -- NOT INTENDED TO BE SENT
