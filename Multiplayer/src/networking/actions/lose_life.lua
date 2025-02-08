@@ -1,12 +1,12 @@
 MP.FUNCS.LOSE_LIFE_ON_RECEIVE = function(self, action, parameters, from)
 	MP.GAME_PLAYERS.set_lives(parameters.player, MP.GAME_PLAYERS.BY_CODE[parameters.player].lives - 1)
 
-	if MPAPI.network_state.code == parameters.player then
+	if MPAPI.get_code() == parameters.player then
 		MP.game_state.comeback_bonus_given = false
 		MP.game_state.comeback_bonus = MP.game_state.comeback_bonus + 1
 		ease_lives(-1)
 		MP.game_state.failed = true
-		if MP.GAME_PLAYERS.BY_CODE[MPAPI.network_state.code].lives == 0 then
+		if MP.GAME_PLAYERS.BY_CODE[MPAPI.get_code()].lives == 0 then
 			MP.game_over()
 		end
 	end

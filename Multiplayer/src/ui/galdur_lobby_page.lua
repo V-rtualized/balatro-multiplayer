@@ -117,7 +117,7 @@ function MP.UI.generate_lobby_card_areas_ui()
 end
 
 function MP.UI.create_lobby_page_cycle()
-	local player_count = #MPAPI.network_state.players_by_index
+	local player_count = #MPAPI.LOBBY_PLAYERS.BY_INDEX
 	local options = {}
 	local cycle
 	local total_pages = math.ceil(player_count / 12)
@@ -137,11 +137,11 @@ function MP.UI.create_lobby_page_cycle()
 end
 
 function MP.UI.update_player_card(card, index)
-	local e_player = MPAPI.network_state.players_by_index[index]
+	local e_player = MPAPI.LOBBY_PLAYERS.BY_INDEX[index]
 	if e_player then
 		card.ability.extra.player_index = index
 		card.ability.extra.username = e_player.username
-		card.ability.extra.text1 = e_player.code == MPAPI.network_state.lobby and localize("lobby_host")
+		card.ability.extra.text1 = e_player.code == MPAPI.get_lobby() and localize("lobby_host")
 			or localize("lobby_member")
 		card.ability.extra.text2 = localize("lobby_deck")
 		card.area.config.highlighted_limit = 1
@@ -184,7 +184,7 @@ function MP.UI.populate_player_card_areas(page)
 	local count = 1 + (page - 1) * 12
 	for i = 1, 12 do
 		local card = nil
-		local player = MPAPI.network_state.players_by_index[count]
+		local player = MPAPI.LOBBY_PLAYERS.BY_INDEX[count]
 		card = SMODS.create_card({
 			set = "Joker",
 			area = Galdur.run_setup.player_select_areas[i],
@@ -253,7 +253,7 @@ Galdur.clean_up_functions.mp_clean_lobby_areas = MP.UI.clean_lobby_areas
 
 for i, _ in ipairs(Galdur.pages_to_add) do
 	Galdur.pages_to_add[i].condition = function()
-		return MPAPI.network_state.lobby == nil or MPAPI.is_host()
+		return MPAPI.get_lobby() == nil or MPAPI.is_host()
 	end
 end
 
@@ -264,11 +264,11 @@ Galdur.add_new_page({
 		MP.UI.should_watch_player_cards = false
 	end,
 	quick_start_text = function()
-		return tostring(#MPAPI.network_state.players_by_index) .. " Players"
+		return tostring(#MPAPI.LOBBY_PLAYERS.BY_INDEX) .. " Players"
 	end,
 	pre_start = function(choices)
 		MP.lobby_state.config.starting_lives = MP.GAMEMODES[MP.lobby_state.config.gamemode].has_lives
-				and MP.GAMEMODES[MP.lobby_state.config.gamemode]:starting_lives(#MPAPI.network_state.players_by_index)
+				and MP.GAMEMODES[MP.lobby_state.config.gamemode]:starting_lives(#MPAPI.LOBBY_PLAYERS.BY_INDEX)
 			or 9999
 		if choices.seed == nil then
 			choices.seed_select = true

@@ -6,17 +6,15 @@ SMODS.Atlas({
 })
 
 MPAPI = {
-	server_config = {
+	SERVER_CONFIG = {
 		url = nil,
 		port = nil,
 	},
-	network_state = {
+	NETWORK_STATE = {
 		connected = false,
 		code = nil,
 		username = "Guest",
 		lobby = nil,
-		players_by_code = {},
-		players_by_index = {},
 	},
 	FUNCS = {},
 	EVENTS = {},
@@ -44,7 +42,7 @@ function MPAPI.load_file(file)
 end
 
 MPAPI.load_file("src/internal_utils.lua")
-MPAPI.load_file("src/external_utils.lua")
+MPAPI.load_file("src/player_utils.lua")
 MPAPI.load_file("src/network_action_type.lua")
 MPAPI.load_file("src/network_action.lua")
 MPAPI.load_file("src/networking.lua")

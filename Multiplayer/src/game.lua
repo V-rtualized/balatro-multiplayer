@@ -62,7 +62,7 @@ function MP.get_br_shown_player()
 
 	local current_player_position = nil
 	for i, player_index in ipairs(sorted_players_indexes) do
-		if MP.GAME_PLAYERS.BY_INDEX[player_index].code == MPAPI.network_state.code then
+		if MP.GAME_PLAYERS.BY_INDEX[player_index].code == MPAPI.get_code() then
 			current_player_position = i
 			break
 		end
@@ -97,7 +97,7 @@ end
 
 function MP.get_1v1_loser()
 	local nemesis = MP.GAME_PLAYERS.BY_CODE[MP.game_state.nemesis]
-	local self_player = MP.GAME_PLAYERS.BY_CODE[MPAPI.network_state.code]
+	local self_player = MP.GAME_PLAYERS.BY_CODE[MPAPI.get_code()]
 
 	if
 		nemesis.hands_left < 1

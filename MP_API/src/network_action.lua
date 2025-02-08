@@ -131,7 +131,7 @@ function MPAPI.NetworkAction:send(recipient_code, parameters)
 	msg.action = action_key
 	msg.id = self.key
 	msg.to = recipient_code
-	msg.from = MPAPI.network_state.code
+	msg.from = MPAPI.get_code()
 
 	if self.callback_func then
 		MPAPI.WaitingActions[self.key] = self
@@ -144,7 +144,7 @@ function MPAPI.NetworkAction:send(recipient_code, parameters)
 end
 
 function MPAPI.NetworkAction:send_to_host(parameters)
-	self:send(MPAPI.network_state.lobby, parameters)
+	self:send(MPAPI.get_lobby(), parameters)
 end
 
 function MPAPI.NetworkAction:send_to_server(parameters)
@@ -175,7 +175,7 @@ function MPAPI.NetworkAction:broadcast(parameters)
 
 	msg.action = action_key
 	msg.id = self.key
-	msg.from = MPAPI.network_state.code
+	msg.from = MPAPI.get_code()
 
 	MPAPI.send_raw(msg, self.action_type.parameters)
 

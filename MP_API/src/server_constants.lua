@@ -41,9 +41,9 @@ MPAPI.ACTIONS.CONNECT_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.CONNECT_CALLBACK = function(self, msg)
-	MPAPI.network_state.connected = true
-	MPAPI.network_state.code = msg.code
-	MPAPI.network_state.username = msg.username
+	MPAPI.NETWORK_STATE.connected = true
+	MPAPI.NETWORK_STATE.code = msg.code
+	MPAPI.NETWORK_STATE.username = msg.username
 
 	if MPAPI.FUNCS.draw_lobby_ui then
 		MPAPI.FUNCS.draw_lobby_ui()
@@ -70,7 +70,7 @@ MPAPI.ACTIONS.SET_USERNAME_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.SET_USERNAME_CALLBACK = function(self, msg)
-	MPAPI.network_state.username = msg.username
+	MPAPI.NETWORK_STATE.username = msg.username
 end
 
 MPAPI.ACTIONS.OPEN_LOBBY_ACTION_TYPE = MPAPI.NetworkActionType({
@@ -81,12 +81,11 @@ MPAPI.ACTIONS.OPEN_LOBBY_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.OPEN_LOBBY_CALLBACK = function(self, msg)
-	MPAPI.network_state.lobby = MPAPI.network_state.code
-	MPAPI.network_state.players_by_code[MPAPI.network_state.code] = {
-		code = MPAPI.network_state.code,
-		username = MPAPI.network_state.username,
-	}
-	MPAPI.network_state.players_by_index[1] = MPAPI.network_state.players_by_code[MPAPI.network_state.code] -- Assigns pointer, not value
+	MPAPI.NETWORK_STATE.lobby = MPAPI.get_code()
+	MPAPI.LOBBY_PLAYERS.add_player({
+		code = MPAPI.get_code(),
+		username = MPAPI.get_username(),
+	})
 
 	if MPAPI.FUNCS.draw_lobby_ui then
 		MPAPI.FUNCS.draw_lobby_ui()
@@ -129,10 +128,10 @@ MPAPI.ACTIONS.JOIN_LOBBY_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.JOIN_LOBBY_CALLBACK = function(self, msg)
-	MPAPI.network_state.lobby = msg.code
+	MPAPI.NETWORK_STATE.lobby = msg.code
 
 	for _, v in pairs(msg.players) do
-		MPAPI.add_player(v)
+		MPAPI.LOBBY_PLAYERS.add_player(v)
 	end
 
 	if MPAPI.FUNCS.draw_lobby_ui then
@@ -148,9 +147,8 @@ MPAPI.ACTIONS.LEAVE_LOBBY_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.LEAVE_LOBBY_CALLBACK = function(self, msg)
-	MPAPI.network_state.lobby = nil
-	MPAPI.network_state.players_by_code = {}
-	MPAPI.network_state.players_by_index = {}
+	MPAPI.NETWORK_STATE.lobby = nil
+	MPAPI.LOBBY_PLAYERS.reset_players()
 
 	if MPAPI.FUNCS.draw_lobby_ui then
 		MPAPI.FUNCS.draw_lobby_ui()
@@ -165,7 +163,7 @@ MPAPI.FUNCS.PLAYER_JOINED_ON_RECEIVE = function(self, action, parameters, from)
 		code = parameters.code,
 		username = parameters.username,
 	}
-	MPAPI.add_player(player)
+	MPAPI.LOBBY_PLAYERS.add_player(player)
 	MPAPI.send_info_message("Player joined: " .. parameters.username .. " (" .. parameters.code .. ")")
 end
 
@@ -192,7 +190,7 @@ MPAPI.FUNCS.PLAYER_LEFT_ON_RECEIVE = function(self, action, parameters, from)
 	local player = {
 		code = parameters.code,
 	}
-	MPAPI.remove_player(player)
+	MPAPI.LOBBY_PLAYERS.remove_player(player)
 	MPAPI.send_info_message("Player left: " .. parameters.code)
 end
 
@@ -211,7 +209,7 @@ MPAPI.ACTIONS.PLAYER_LEFT_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.HOST_MIGRATION_ON_RECEIVE = function(self, action, parameters, from)
-	MPAPI.network_state.lobby = parameters.code
+	MPAPI.NETWORK_STATE.lobby = parameters.code
 	MPAPI.send_info_message("Host Migrated to " .. parameters.code)
 end
 
@@ -230,12 +228,11 @@ MPAPI.ACTIONS.HOST_MIGRATION_ACTION_TYPE = MPAPI.NetworkActionType({
 })
 
 MPAPI.FUNCS.DISCONNECTED_ON_RECEIVE = function(self, action, parameters, from)
-	MPAPI.network_state.connected = false
-	MPAPI.network_state.code = nil
-	MPAPI.network_state.lobby = nil
-	MPAPI.network_state.players_by_code = {}
-	MPAPI.network_state.players_by_index = {}
-	MPAPI.network_state.username = ""
+	MPAPI.NETWORK_STATE.connected = false
+	MPAPI.NETWORK_STATE.code = nil
+	MPAPI.NETWORK_STATE.lobby = nil
+	MPAPI.NETWORK_STATE.username = ""
+	MPAPI.LOBBY_PLAYERS.reset_players()
 	MPAPI.send_info_message("Disconnected")
 
 	if MPAPI.FUNCS.draw_lobby_ui then

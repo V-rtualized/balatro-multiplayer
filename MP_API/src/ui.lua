@@ -61,7 +61,7 @@ function MPAPI.FUNCS.copy_code(e)
 			return true
 		end,
 	}))
-	MPAPI.copy_to_clipboard(MPAPI.network_state.lobby)
+	MPAPI.copy_to_clipboard(MPAPI.get_lobby())
 end
 G.FUNCS.mpapi_copy_code = MPAPI.FUNCS.copy_code
 
@@ -83,7 +83,7 @@ function MPAPI.FUNCS.draw_lobby_ui()
 			definition = MPAPI.UI.create_UIBox_lobby(),
 			config = { align = "tl", offset = { x = 1.5, y = -10 }, major = G.ROOM_ATTACH, bond = "Weak" },
 		})
-		MPAPI.LOBBY_UI.alignment.offset.y = MPAPI.network_state.connected and 4 or 3
+		MPAPI.LOBBY_UI.alignment.offset.y = MPAPI.is_connected() and 4 or 3
 		MPAPI.LOBBY_UI:align_to_major()
 	end
 end
@@ -126,9 +126,9 @@ function MPAPI.UI.create_lobby_status()
 			{
 				n = G.UIT.T,
 				config = {
-					text = MPAPI.is_in_lobby() and localize("k_in_lobby")
-						or MPAPI.network_state.connected and localize("k_connected")
-						or localize("k_disconnected"),
+					text = MPAPI.is_in_lobby() and localize("k_in_lobby") or MPAPI.is_connected() and localize(
+						"k_connected"
+					) or localize("k_disconnected"),
 					shadow = true,
 					scale = 0.3,
 					colour = G.C.UI.TEXT_LIGHT,
@@ -210,7 +210,7 @@ function MPAPI.UI.create_UIBox_lobby()
 				scale = 0.45,
 			})
 		)
-	elseif MPAPI.network_state.connected then
+	elseif MPAPI.is_connected() then
 		table.insert(
 			lobby_ui_btns,
 			UIBox_button({

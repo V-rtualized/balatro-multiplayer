@@ -1,6 +1,6 @@
 -- We set the url and port for the server
-MPAPI.server_config.url = "localhost"
-MPAPI.server_config.port = 6858
+MPAPI.SERVER_CONFIG.url = "localhost"
+MPAPI.SERVER_CONFIG.port = 6858
 -- And then initialize the connection to it
 MPAPI.initialize()
 
@@ -21,7 +21,7 @@ RACE = {
 -- We want this function to run when someone wins the game
 RACE.FUNCS.ON_RECEIVE_WIN_GAME = function(self, action, parameters, from)
 	-- Checkes if the given code is our code (because we broadcast to the whole lobby when we win)
-	if parameters.code == MPAPI.network_state.code then
+	if parameters.code == MPAPI.get_code() then
 		return
 	end
 	-- Forces game over screen
@@ -52,7 +52,7 @@ function win_game()
 	local action = MPAPI.NetworkAction(RACE.ACTIONS.WIN_GAME_ACTION_TYPE)
 	-- We set the code parameter to our code, parameters must match the parameters set in the action type
 	local parameters = {
-		code = MPAPI.network_state.code,
+		code = MPAPI.get_code(),
 	}
 	-- We broadcast the action to the whole lobby, which will run the defined on_receive function for everyone including ourselves
 	action:broadcast(parameters)

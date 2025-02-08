@@ -6,7 +6,7 @@ function MP.send.return_to_lobby()
 end
 
 function MP.send.start_run(choices)
-	MP.GAME_PLAYERS.copy_players(MPAPI.network_state.players_by_code)
+	MP.GAME_PLAYERS.copy_players(MPAPI.LOBBY_PLAYERS.BY_CODE)
 	local action = MPAPI.NetworkAction(MP.ACTIONS.START_RUN)
 	action:broadcast({
 		choices = choices,
@@ -50,7 +50,7 @@ function MP.send.set_skips(skips)
 end
 
 function MP.send.fail_round()
-	MP.send.lose_life(MPAPI.network_state.code)
+	MP.send.lose_life(MPAPI.get_code())
 end
 
 function MP.send.end_pvp()

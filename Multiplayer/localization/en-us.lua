@@ -75,8 +75,8 @@ return {
 			bl_mp_precision = {
 				name = "The Marksman",
 				text = {
-					"Face another player,",
-					"closest to the target score wins",
+					"Face another player, closest",
+					"to the target score wins",
 				},
 			},
 			bl_mp_horde = {

@@ -12,7 +12,7 @@ function Game:start_run(args)
 
 	-- Set lives number
 	hud_ante.children[2].children[1].config.object = DynaText({
-		string = { { ref_table = MP.GAME_PLAYERS.BY_CODE[MPAPI.network_state.code], ref_value = "lives" } },
+		string = { { ref_table = MP.GAME_PLAYERS.BY_CODE[MPAPI.get_code()], ref_value = "lives" } },
 		colours = { G.C.IMPORTANT },
 		shadow = true,
 		font = G.LANGUAGES["en-us"].font,
@@ -81,6 +81,7 @@ local function reset_blind_HUD()
 		G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object:update_text()
 		G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = G.GAME.blind
 		G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = "chip_text"
+		G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.func = "blind_chip_UI_scale"
 		G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text =
 			localize("ph_blind_score_at_least")
 		G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text =

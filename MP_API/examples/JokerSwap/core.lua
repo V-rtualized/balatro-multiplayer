@@ -1,6 +1,6 @@
 -- We set the url and port for the server
-MPAPI.server_config.url = "localhost"
-MPAPI.server_config.port = 6858
+MPAPI.SERVER_CONFIG.url = "localhost"
+MPAPI.SERVER_CONFIG.port = 6858
 -- And then initialize the connection to it
 MPAPI.initialize()
 
@@ -94,8 +94,8 @@ function G.FUNCS.buy_from_shop(e)
 		local random_player
 		repeat
 			-- We get a random player that isnt ourselves by getting random indexes from `players_by_index` until one doesn't match our code
-			random_player = MPAPI.network_state.players_by_index[math.random(#MPAPI.network_state.players_by_index)]
-		until random_player.code ~= MPAPI.network_state.code
+			random_player = MPAPI.LOBBY_PLAYERS.BY_INDEX[math.random(#MPAPI.LOBBY_PLAYERS.BY_INDEX)]
+		until random_player.code ~= MPAPI.get_code()
 		-- Then we send the action to the random player using their code and the parameters we created
 		action:send(random_player.code, parameters)
 	end

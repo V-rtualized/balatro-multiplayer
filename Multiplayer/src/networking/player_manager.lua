@@ -92,9 +92,9 @@ function MP.GAME_PLAYERS.get_alive()
 end
 
 local function sort_table_by_score(t, get_score_func)
-	local t2 = table
+	local t2 = MP.deep_copy(t)
 	table.sort(t2, function(a, b)
-		return MP.to_big(get_score_func(a)) < MP.to_big(get_score_func(b))
+		return MP.to_big(get_score_func(a)) > MP.to_big(get_score_func(b))
 	end)
 	return t2
 end

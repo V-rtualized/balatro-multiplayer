@@ -119,8 +119,8 @@ MP.load_file("src/ui/galdur_lobby_page.lua")
 MP.load_dir("src/blinds")
 MP.load_file("src/gamemodes.lua")
 
-MPAPI.server_config.url = "virtualized.dev"
-MPAPI.server_config.port = 6858
+MPAPI.SERVER_CONFIG.url = "virtualized.dev"
+MPAPI.SERVER_CONFIG.port = 6858
 MPAPI.initialize()
 
 local event

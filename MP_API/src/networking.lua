@@ -90,7 +90,7 @@ function MPAPI.handle_network_message(msg_str)
 			action = msg.action .. "_ack",
 			id = msg.id,
 			to = msg.from,
-			from = MPAPI.network_state.code,
+			from = MPAPI.get_code(),
 		}
 		MPAPI.send_raw(ack_msg, received_action.action_type.callback_parameters)
 	elseif type(result) == "table" then
@@ -98,7 +98,7 @@ function MPAPI.handle_network_message(msg_str)
 		response_msg.action = msg.action .. "_ack"
 		response_msg.id = msg.id
 		response_msg.to = msg.from
-		response_msg.from = MPAPI.network_state.code
+		response_msg.from = MPAPI.get_code()
 		MPAPI.send_raw(response_msg, received_action.action_type.callback_parameters)
 	end
 end
@@ -277,14 +277,14 @@ function MPAPI.reconnect_to_server()
 end
 
 function MPAPI.initialize(ignore_server_constants, disable_ui)
-	if not MPAPI.server_config.url or not MPAPI.server_config.port then
+	if not MPAPI.SERVER_CONFIG.url or not MPAPI.SERVER_CONFIG.port then
 		MPAPI.send_error_message("Attempted to initialize MultiplayerAPI without setting a url and port")
 		return
 	end
 	if not MPAPI.NETWORKING_THREAD then
 		local SOCKET = MPAPI.load_file("src/server.lua")
 		MPAPI.NETWORKING_THREAD = love.thread.newThread(SOCKET)
-		MPAPI.NETWORKING_THREAD:start(MPAPI.server_config.url, MPAPI.server_config.port)
+		MPAPI.NETWORKING_THREAD:start(MPAPI.SERVER_CONFIG.url, MPAPI.SERVER_CONFIG.port)
 
 		if not ignore_server_constants then
 			MPAPI.load_file("src/server_constants.lua")

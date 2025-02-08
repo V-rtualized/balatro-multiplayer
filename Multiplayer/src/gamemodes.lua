@@ -93,7 +93,7 @@ MP.GAMEMODES.PRECISION = MP.Gamemode({
 		return {
 			nil,
 			nil,
-			nil,
+			"bl_mp_precision",
 		}
 	end,
 	starting_lives = function(self, players)
