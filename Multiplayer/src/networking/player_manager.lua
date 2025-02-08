@@ -94,7 +94,7 @@ end
 local function sort_table_by_score(t, get_score_func)
 	local t2 = MP.deep_copy(t)
 	table.sort(t2, function(a, b)
-		return MP.to_big(get_score_func(a)) > MP.to_big(get_score_func(b))
+		return MP.to_big(get_score_func(a)) < MP.to_big(get_score_func(b))
 	end)
 	return t2
 end
@@ -108,21 +108,17 @@ local function get_indexes_by_score()
 		indexes[i] = i
 	end
 
-	sort_table_by_score(indexes, function(element)
+	return sort_table_by_score(indexes, function(element)
 		return alive_players[element].score
 	end)
-
-	return indexes
 end
 
 local function get_players_by_score()
 	local alive_players = MP.GAME_PLAYERS.get_alive()
 
-	sort_table_by_score(alive_players, function(element)
+	return sort_table_by_score(alive_players, function(element)
 		return element.score
 	end)
-
-	return alive_players
 end
 
 function MP.GAME_PLAYERS.get_by_score(get_indexes)
