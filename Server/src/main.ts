@@ -44,7 +44,14 @@ const handleClientMessage = async (client: Client, data: string) => {
 			continue
 		}
 
-		const parsedMessage = parseNetworkingMessage(message)
+		let parsedMessage
+
+		try {
+			parsedMessage = parseNetworkingMessage(message)
+		} catch (_) {
+			await client.send('action:error,message:Your MultiplayerAPI is not compatible with this server', sendType.Ack, 'SERVER')
+			continue
+		}
 
 		if (typeof parsedMessage.action !== 'string') {
 			await client.send(
