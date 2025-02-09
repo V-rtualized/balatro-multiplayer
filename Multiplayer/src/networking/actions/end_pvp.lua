@@ -7,6 +7,16 @@ MP.EVENTS.end_pvp = Event({
 			G.STATE_COMPLETE = false
 			G.STATE = G.STATES.WAITING_ON_PVP_END
 			MP.game_state.end_pvp = true
+			MP.add_event(Event({
+				trigger = "after",
+				blockable = false,
+				blocking = false,
+				delay = 1,
+				func = function()
+					MP.send.play_hand(0, 4)
+					return true
+				end,
+			}))
 			return true
 		end
 		return false

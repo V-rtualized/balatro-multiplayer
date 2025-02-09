@@ -20,6 +20,12 @@ SMODS.Blind({
 	in_pool = function(self)
 		return false
 	end,
+	variable_hud_text = function(self)
+		return {
+			ref_table = MP.GAME_PLAYERS.BY_CODE[MP.game_state.nemesis],
+			ref_value = "hands_left",
+		}
+	end,
 	mp_credits = {
 		art = { "KilledByLava" },
 		code = { "Virtualized" },

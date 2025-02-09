@@ -56,17 +56,24 @@ function MP.get_br_required_losers(alive_players)
 	end
 end
 
-function MP.get_br_shown_player()
-	local sorted_players_indexes = MP.GAME_PLAYERS.get_by_score(true)
-	local nemesis_threshold_index = MP.get_br_required_losers(sorted_players_indexes)
+function MP.get_br_current_player_score_position(sorted_players_indexes)
+	sorted_players_indexes = sorted_players_indexes or MP.GAME_PLAYERS.get_by_score(true)
 
-	local current_player_position = nil
+	local current_player_position = 1
 	for i, player_index in ipairs(sorted_players_indexes) do
 		if MP.GAME_PLAYERS.BY_INDEX[player_index].code == MPAPI.get_code() then
 			current_player_position = i
 			break
 		end
 	end
+	return current_player_position
+end
+
+function MP.get_br_shown_player()
+	local sorted_players_indexes = MP.GAME_PLAYERS.get_by_score(true)
+	local nemesis_threshold_index = MP.get_br_required_losers(sorted_players_indexes)
+
+	local current_player_position = MP.get_br_current_player_score_position(sorted_players_indexes)
 
 	if current_player_position and current_player_position <= nemesis_threshold_index then
 		return MP.GAME_PLAYERS.BY_INDEX[sorted_players_indexes[nemesis_threshold_index + 1]]

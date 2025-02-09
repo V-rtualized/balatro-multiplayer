@@ -43,26 +43,20 @@ function MP.UI.update_blind_HUD(aniamte)
 					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = "score_text"
 					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.func = "multiplayer_blind_chip_UI_scale"
 				end
-				local gamemode_score_text = localize({
-					type = "score_text",
-					set = "Gamemode",
-					key = MP.lobby_state.config.gamemode,
-					vars = MP.GAMEMODES[MP.lobby_state.config.gamemode]:loc_vars(MP.game_state.nemesis).vars,
-				})
-				if gamemode_score_text then
+				local gamemode_score_text = localize("k_" .. G.GAME.blind.config.blind.key .. "_score_text")
+				if gamemode_score_text ~= "ERROR" then
 					G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[1].children[1].config.text =
 						gamemode_score_text
 				end
-				local gamemode_secondary_text = localize({
-					type = "secondary_text",
-					set = "Gamemode",
-					key = MP.lobby_state.config.gamemode,
-					vars = MP.GAMEMODES[MP.lobby_state.config.gamemode]:loc_vars(MP.game_state.nemesis).vars,
-				})
-				if gamemode_secondary_text then
+				local gamemode_secondary_text = localize("k_" .. G.GAME.blind.config.blind.key .. "_secondary_text")
+				if gamemode_secondary_text ~= "ERROR" then
 					G.HUD_blind:get_UIE_by_ID("HUD_blind").children[2].children[2].children[2].children[3].children[1].config.text =
 						gamemode_secondary_text
-					G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = ""
+					G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object.config.string = {
+						SMODS.Blinds[G.GAME.blind.config.blind.key]
+								and SMODS.Blinds[G.GAME.blind.config.blind.key]:variable_hud_text()
+							or { ref_table = { txt = "?" }, ref_value = "txt" },
+					}
 					G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
 				end
 				if aniamte then
@@ -613,7 +607,9 @@ G.FUNCS.can_open = function(e)
 end
 
 G.FUNCS.multiplayer_blind_chip_UI_scale = function(e)
-	e.config.scale = e.config.ref_table.score_scale
+	if e.config.ref_table then
+		e.config.scale = e.config.ref_table.score_scale
+	end
 end
 
 local function show_enemy_location()
@@ -772,6 +768,7 @@ function G.FUNCS.select_blind(e)
 		MP.game_state.ante_key = tostring(math.random())
 		MP.send.play_hand(0, G.GAME.round_resets.hands)
 		--hide_enemy_location()
+		MP.game_state.ready_blind_text = MP.game_state.ready_blind and localize("unready") or localize("ready")
 		if MPAPI.is_host() and MP.value_is_pvp_boss(blind_key) then
 			G.E_MANAGER:add_event(Event({
 				trigger = "immediate",

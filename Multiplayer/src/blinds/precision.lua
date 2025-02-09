@@ -20,6 +20,12 @@ SMODS.Blind({
 	in_pool = function(self)
 		return false
 	end,
+	variable_hud_text = function(self)
+		return {
+			ref_table = MP.game_state,
+			ref_value = "ranking_position",
+		}
+	end,
 	mp_credits = {
 		art = { "Carter" },
 		code = { "Virtualized" },

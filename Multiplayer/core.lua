@@ -29,7 +29,7 @@ function MP.reset_game_state()
 		blinds_by_ante = {},
 		end_pvp = false,
 		ready_blind = false,
-		ready_blind_text = localize("unready"),
+		ready_blind_text = localize("ready"),
 		ready_blind_context = nil,
 		ante_key = tostring(math.random()),
 		antes_keyed = {},
@@ -38,6 +38,7 @@ function MP.reset_game_state()
 		comeback_bonus_given = true,
 		comeback_bonus = 0,
 		failed = false,
+		ranking_position = "?/?",
 	}
 end
 

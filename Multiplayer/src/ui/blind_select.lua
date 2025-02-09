@@ -595,7 +595,7 @@ end
 
 function G.FUNCS.mp_toggle_ready(e)
 	MP.game_state.ready_blind = not MP.game_state.ready_blind
-	MP.game_state.ready_blind_text = MP.game_state.ready_blind and localize("ready") or localize("unready")
+	MP.game_state.ready_blind_text = MP.game_state.ready_blind and localize("unready") or localize("ready")
 
 	if MP.game_state.ready_blind then
 		--G.MULTIPLAYER.set_location("loc_ready")

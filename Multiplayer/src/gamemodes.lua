@@ -51,7 +51,7 @@ MP.GAMEMODES.BATTLE_ROYALE = MP.Gamemode({
 	loc_vars = function(self, nemesis)
 		return {
 			vars = {
-				"?",
+				MP.get_br_current_player_score_position(),
 				#MP.GAME_PLAYERS.get_alive(),
 			},
 		}
@@ -84,7 +84,7 @@ MP.GAMEMODES.PRECISION = MP.Gamemode({
 	loc_vars = function(self, nemesis)
 		return {
 			vars = {
-				"?",
+				MP.get_br_current_player_score_position(),
 				#MP.GAME_PLAYERS.get_alive(),
 			},
 		}

@@ -101,11 +101,9 @@ return {
 					"Every boss blind is a battle",
 					"between each player and their",
 					"nemesis with a life at stake.",
-				},
-				score_text = "Current Nemesis Score:",
-				secondary_text = "Nemesis Hands Left: #1#",
-				lives = "4 Lives",
-				other = {
+					-- Lives text
+					"4 Lives",
+					-- Other
 					"Your nemesis changes every ante.",
 				},
 			},
@@ -115,11 +113,9 @@ return {
 					"Every boss blind is a",
 					"battle between all players",
 					"with a life at stake.",
-				},
-				score_text = "Score to Beat:",
-				secondary_text = "Current Ranking: #1#/#2#",
-				lives = "2-4 Lives, depending on amount of players",
-				other = {
+					-- Lives text
+					"2-4 Lives, depending on amount of players",
+					-- Other
 					"At 5+ players, bottom 2 players lose a life",
 				},
 			},
@@ -129,12 +125,10 @@ return {
 					"Battle Royale, except each boos",
 					"blind has a target score,",
 					"farthest from the target score loses.",
-				},
-				lives = "2-4 Lives, depending on amount of players",
-				score_text = "Target Score",
-				secondary_text = "Current Ranking: #1#/#2#",
-				other = {
-					"At 5+ players, farthest 2 players lose a life",
+					-- Lives text
+					"2-4 Lives, depending on amount of players",
+					-- Other
+					"At 5+ players, bottom 2 players lose a life",
 				},
 			},
 			gamemode_mp_speedrun = {
@@ -143,11 +137,9 @@ return {
 					"First player to beat ante 8",
 					"wins. No lives, losing restarts",
 					"you on ante 1 with a different seed.",
-				},
-				lives = "Win or Game Over",
-				score_text = "",
-				secondary_text = "",
-				other = {
+					-- Lives text
+					"Win or Game Over",
+					-- Other
 					"On same seed, players will get the same seed order",
 				},
 			},
@@ -273,6 +265,12 @@ return {
 			enemy_loc = { "Enemy", "location" },
 			return_to_lobby_split = { "Return to", "Lobby" },
 			leave_lobby_split = { "Leave", "Lobby" },
+			k_bl_mp_nemesis_score_text = "Current Nemesis Score:",
+			k_bl_mp_nemesis_secondary_text = "Nemesis Hands Left: ",
+			k_bl_mp_horde_score_text = "Score to Beat:",
+			k_bl_mp_horde_secondary_text = "Current Ranking: ",
+			k_bl_mp_precision_score_text = "Target Score",
+			k_bl_mp_precision_secondary_text = "Current Ranking: ",
 		},
 		v_dictionary = {
 			mp_art = { "Art: #1#" },
