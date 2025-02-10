@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { ActionMessage, ParsedMessage, sendType, ToMessage } from './types.ts'
+import { sendType } from './types.ts'
 import { Lobby } from './lobby.ts'
 
 export const generateUniqueCode = (): string => {
@@ -45,8 +45,6 @@ function encodeValue(val: any): string {
         parts.push(encodeValue(v));
       }
       return `t${parts.join('')}e`;
-    default:
-      throw new Error(`Unsupported type: ${typeof val}`);
   }
 }
 
@@ -55,7 +53,13 @@ function decodeValue(str: string): any {
 
   function decode(): any {
     if (pos >= str.length) {
-      throw new Error('Unexpected end of input');
+      sendTraceMessage(
+        sendType.Error,
+        undefined,
+        undefined,
+        'Error: Unexpected end of input',
+      )
+      return null
     }
 
     const typ = str[pos];
@@ -98,8 +102,6 @@ function decodeValue(str: string): any {
         pos++;
         return obj;
       }
-      default:
-        throw new Error(`Unknown type: ${typ}`);
     }
   }
 
