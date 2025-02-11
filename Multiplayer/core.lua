@@ -116,7 +116,7 @@ MP.load_file("src/stickers.lua")
 MP.load_file("src/tags.lua")
 MP.load_dir("src/consumables")
 MP.load_dir("src/jokers")
-MP.load_file("src/ui/galdur_lobby_page.lua")
+MP.load_dir("src/ui/galdur_pages")
 MP.load_dir("src/blinds")
 MP.load_file("src/gamemodes.lua")
 

@@ -68,14 +68,14 @@ return {
 				name = "Your Nemesis",
 				text = {
 					"Face your nemesis,", -- Changed as of 1.0
-					"highest score wins",
+					"most score wins",
 				},
 			},
 			-- New as of 1.0
 			bl_mp_precision = {
 				name = "The Marksman",
 				text = {
-					"Face your nemesis, closest",
+					"Face another player, closest",
 					"to the target score wins",
 				},
 			},
@@ -83,7 +83,7 @@ return {
 				name = "The Horde",
 				text = {
 					"Face all other players,",
-					"lowest score loses",
+					"least score loses",
 				},
 			},
 			bl_mp_truce = {
@@ -100,11 +100,11 @@ return {
 				text = {
 					"Every boss blind is a battle",
 					"between each player and their",
-					"nemesis with a life at stake.",
-					-- Lives text
-					"4 Lives",
-					-- Other
-					"Your nemesis changes every ante.",
+					"{X:purple,C:white}Nemesis{} with a life at stake.",
+					"{C:inactive}--", -- Lives text
+					"{C:red}4 Lives",
+					"{C:inactive}--", -- Other
+					"{C:inactive}Your {X:purple,C:white}Nemesis{C:inactive} changes every ante.{}",
 				},
 			},
 			gamemode_mp_battle_royale = {
@@ -112,11 +112,11 @@ return {
 				text = {
 					"Every boss blind is a",
 					"battle between all players",
-					"with a life at stake.",
-					-- Lives text
-					"2-4 Lives, depending on amount of players",
-					-- Other
-					"At 5+ players, bottom 2 players lose a life",
+					"with a {C:red}life{} at stake.",
+					"{C:inactive}--", -- Lives text
+					"{C:red}2-4 Lives{C:inactive}, depending on amount of players",
+					"{C:inactive}--", -- Other
+					"{C:inactive}At 5+ players, bottom 2 players lose a life",
 				},
 			},
 			gamemode_mp_precision = {
@@ -125,10 +125,10 @@ return {
 					"Battle Royale, except each boss",
 					"blind has a target score,",
 					"farthest from the target score loses.",
-					-- Lives text
-					"2-4 Lives, depending on amount of players",
-					-- Other
-					"At 5+ players, bottom 2 players lose a life",
+					"{C:inactive}--", -- Lives text
+					"{C:red}2-4 Lives{C:inactive}, depending on amount of players",
+					"{C:inactive}--", -- Other
+					"{C:inactive}At 5+ players, bottom 2 players lose a life",
 				},
 			},
 			gamemode_mp_speedrun = {
@@ -137,10 +137,10 @@ return {
 					"First player to beat ante 8",
 					"wins. No lives, losing restarts",
 					"you on ante 1 with a different seed.",
-					-- Lives text
-					"Win or Game Over",
-					-- Other
-					"On same seed, players will get the same seed order",
+					"{C:inactive}--", -- Lives text
+					"{C:red}Win or Game Over{}",
+					"{C:inactive}--", -- Other
+					"{C:inactive}On same seed, players will get the same seed order",
 				},
 			},
 		},
@@ -246,6 +246,7 @@ return {
 			opts_player_diff_deck = "Players have different decks",
 			-- New as of 1.0
 			page_title_lobby = "Lobby",
+			page_title_gamemode = "Gamemode",
 			lobby_host = "Host",
 			lobby_member = "Member",
 			lobby_spectator = "Spectator",
@@ -271,6 +272,7 @@ return {
 			k_bl_mp_horde_secondary_text = "Current Ranking: ",
 			k_bl_mp_precision_score_text = "Target Score",
 			k_bl_mp_precision_secondary_text = "Current Ranking: ",
+			k_gamemode = "Gamemode",
 		},
 		v_dictionary = {
 			mp_art = { "Art: #1#" },

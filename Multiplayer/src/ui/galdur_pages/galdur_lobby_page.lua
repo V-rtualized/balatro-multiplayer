@@ -2,48 +2,10 @@ MP.UI.VARS.should_watch_player_cards = false
 
 function MP.UI.BTN.change_lobby_page(args)
 	MP.UI.should_watch_player_cards = false
-	Galdur.clean_up_functions.clean_deck_areas()
+	Galdur.clean_up_functions.clean_lobby_areas()
 	MP.UI.populate_player_card_areas(args.cycle_config.current_option)
 end
 G.FUNCS.mp_change_lobby_page = MP.UI.BTN.change_lobby_page
-
-function MP.UI.BTN.galdur_next_page_btn(e)
-	if Galdur.run_setup.current_page == #Galdur.run_setup.pages and MPAPI.is_in_lobby() then
-		e.config.hover = MPAPI.is_host()
-		e.config.shadow = MPAPI.is_host()
-		e.config.colour = MPAPI.is_host() and HEX("00be67") or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].config.colour = MPAPI.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].config.shadow = MPAPI.is_host()
-		e.config.button = MPAPI.is_host() and "deck_select_next" or nil
-	else
-		e.config.hover = true
-		e.config.shadow = true
-		e.config.colour = G.C.BLUE
-		e.children[1].children[1].config.colour = G.C.WHITE
-		e.children[1].children[1].config.shadow = true
-		e.config.button = "deck_select_next"
-	end
-end
-G.FUNCS.mp_galdur_next_page_btn = MP.UI.BTN.galdur_next_page_btn
-
-function MP.UI.BTN.galdur_last_run_btn(e)
-	if MPAPI.is_in_lobby() then
-		e.config.hover = MPAPI.is_host()
-		e.config.shadow = MPAPI.is_host()
-		e.config.colour = MPAPI.is_host() and G.C.ORANGE or G.C.UI.BACKGROUND_INACTIVE
-		e.children[1].children[1].children[1].config.colour = MPAPI.is_host() and G.C.WHITE or G.C.UI.TEXT_INACTIVE
-		e.children[1].children[1].children[1].config.shadow = MPAPI.is_host()
-		e.config.button = MPAPI.is_host() and "quick_start" or nil
-	else
-		e.config.hover = true
-		e.config.shadow = true
-		e.config.colour = G.C.ORANGE
-		e.children[1].children[1].children[1].config.colour = G.C.WHITE
-		e.children[1].children[1].children[1].config.shadow = true
-		e.config.button = "quick_start"
-	end
-end
-G.FUNCS.mp_galdur_last_run_btn = MP.UI.BTN.galdur_last_run_btn
 
 function MP.UI.lobby_page()
 	MP.UI.should_watch_player_cards = true
@@ -262,9 +224,6 @@ Galdur.add_new_page({
 	definition = MP.UI.lobby_page,
 	confirm = function()
 		MP.UI.should_watch_player_cards = false
-	end,
-	quick_start_text = function()
-		return tostring(#MPAPI.LOBBY_PLAYERS.BY_INDEX) .. " Players"
 	end,
 	pre_start = function(choices)
 		MP.lobby_state.config.starting_lives = MP.GAMEMODES[MP.lobby_state.config.gamemode].has_lives

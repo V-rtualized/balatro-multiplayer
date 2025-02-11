@@ -1,3 +1,4 @@
+G.P_CENTER_POOLS.Gamemode = {}
 MP.GAMEMODES = {}
 MP.Gamemode = SMODS.GameObject:extend({
 	obj_table = MP.GAMEMODES,
@@ -10,36 +11,11 @@ MP.Gamemode = SMODS.GameObject:extend({
 		"has_lives", -- If true requires "starting_lives"
 	},
 	class_prefix = "gamemode",
-	inject = function() end,
+	inject = function(self)
+		table.insert(G.P_CENTER_POOLS.Gamemode, self)
+	end,
 	process_loc_text = function(self)
 		SMODS.process_loc_text(G.localization.descriptions["Gamemode"], self.key, self.loc_txt)
-	end,
-})
-
-MP.GAMEMODES.ATTRITION = MP.Gamemode({
-	key = "attrition",
-	atlas = "nemesis",
-	is_1v1 = true,
-	has_lives = true,
-	loc_vars = function(self, nemesis)
-		return {
-			vars = {
-				MP.GAME_PLAYERS.BY_CODE[nemesis] and MP.GAME_PLAYERS.BY_CODE[nemesis].hands_left or 0,
-			},
-		}
-	end,
-	blinds_by_ante = function(self, ante)
-		return {
-			nil,
-			nil,
-			"bl_mp_nemesis",
-		}
-	end,
-	current_enemy = function(self, nemesis)
-		return MP.GAME_PLAYERS.BY_CODE[nemesis]
-	end,
-	starting_lives = function(self, players)
-		return 4
 	end,
 })
 
@@ -72,6 +48,33 @@ MP.GAMEMODES.BATTLE_ROYALE = MP.Gamemode({
 		elseif players > 3 then
 			return 3
 		end
+		return 4
+	end,
+})
+
+MP.GAMEMODES.ATTRITION = MP.Gamemode({
+	key = "attrition",
+	atlas = "nemesis",
+	is_1v1 = true,
+	has_lives = true,
+	loc_vars = function(self, nemesis)
+		return {
+			vars = {
+				MP.GAME_PLAYERS.BY_CODE[nemesis] and MP.GAME_PLAYERS.BY_CODE[nemesis].hands_left or 0,
+			},
+		}
+	end,
+	blinds_by_ante = function(self, ante)
+		return {
+			nil,
+			nil,
+			"bl_mp_nemesis",
+		}
+	end,
+	current_enemy = function(self, nemesis)
+		return MP.GAME_PLAYERS.BY_CODE[nemesis]
+	end,
+	starting_lives = function(self, players)
 		return 4
 	end,
 })
