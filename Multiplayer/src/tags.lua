@@ -3,7 +3,7 @@ SMODS.Tag:take_ownership("tag_negative", {
 		if MPAPI.is_in_lobby() then
 			return true -- Can spawn in any ante while in multiplayer
 		end
-		return G.GAME.round_resets.ante >= args.min_ante
+		return G.GAME.round_resets.ante >= self.min_ante
 	end,
 }, true)
 
@@ -12,7 +12,7 @@ SMODS.Tag:take_ownership("tag_standard", {
 		if MPAPI.is_in_lobby() then
 			return true -- Can spawn in any ante while in multiplayer
 		end
-		return G.GAME.round_resets.ante >= args.min_ante
+		return G.GAME.round_resets.ante >= self.min_ante
 	end,
 }, true)
 
