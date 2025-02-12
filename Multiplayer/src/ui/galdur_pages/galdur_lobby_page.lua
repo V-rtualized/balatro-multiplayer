@@ -10,6 +10,7 @@ G.FUNCS.mp_change_lobby_page = MP.UI.BTN.change_lobby_page
 function MP.UI.lobby_page()
 	MP.UI.should_watch_player_cards = true
 	MP.UI.generate_lobby_card_areas()
+	MP.UI.include_gamemode_preview()
 
 	return {
 		n = G.UIT.ROOT,
@@ -23,6 +24,7 @@ function MP.UI.lobby_page()
 					MP.UI.create_lobby_page_cycle(),
 				},
 			},
+			MP.UI.display_gamemode_preview(),
 		},
 	}
 end
@@ -226,8 +228,10 @@ Galdur.add_new_page({
 		MP.UI.should_watch_player_cards = false
 	end,
 	pre_start = function(choices)
-		MP.lobby_state.config.starting_lives = MP.GAMEMODES[MP.lobby_state.config.gamemode].has_lives
-				and MP.GAMEMODES[MP.lobby_state.config.gamemode]:starting_lives(#MPAPI.LOBBY_PLAYERS.BY_INDEX)
+		MP.lobby_state.config.starting_lives = G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode].has_lives
+				and G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode]:starting_lives(
+					#MPAPI.LOBBY_PLAYERS.BY_INDEX
+				)
 			or 9999
 		if choices.seed == nil then
 			choices.seed_select = true

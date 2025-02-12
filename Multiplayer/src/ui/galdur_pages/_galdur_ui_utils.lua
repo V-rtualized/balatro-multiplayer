@@ -102,7 +102,7 @@ end
 local card_hover_ref = Card.hover
 function Card:hover()
 	if
-		self.params.gamemode_chip
+		(self.params.gamemode_chip or self.params.gamemode_preview)
 		and (not self.states.drag.is or G.CONTROLLER.HID.touch)
 		and not self.no_ui
 		and not G.debug_tooltip_toggle
@@ -251,4 +251,164 @@ function Card:hover()
 	else
 		card_hover_ref(self)
 	end
+end
+
+local card_click_ref = Card.click
+function Card:click()
+	if self.params.gamemode_chip then
+		MP.lobby_state.config.gamemode = self.params.gamemode
+		G.E_MANAGER:clear_queue("galdur")
+		MP.UI.populate_gamemode_preview(self.params.gamemode)
+	else
+		card_click_ref(self)
+	end
+end
+
+function MP.UI.include_gamemode_preview()
+	MP.UI.generate_gamemode_card_areas()
+	MP.UI.generate_gamemode_preview()
+	MP.UI.populate_gamemode_preview(MP.lobby_state.config.gamemode)
+end
+
+function MP.UI.generate_gamemode_preview()
+	if Galdur.run_setup.selected_gamemode_area_holding then
+		for j = 1, #G.I.CARDAREA do
+			if Galdur.run_setup.selected_gamemode_area_holding == G.I.CARDAREA[j] then
+				table.remove(G.I.CARDAREA, j)
+				Galdur.run_setup.selected_gamemode_area_holding = nil
+			end
+		end
+	end
+
+	Galdur.run_setup.selected_gamemode_area_holding = CardArea(
+		17.475,
+		2,
+		G.CARD_W,
+		G.CARD_H,
+		{ card_limit = 1, type = "deck", highlight_limit = 0, gamemode_select = true }
+	)
+end
+
+function MP.UI.populate_gamemode_preview(_gamemode)
+	if Galdur.run_setup.selected_gamemode_area_holding.cards then
+		remove_all(Galdur.run_setup.selected_gamemode_area_holding.cards)
+		Galdur.run_setup.selected_gamemode_area_holding.cards = {}
+	end
+	if not _gamemode then
+		_gamemode = 1
+	end
+	local card = Card(
+		Galdur.run_setup.gamemode_select_areas[1].T.x,
+		Galdur.run_setup.gamemode_select_areas[1].T.y,
+		3.4 * 14 / 30,
+		3.4 * 14 / 30,
+		Galdur.run_setup.choices.deck.effect.center,
+		Galdur.run_setup.choices.deck.effect.center,
+		{ gamemode = _gamemode, gamemode_preview = true }
+	)
+	Galdur.run_setup.selected_gamemode_area_holding:emplace(card)
+	card.sprite_facing = "back"
+	card.facing = "back"
+	card.children.back:remove()
+	card.children.back = Sprite(
+		0,
+		0,
+		1,
+		1,
+		G.ANIMATION_ATLAS[G.P_CENTER_POOLS.Gamemode[_gamemode].atlas],
+		G.P_CENTER_POOLS.Gamemode[_gamemode].pos
+	)
+	card.children.back.states.hover = card.states.hover
+	card.children.back.states.click = card.states.click
+	card.children.back.states.drag = card.states.drag
+	card.children.back.states.collide.can = false
+	card.children.back:set_role({ major = card, role_type = "Glued", draw_major = card })
+end
+
+function MP.UI.display_gamemode_preview()
+	local gamemode_node = {
+		n = G.UIT.R,
+		config = { align = "tm" },
+		nodes = {
+			{ n = G.UIT.O, config = { object = Galdur.run_setup.selected_gamemode_area_holding } },
+		},
+	}
+
+	return {
+		n = G.UIT.C,
+		config = { align = "tm", padding = 0.15 },
+		nodes = {
+			{
+				n = G.UIT.R,
+				config = {
+					minh = 5.95,
+					minw = 3,
+					maxw = 3,
+					colour = G.C.BLACK,
+					r = 0.1,
+					align = "bm",
+					padding = 0.15,
+					emboss = 0.05,
+				},
+				nodes = {
+					{
+						n = G.UIT.R,
+						config = { align = "cm", minh = 0.6, maxw = 2.8 },
+						nodes = {
+							{
+								n = G.UIT.O,
+								config = {
+									id = "gamemode_name_1",
+									object = DynaText({
+										string = {
+											{ ref_table = MP.gamemode_preview_texts, ref_value = "gamemode_preview_1" },
+										},
+										scale = 0.7
+											/ math.max(1, string.len(MP.gamemode_preview_texts.gamemode_preview_1) / 8),
+										colours = { G.C.GREY },
+										pop_in_rate = 5,
+										silent = true,
+									}),
+								},
+							},
+						},
+					},
+					{
+						n = G.UIT.R,
+						config = { align = "cm", minh = 0.6, maxw = 2.8 },
+						nodes = {
+							{
+								n = G.UIT.O,
+								config = {
+									id = "gamemode_name_2",
+									object = DynaText({
+										string = {
+											{ ref_table = MP.gamemode_preview_texts, ref_value = "gamemode_preview_2" },
+										},
+										scale = 0.7
+											/ math.max(1, string.len(MP.gamemode_preview_texts.gamemode_preview_2) / 8),
+										colours = { G.C.GREY },
+										pop_in_rate = 5,
+										silent = true,
+									}),
+								},
+							},
+						},
+					},
+					{ n = G.UIT.R, config = { align = "cm", minh = 0.2 } },
+					gamemode_node,
+					{
+						n = G.UIT.R,
+						config = { minh = 0.8, align = "bm" },
+						nodes = {
+							{
+								n = G.UIT.T,
+								config = { text = localize("gald_selected"), scale = 0.75, colour = G.C.GREY },
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 end

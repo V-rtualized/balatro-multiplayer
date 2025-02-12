@@ -1,3 +1,8 @@
+MP.gamemode_preview_texts = {
+	gamemode_preview_1 = "",
+	gamemode_preview_2 = "",
+}
+
 function MP.UI.BTN.change_gamemode_page(args)
 	Galdur.clean_up_functions.clean_gamemode_areas()
 	MP.UI.populate_player_card_areas(args.cycle_config.current_option)
@@ -7,6 +12,7 @@ G.FUNCS.mp_change_gamemode_page = MP.UI.BTN.change_gamemode_page
 function MP.UI.gamemode_page()
 	MP.UI.should_watch_player_cards = true
 	MP.UI.generate_gamemode_card_areas()
+	MP.UI.include_gamemode_preview()
 
 	return {
 		n = G.UIT.ROOT,
@@ -20,6 +26,7 @@ function MP.UI.gamemode_page()
 					MP.UI.create_gamemode_page_cycle(),
 				},
 			},
+			MP.UI.display_gamemode_preview(),
 		},
 	}
 end
@@ -36,7 +43,7 @@ function MP.UI.generate_gamemode_card_areas()
 		end
 	end
 	Galdur.run_setup.gamemode_select_areas = {}
-	for i = 1, 16 do
+	for i = 1, #G.P_CENTER_POOLS.Gamemode do
 		Galdur.run_setup.gamemode_select_areas[i] = CardArea(
 			G.ROOM.T.w * 0.116,
 			G.ROOM.T.h * 0.209,
@@ -50,7 +57,7 @@ end
 function MP.UI.generate_gamemode_card_areas_ui()
 	local gamemode_ui_element = {}
 	local count = 1
-	for i = 1, math.floor(#G.P_CENTER_POOLS.Gamemode / 8) do
+	for i = 1, (math.floor(#G.P_CENTER_POOLS.Gamemode / 8) + 1) do
 		local row = { n = G.UIT.R, config = { colour = G.C.LIGHT, padding = 0.1 }, nodes = {} }
 		for j = 1, math.min(#G.P_CENTER_POOLS.Gamemode, 8) do
 			table.insert(row.nodes, {
@@ -189,6 +196,22 @@ function MP.UI.clean_gamemode_areas()
 	end
 end
 Galdur.clean_up_functions.mp_clean_gamemode_areas = MP.UI.clean_gamemode_areas
+
+function MP.set_new_gamemode(silent)
+	G.E_MANAGER:clear_queue("galdur")
+	MP.UI.populate_gamemode_preview(MP.lobby_state.config.gamemode, silent)
+
+	local gamemode_name = split_string_2(
+		G.localization.descriptions["Gamemode"][G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode].key].parsed_name
+	)
+	MP.gamemode_preview_texts.gamemode_preview_1 = gamemode_name[1]
+	MP.gamemode_preview_texts.gamemode_preview_2 = gamemode_name[2]
+
+	for i = 1, 2 do
+		local dyna_text_object = G.OVERLAY_MENU:get_UIE_by_ID("gamemode_name_" .. i).config.object
+		dyna_text_object.scale = 0.7 / math.max(1, string.len(MP.gamemode_preview_texts["gamemode_preview_" .. i]) / 8)
+	end
+end
 
 Galdur.add_new_page({
 	name = "page_title_gamemode",

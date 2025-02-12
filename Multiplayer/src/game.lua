@@ -38,7 +38,7 @@ function MP.update_waiting_on_pvp_end(dt)
 end
 
 function MP.generate_blinds_by_ante(ante)
-	MP.game_state.blinds_by_ante[ante] = MP.GAMEMODES[MP.lobby_state.config.gamemode]:blinds_by_ante(ante)
+	MP.game_state.blinds_by_ante[ante] = G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode]:blinds_by_ante(ante)
 end
 
 function MP.game_over()

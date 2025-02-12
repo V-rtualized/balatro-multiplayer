@@ -37,8 +37,9 @@ function MP.UI.update_blind_HUD(aniamte)
 			delay = 0.3,
 			blockable = false,
 			func = function()
-				if MP.GAMEMODES[MP.lobby_state.config.gamemode].current_enemy then
-					local enemy = MP.GAMEMODES[MP.lobby_state.config.gamemode]:current_enemy(MP.game_state.nemesis)
+				if G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode].current_enemy then
+					local enemy =
+						G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode]:current_enemy(MP.game_state.nemesis)
 					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_table = enemy
 					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.ref_value = "score_text"
 					G.HUD_blind:get_UIE_by_ID("HUD_blind_count").config.func = "multiplayer_blind_chip_UI_scale"
@@ -108,7 +109,7 @@ function Game:update_draw_to_hand(dt)
 							delay = 0.45,
 							blockable = false,
 							func = function()
-								if MP.GAMEMODES[MP.lobby_state.config.gamemode].is_1v1 then
+								if G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode].is_1v1 then
 									G.HUD_blind:get_UIE_by_ID("HUD_blind_name").config.object.config.string = {
 										{
 											ref_table = MP.GAME_PLAYERS.BY_CODE[MP.game_state.nemesis],
@@ -776,7 +777,8 @@ function G.FUNCS.select_blind(e)
 				blocking = false,
 				no_delete = true,
 				func = function()
-					local losers = MP.GAMEMODES[MP.lobby_state.config.gamemode].is_1v1 and MP.get_1v1_loser()
+					local losers = G.P_CENTER_POOLS.Gamemode[MP.lobby_state.config.gamemode].is_1v1
+							and MP.get_1v1_loser()
 						or MP.get_br_losers()
 					if losers ~= nil then
 						for _, v in ipairs(losers) do

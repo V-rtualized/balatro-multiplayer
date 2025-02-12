@@ -98,9 +98,9 @@ return {
 			gamemode_mp_attrition = {
 				name = "Attrition",
 				text = {
-					"Every boss blind is a battle",
-					"between each player and their",
-					"{X:purple,C:white}Nemesis{} with a life at stake.",
+					"Fight 1-on-1 with your {X:purple,C:white}Nemesis{},",
+					"player with the lowest score",
+					"loses a life.",
 					"{C:inactive}--", -- Lives text
 					"{C:red}4 Lives",
 					"{C:inactive}--", -- Other
@@ -110,9 +110,9 @@ return {
 			gamemode_mp_battle_royale = {
 				name = "Battle Royale",
 				text = {
-					"Every boss blind is a",
-					"battle between all players",
-					"with a {C:red}life{} at stake.",
+					"Fight against all remaining players",
+					"at each Boss Blind. Player with",
+					"the lowest score loses a life.",
 					"{C:inactive}--", -- Lives text
 					"{C:red}2-4 Lives{C:inactive}, depending on amount of players",
 					"{C:inactive}--", -- Other
@@ -122,9 +122,9 @@ return {
 			gamemode_mp_precision = {
 				name = "Precision",
 				text = {
-					"Battle Royale, except each boss",
-					"blind has a target score,",
-					"farthest from the target score loses.",
+					"Fight against all remaining players at ",
+					"each Boss Blind. Player with the farthest",
+					"score from the target score loses a life.",
 					"{C:inactive}--", -- Lives text
 					"{C:red}2-4 Lives{C:inactive}, depending on amount of players",
 					"{C:inactive}--", -- Other
@@ -246,7 +246,7 @@ return {
 			opts_player_diff_deck = "Players have different decks",
 			-- New as of 1.0
 			page_title_lobby = "Lobby",
-			page_title_gamemode = "Gamemode",
+			page_title_gamemode = "Select Gamemode",
 			lobby_host = "Host",
 			lobby_member = "Member",
 			lobby_spectator = "Spectator",

@@ -12,7 +12,7 @@ MP.lobby_state = {
 		different_seeds = false,
 		starting_lives = 2,
 		showdown_starting_antes = 3,
-		gamemode = "gamemode_mp_battle_royale",
+		gamemode = 1,
 		custom_seed = "random",
 		different_decks = false,
 	},
@@ -98,29 +98,23 @@ SMODS.Atlas({
 	py = 34,
 })
 
-MP.load_file("src/networking/player_manager.lua")
-MP.load_file("src/ui/smods.lua")
 MP.load_file("src/utils.lua")
+MP.load_dir("src/ui")
+MP.load_dir("src/networking")
 MP.load_file("src/mod_hash.lua")
-MP.load_file("src/networking/networking.lua")
 MP.load_dir("src/networking/actions")
 MP.load_file("src/misc.lua")
 MP.load_file("src/game.lua")
-MP.load_file("src/ui/utils.lua")
-MP.load_file("src/ui/blind_select.lua")
-MP.load_file("src/ui/game_hud.lua")
-MP.load_file("src/ui/end_game_overlay.lua")
-MP.load_file("src/ui/cards.lua")
 MP.load_file("src/editions.lua")
 MP.load_file("src/stickers.lua")
 MP.load_file("src/tags.lua")
 MP.load_dir("src/consumables")
 MP.load_dir("src/jokers")
-MP.load_dir("src/ui/galdur_pages")
 MP.load_dir("src/blinds")
-MP.load_file("src/gamemodes.lua")
+MP.load_dir("src/gamemodes")
+MP.load_dir("src/ui/galdur_pages")
 
-MPAPI.SERVER_CONFIG.url = "virtualized.dev"
+MPAPI.SERVER_CONFIG.url = "balatro.virtualized.dev"
 MPAPI.SERVER_CONFIG.port = 6858
 MPAPI.initialize()
 

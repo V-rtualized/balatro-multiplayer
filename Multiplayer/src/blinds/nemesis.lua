@@ -15,7 +15,7 @@ SMODS.Blind({
 	dollars = 5,
 	mult = 1, -- Jen's Almanac crashes the game if the mult is 0
 	boss = { min = 1, max = 10 },
-	boss_colour = HEX("ac3232"),
+	boss_colour = HEX("835aad"),
 	discovered = true,
 	in_pool = function(self)
 		return false
