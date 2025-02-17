@@ -301,7 +301,7 @@ local update_new_round_ref = Game.update_new_round
 function Game:update_new_round(dt)
 	if MPAPI.is_in_lobby() and not G.STATE_COMPLETE then
 		-- Prevent player from losing
-		if to_big(G.GAME.chips) < to_big(G.GAME.blind.chips) and not MP.is_pvp_boss() then
+		if MP.to_big(G.GAME.chips) < MP.to_big(G.GAME.blind.chips) and not MP.is_pvp_boss() then
 			G.GAME.blind.chips = -1
 			MP.send.fail_round()
 		end
