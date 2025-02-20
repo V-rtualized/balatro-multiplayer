@@ -177,7 +177,7 @@ function G.UIDEF.create_UIBox_lobby_menu()
 									align = "cm",
 								},
 								nodes = {
-									UIBox_button({
+									--[[UIBox_button({
 										button = "lobby_options",
 										colour = G.C.ORANGE,
 										minw = 3.15,
@@ -187,7 +187,7 @@ function G.UIDEF.create_UIBox_lobby_menu()
 										},
 										scale = text_scale * 1.2,
 										col = true,
-									}),
+									}),]]
 									{
 										n = G.UIT.C,
 										config = {
