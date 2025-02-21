@@ -13,10 +13,11 @@
 	"dependencies": [
     "Steamodded (>>1.0.0~ALPHA-1304a)",
     "Lovely (>=0.7)",
-    "Balatro (>=1.0.1n)"
+    "Balatro (>=1.0.1n)",
+		"Pokermon (>=2.7.0)"
   ],
 	"conflicts": [
-		"Cryptid (<=0.5.3c)",
-		"Talisman (<<2.1.0~dev)"
+		"Cryptid",
+		"Talisman"
 	]
 }
