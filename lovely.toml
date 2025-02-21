@@ -249,3 +249,21 @@ payload = '''if self.config.center.key == "j_mp_hanging_bad" and is_pvp_boss() t
 end'''
 match_indent = true
 times = 1
+
+[[patches]]
+[patches.regex]
+target = 'functions/state_events.lua'
+pattern = '''G.FUNCS.evaluate_round(?<pre>[\s\S]+?)to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips)'''
+position = 'at'
+payload = '''G.FUNCS.evaluate_round$pre to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips) or G.LOBBY.code'''
+match_indent = true
+times = 1
+
+[[patches]]
+[patches.regex]
+target = 'functions/state_events.lua'
+pattern = '''G.FUNCS.evaluate_round(?<pre>[\s\S]+?)G.GAME.chips - G.GAME.blind.chips >= 0'''
+position = 'at'
+payload = '''G.FUNCS.evaluate_round$pre (G.GAME.chips - G.GAME.blind.chips >= 0) or G.LOBBY.code'''
+match_indent = true
+times = 1
