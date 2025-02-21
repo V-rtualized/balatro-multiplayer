@@ -2,7 +2,7 @@ Client = {}
 
 function Client.send(msg)
 	if not (msg == "action:keepAliveAck") then
-		--sendTraceMessage(string.format("Client sent message: %s", msg), "MULTIPLAYER")
+		sendTraceMessage(string.format("Client sent message: %s", msg), "MULTIPLAYER")
 	end
 	love.thread.getChannel("uiToNetwork"):push(msg)
 end
@@ -40,7 +40,7 @@ local function action_lobbyInfo(host, hostHash, guest, guestHash, is_host)
 	end
 	-- TODO: This should check for player count instead
 	-- once we enable more than 2 players
-	G.LOBBY.ready_to_start = false
+	G.LOBBY.ready_to_start = G.LOBBY.is_host and guest ~= nil
 
 	if G.LOBBY.is_host then
 		G.MULTIPLAYER.lobby_options()
@@ -52,7 +52,7 @@ local function action_lobbyInfo(host, hostHash, guest, guestHash, is_host)
 end
 
 local function action_error(message)
-	--sendWarnMessage(message, "MULTIPLAYER")
+	sendWarnMessage(message, "MULTIPLAYER")
 
 	G.MULTIPLAYER.UTILS.overlay_message(message)
 end
@@ -87,7 +87,7 @@ local function action_start_blind()
 	if G.MULTIPLAYER_GAME.next_blind_context then
 		G.FUNCS.select_blind(G.MULTIPLAYER_GAME.next_blind_context)
 	else
-		--sendErrorMessage("No next blind context", "MULTIPLAYER")
+		sendErrorMessage("No next blind context", "MULTIPLAYER")
 	end
 end
 
@@ -100,7 +100,7 @@ local function action_enemy_info(score_str, hands_left_str, skips_str)
 	local skips = tonumber(skips_str)
 
 	if score == nil or hands_left == nil then
-		--sendDebugMessage("Invalid score or hands_left", "MULTIPLAYER")
+		sendDebugMessage("Invalid score or hands_left", "MULTIPLAYER")
 		return
 	end
 
@@ -414,7 +414,7 @@ function Game:update(dt)
 				for k, v in pairs(parsedAction) do
 					log = log .. string.format(" (%s: %s) ", k, v)
 				end
-				--sendTraceMessage(log, "MULTIPLAYER")
+				sendTraceMessage(log, "MULTIPLAYER")
 			end
 
 			if parsedAction.action == "connected" then
