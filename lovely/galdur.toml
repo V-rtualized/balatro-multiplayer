@@ -1,7 +1,7 @@
 [manifest]
 version = "1.0.0"
 dump_lua = true
-priority = 2147483647
+priority = 2147483600
 
 # Modifies Galdur's main UI creation function to add conditionals to galdur pages and remove caching (so the conditionals can change every time the menu is opened instead of just on load)
 [[patches]]
